@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "FZExtensions",
+        "repositoryURL": "https://github.com/flocked/FZExtensions.git",
+        "state": {
+          "branch": "main",
+          "revision": "44caafa5ebffc354275100e07b2c20bc427454d7",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
