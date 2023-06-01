@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  MetadataQuery+ResultDfference.swift
 //  
 //
 //  Created by Florian Zand on 27.04.23.

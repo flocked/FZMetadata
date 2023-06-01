@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  NSMetadata+.swift
 //  
 //
 //  Created by Florian Zand on 28.08.22.

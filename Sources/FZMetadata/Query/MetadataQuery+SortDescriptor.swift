@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  MetadataQuery+SortDescriptor.swift
 //  
 //
 //  Created by Florian Zand on 10.02.23.

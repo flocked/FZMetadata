@@ -1,6 +1,6 @@
 //
-//  URLMetadata+MDItemKey.swift
-//  FZCollection
+//  MetadataItem+AttributeKey.swift
+//  
 //
 //  Created by Florian Zand on 22.05.22.
 //

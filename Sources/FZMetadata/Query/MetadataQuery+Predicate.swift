@@ -1,6 +1,6 @@
 //
-//  Query.swift
-//  ScreenshotTest
+//  MetadataQuery+Predicate.swift
+//  
 //
 //  Created by Florian Zand on 21.04.23.
 //

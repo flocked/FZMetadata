@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  MetadataItem+Attribute.swift
 //
 //
 //  Created by Florian Zand on 28.08.22.
