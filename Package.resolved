@@ -2,11 +2,11 @@
   "object": {
     "pins": [
       {
-        "package": "FZExtensions",
-        "repositoryURL": "https://github.com/flocked/FZExtensions.git",
+        "package": "FZSwiftUtils",
+        "repositoryURL": "https://github.com/flocked/FZSwiftUtils.git",
         "state": {
           "branch": "main",
-          "revision": "44caafa5ebffc354275100e07b2c20bc427454d7",
+          "revision": "0b4eec6b8854fb9e09b4ea79a17b13009b712d1e",
           "version": null
         }
       }

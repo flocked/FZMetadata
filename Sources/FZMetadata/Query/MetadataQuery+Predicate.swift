@@ -7,7 +7,7 @@
 
 import Foundation
 import UniformTypeIdentifiers
-import FZExtensions
+import FZSwiftUtils
 
 public extension NSPredicate {
     typealias Item = MetadataQuery.Predicate<MetadataItem>

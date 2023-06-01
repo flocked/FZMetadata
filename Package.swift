@@ -12,13 +12,13 @@ let package = Package(
             targets: ["FZMetadata"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/flocked/FZExtensions.git", branch: "main"),
+        .package(url: "https://github.com/flocked/FZSwiftUtils.git", branch: "main"),
     ],
     targets: [
         
         .target(
             name: "FZMetadata",
-            dependencies: ["FZExtensions"]),
+            dependencies: ["FZSwiftUtils"]),
         .testTarget(
             name: "FZMetadataTests",
             dependencies: ["FZMetadata"]),

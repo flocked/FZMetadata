@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FZExtensions
+import FZSwiftUtils
 
 #if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
