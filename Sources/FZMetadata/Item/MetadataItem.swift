@@ -974,7 +974,7 @@ public extension MetadataItem {
     }
     
     
-    subscript<T>(key: URL.ExtendedAttributes.Key, initalValue: T? = nil) -> T?  {
+    subscript<T>(key: String, initalValue: T? = nil) -> T?  {
         get {
             guard let _url = self.url ?? self.url  else { return nil }
             return _url.extendedAttributes[key]
@@ -985,7 +985,7 @@ public extension MetadataItem {
         }
     }
     
-     func availableExtendedAttributes() throws -> [URL.ExtendedAttributes.Key] {
+     func availableExtendedAttributes() throws -> [String] {
         guard let _url = self.url ?? self.url  else { return [] }
        return try _url.extendedAttributes.listExtendedAttributes()
     }
