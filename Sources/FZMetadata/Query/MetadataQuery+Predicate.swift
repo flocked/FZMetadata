@@ -50,7 +50,7 @@ public extension MetadataQuery {
         
         /// All mdKeys used for the predicate.
         internal var mdKeys: [String] {
-            return self.predicate?.predicateFormat.matches(regex: #"\bkMDItem[a-zA-Z]*\b"#).uniqued() ?? []
+            return self.predicate?.predicateFormat.matches(regex: #"\bkMDItem[a-zA-Z]*\b"#).compactMap({$0.string}).uniqued() ?? []
         }
         
         /// All attributes used for the predicate.
