@@ -103,11 +103,14 @@ public class MetadataItem {
         if let rawValue: T.RawValue = self.value(for: keyPath.mdItemKey) {
            return T(rawValue: rawValue)
         }
-        return nil
+        return getExplicity(keyPath)
     }
     
     internal func value<T, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
-        return self.value(for: keyPath.mdItemKey)
+        if let value: T = self.value(for: keyPath.mdItemKey) {
+           return value
+        }
+        return getExplicity(keyPath)
     }
     
     // MARK: - File
@@ -964,7 +967,7 @@ public extension MetadataItem {
         }
     }
     
-    func getExplicity<V: Any, K: KeyPath<MetadataItem, V>>(_ keyPath: K) -> V? {
+    func getExplicity<V: Any, K: KeyPath<MetadataItem, V?>>(_ keyPath: K) -> V? {
         let key = "com.apple.metadata:" + keyPath.mdItemKey
         var value: V? = self.url?.extendedAttributes[key]
         if keyPath.mdItemKey == "kMDItemUserTags", let val = value as? [String]  {
