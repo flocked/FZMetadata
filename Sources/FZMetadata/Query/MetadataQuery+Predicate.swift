@@ -80,7 +80,7 @@ public extension MetadataQuery {
         }
         
         internal static func and(_ predicates: [MetadataQuery.Predicate<Bool>]) -> MetadataQuery.Predicate<Bool> {
-            Swift.print("AND", predicates.compactMap({$0.predicate}))
+            Swift.debugPrint("AND", predicates.compactMap({$0.predicate}))
             return .init(NSCompoundPredicate(and: predicates.compactMap({$0.predicate})))
         }
         

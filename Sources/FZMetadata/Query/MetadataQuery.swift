@@ -453,13 +453,13 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     internal var isMonitoringEnabled = false
     
     @objc internal func queryGatheringDidStart(_ notification: Notification) {
-        Swift.print("MetadataQuery GatheringDidStart")
+        Swift.debugPrint("MetadataQuery GatheringDidStart")
         self.resetResults()
         self.stateHandler?(.isGatheringFiles)
     }
     
     @objc internal func queryGatheringFinished(_ notification: Notification) {
-        Swift.print("MetadataQuery GatheringFinished")
+        Swift.debugPrint("MetadataQuery GatheringFinished")
         self.runWithPausedMonitoring {
             self.stateHandler?(.isMonitoring)
             self.resultsHandler?(self.results, .added(_results))
@@ -468,12 +468,12 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     @objc internal func queryGatheringProgress(_ notification: Notification) {
-        Swift.print("MetadataQuery GatheringProgress")
+        Swift.debugPrint("MetadataQuery GatheringProgress")
       //  updateResultAdditions()
     }
     
     @objc internal func queryUpdated(_ notification: Notification) {
-        Swift.print("MetadataQuery Updated")
+        Swift.debugPrint("MetadataQuery Updated")
         self.runWithPausedMonitoring {
             let added: [MetadataItem] =  (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
             let removed: [MetadataItem] =  (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
