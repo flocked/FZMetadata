@@ -24,10 +24,10 @@ An abstraction of NSMetadataQuery for:
 let query = MetadataQuery()
 query.searchLocations = [downloadsFolderURL, documentsFolderURL]
 query.predicate = { 
-    $0.fileTypes(.image) && 
+    $0.fileTypes(.image, .video) && 
     $0.dateAdded.thisWeek && 
     $0.fileSize.megabytes >= 10 
-}  // image files, added this week, 10mb or larger
+}  // image & video files, added this week, 10mb or larger
 query.completionHandler = { files in
 // found files
 }
