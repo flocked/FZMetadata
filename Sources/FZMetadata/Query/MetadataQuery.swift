@@ -39,7 +39,7 @@ import Foundation
  ```
  query.searchLocations = [userDocumentURL]
  query.predicate = { $0.fileExtension = "doc" && $0.modificatonDate.today }
- query.resultHandler = { items, diff in
+ query.resultsHandler = { items, diff in
  // the result
  }
  query.start()
@@ -49,7 +49,7 @@ import Foundation
  ```
  query.predicate = { $0.modificationDate.today && $0.isFile }
  query.enabledMontoring()
- query.resultHandler = { items, diff in
+ query.resultsHandler = { items, diff in
  // the result handler gets called whenever new files get modified
  }
  query.start()
@@ -59,7 +59,7 @@ import Foundation
  ```
  query.urls = [myMovieURLs]
  query.attributes = [.duration, .pixelSize, .fileSize, .lastUsageDate]
- query.resultHandler = { items, diff in
+ query.resultsHandler = { items, diff in
  // the result
  }
  query.start()
@@ -74,7 +74,7 @@ import Foundation
  In addition to querying metadata, MetadataQuery provides notifications for changes to the search results, which allows your application to respond in real-time to changes in the file system.
  */
 public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
-    public typealias ResultHandler = ((_ items: [MetadataItem], _ difference: ResultDifference)->())
+    public typealias ResultsHandler = ((_ items: [MetadataItem], _ difference: ResultDifference)->())
     public typealias StateHandler = ((_ state: State)->())
     public typealias Item = MetadataItem
     public typealias Attribute = MetadataItem.Attribute
@@ -91,7 +91,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     public let query = NSMetadataQuery()
     
-    public var resultHandler: ResultHandler? = nil
+    public var resultsHandler: ResultsHandler? = nil
     public var stateHandler: StateHandler? = nil
 
     internal var isRunning: Bool { return self.query.isStarted }
@@ -343,7 +343,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     internal func reset() {
-        self.resultHandler = nil
+        self.resultsHandler = nil
         self.searchScopes = []
         self.urls = []
         self.predicate = nil
@@ -382,7 +382,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
             if (changeCount != 0) {
                 let added =  results(at: Array(_results.count..<changeCount))
                 _results = _results + added
-                self.resultHandler?(self.results, .added(added))
+                self.resultsHandler?(self.results, .added(added))
             }
         }
     }
@@ -462,7 +462,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         Swift.print("MetadataQuery GatheringFinished")
         self.runWithPausedMonitoring {
             self.stateHandler?(.isMonitoring)
-            self.resultHandler?(self.results, .added(_results))
+            self.resultsHandler?(self.results, .added(_results))
             // updateResultAdditions()
         }
     }
@@ -486,7 +486,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
             if (changed.isEmpty == false) {
                 (changed + added).forEach({ _results.move($0, to: self.query.index(ofResult: $0) + 1) })
             }
-            resultHandler?(_results, ResultDifference(added: added, removed: removed, changed: changed))
+            resultsHandler?(_results, ResultDifference(added: added, removed: removed, changed: changed))
         }
     }
      
