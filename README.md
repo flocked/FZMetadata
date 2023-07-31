@@ -20,6 +20,7 @@ An abstraction of NSMetadataQuery for:
 - Monitoring of files and directories for updates to the search query and attributes.
 
 ### Searching for files by location & file attributes
+The results handler gets called whenever new files meet the specified predicate at the search locations.
 ```
 let query = MetadataQuery()
 query.searchLocations = [downloadsFolderURL, documentsFolderURL]
