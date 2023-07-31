@@ -28,7 +28,7 @@ query.predicate = {
     $0.dateAdded.thisWeek && 
     $0.fileSize.megabytes >= 10 
 }  // image & video files, added this week, 10mb or larger
-query.completionHandler = { files in
+query.resultHandler = { files in
 // found files
 }
 query.start()
@@ -39,7 +39,7 @@ MetadataQuery provides blazing fast query of attributes for large batches of fil
 ```
 query.urls = videoFileURLs  // URLs for querying of attributes
 query.attributes = [.pixelSize, .duration, .fileSize, .creationDate] // Attributes to query
-query.completionHandler = { files in  
+query.resultHandler = { files in  
     for file in files {
     // file.pixelSize, file.duration, file.fileSize, file.creationDate
     }
@@ -53,7 +53,7 @@ MetadataQuery can monitor for changes to search results & queried attributes. It
 query.predicate = { $0.isScreenCapture }  // Files that are screenshots
 query.searchScopes = [.local] // Searches everywhere on the local file system
 query.enableMonitoring() // Enables monitoring. Whenever a new screenshot gets captures the completion handler gets called
-query.completionHandler = { files in  
+query.resultHandler = { files in  
     for file in files {
     // screenshot files
     }
