@@ -1,5 +1,9 @@
 # MetadataItem & MetadataQuery
 
+File Metadata and File Query similar to Spotlight.
+
+**For a full documentation take a look at the included documentation accessible via Xcode's documentation browser.**
+
 ## MetadataItem
 An abstraction of NSMetadataItem for easy access of a file's attributes.
 ```
