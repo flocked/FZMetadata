@@ -906,6 +906,10 @@ public protocol QueryFileType { }
 extension URL.FileType: QueryFileType { }
 extension Optional: QueryFileType where Wrapped: QueryFileType { }
 
+public protocol QueryDataSize: QueryEquatable, QueryEquatable { }
+extension DataSize: QueryDataSize { }
+extension Optional: QueryDataSize where Wrapped: QueryDataSize { }
+
 @available(macOS 11.0, *)
 public protocol QueryUTType { }
 @available(macOS 11.0, *)
