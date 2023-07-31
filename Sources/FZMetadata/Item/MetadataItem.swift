@@ -753,7 +753,7 @@ public class MetadataItem {
         get { self.value(\.isoSpeed) } }
     
     
-    public enum Orientation: Int, _QueryRawRepresentable {
+    public enum Orientation: Int, QueryRawRepresentable {
         case horizontal = 0
         case vertical = 1
     }
@@ -768,7 +768,7 @@ public class MetadataItem {
         get { self.value(\.layerNames) } }
     
     /// White balance setting a the camera.
-    public enum WhiteBalance: Int, _QueryRawRepresentable {
+    public enum WhiteBalance: Int, QueryRawRepresentable {
         case auto = 0
         case off = 1
         public init?(rawValue: Int) {
@@ -864,7 +864,7 @@ public class MetadataItem {
         get { self.value(\.isScreenCapture) }  }
     
    /// The screen capture type.
-    public enum ScreenCaptureType: String, _QueryRawRepresentable {
+    public enum ScreenCaptureType: String, QueryRawRepresentable {
         /// Screen capture of a display.
         case display
         /// Screen capture of a window.

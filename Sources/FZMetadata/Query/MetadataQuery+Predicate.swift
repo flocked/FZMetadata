@@ -210,7 +210,7 @@ extension MetadataQuery.Predicate where T: QueryEquatable {
 
 
 // MARK: FileType
-extension MetadataQuery.Predicate where T: _QueryFileType {
+extension MetadataQuery.Predicate where T: QueryFileType {
     public func fileTypes(_ types: URL.FileType...) -> MetadataQuery.Predicate<Bool> {
         return self.fileTypes(types)
     }
@@ -245,7 +245,7 @@ extension MetadataQuery.Predicate where T: _QueryFileType {
 
 
 // MARK: Comparable
-extension MetadataQuery.Predicate where T: _QueryComparable {
+extension MetadataQuery.Predicate where T: QueryComparable {
     /// Checks if an element equals is greater than given value.
     public static func > (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .greaterThan,  rhs)
@@ -308,7 +308,7 @@ extension MetadataQuery.Predicate where T: _QueryComparable {
 }
 
 // MARK: Date
-extension MetadataQuery.Predicate where T: _QueryDate {
+extension MetadataQuery.Predicate where T: QueryDate {
     /// Checks if a date is now.
      public var isNow:  MetadataQuery.Predicate<Bool> {
          .init(query(for: .now, mdKey: mdKey))
@@ -409,14 +409,14 @@ extension MetadataQuery.Predicate where T: _QueryDate {
          .init(query(for: .last(value, unit), mdKey: mdKey))
      }
      
-     internal func query(for queryDate: QueryDate, mdKey: String) -> NSPredicate {
+     internal func query(for queryDate: QueryDateRange, mdKey: String) -> NSPredicate {
          return PredicateBuilder.between(mdKey, values: queryDate.values)
      }
 }
 
 // MARK: UTType
 @available(macOS 11.0, *)
-extension MetadataQuery.Predicate where T: _QueryUTType {
+extension MetadataQuery.Predicate where T: QueryUTType {
     /// Checks iif the content type is a subtype of a given type.
     public func subtype(of type: UTType) -> MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, type.identifier)
@@ -439,7 +439,7 @@ extension MetadataQuery.Predicate where T: _QueryUTType {
 }
 
 // MARK: String
-extension MetadataQuery.Predicate where T: _QueryString {
+extension MetadataQuery.Predicate where T: QueryString {
     /**
      /// Checks if a string contains a given string.
      - parameter value: value used.
@@ -544,11 +544,11 @@ extension MetadataQuery.Predicate where T: _QueryString {
 }
 
 // MARK: String
-extension MetadataQuery.Predicate where T: _QueryFileType {
+extension MetadataQuery.Predicate where T: QueryFileType {
 }
 
 /*
-extension MetadataQuery.Predicate where T: _QueryString {
+extension MetadataQuery.Predicate where T: QueryString {
     public func begins<C: Collection<QueryString>>(with values: C) -> MetadataQuery.Predicate<Bool> {
         let values = Array(values)
         return (values.count == 1) ? .comparison(mdKey, .beginsWith, values.first!) : .or(mdKey, .beginsWith, values)
@@ -691,7 +691,7 @@ extension QueryString where Self == String {
  */
 
 
-public enum QueryString {
+public enum QueryStringOption {
     case c(String)
     case d(String)
     case w(String)
@@ -717,15 +717,15 @@ public enum QueryString {
         }
     }
     
-    static func caseSensitive(_ string: String) -> QueryString {
+    static func caseSensitive(_ string: String) -> QueryStringOption {
         return .c(string)
     }
     
-    static func diacriticSensitive(_ string: String) -> QueryString {
+    static func diacriticSensitive(_ string: String) -> QueryStringOption {
         return .d(string)
     }
     
-    static func wordBased(_ string: String) -> QueryString {
+    static func wordBased(_ string: String) -> QueryStringOption {
         return .w(string)
     }
 }
@@ -733,7 +733,7 @@ public enum QueryString {
 
 
 // MARK: Collection
-extension MetadataQuery.Predicate where T: _QueryCollection {
+extension MetadataQuery.Predicate where T: QueryCollection {
     /// Checks if an element exists in this collection.
     public func contains(_ value: T.Element) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .equalTo, value)
@@ -786,9 +786,9 @@ internal extension MetadataQuery.Predicate {
                 return size(mdKey, type, value)
             case (_, let rect as CGRect):
                 value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
-            case (_, let value as QueryString):
+            case (_, let value as QueryStringOption):
                 return queryString(mdKey, type, value)
-            case (_, let _value as (any _QueryRawRepresentable)):
+            case (_, let _value as (any QueryRawRepresentable)):
                 value = _value.rawValue
             default: break
             }
@@ -822,7 +822,7 @@ internal extension MetadataQuery.Predicate {
             return NSCompoundPredicate(and: predicates)
         }
         
-        static func queryString(_ mdKey: String, _ type: ComparisonOperator, _ queryString: QueryString) -> NSPredicate {
+        static func queryString(_ mdKey: String, _ type: ComparisonOperator, _ queryString: QueryStringOption) -> NSPredicate {
                 return string(mdKey, type, queryString.value, queryString.options)
         }
         
@@ -863,8 +863,8 @@ internal extension MetadataQuery.Predicate {
 
 public protocol QueryEquatable { }
 extension Optional: QueryEquatable where Wrapped: QueryEquatable { }
-public protocol _QueryComparable: Comparable { }
-extension Optional: _QueryComparable where Wrapped: _QueryComparable { }
+public protocol QueryComparable: Comparable { }
+extension Optional: QueryComparable where Wrapped: QueryComparable { }
 extension Optional: Comparable where Wrapped: Comparable {
     public static func < (lhs: Optional, rhs: Optional) -> Bool {
         if let lhs = lhs, let rhs = rhs { return lhs < rhs }
@@ -872,69 +872,69 @@ extension Optional: Comparable where Wrapped: Comparable {
     }
 }
 
-public protocol _QueryRawRepresentable: QueryEquatable {
+internal protocol QueryRawRepresentable: QueryEquatable {
     associatedtype RawValue
     var rawValue: RawValue { get }
 }
 
-extension DataSize: _QueryRawRepresentable {
+extension DataSize: QueryRawRepresentable {
     public var rawValue: Int { return self.bytes }
 }
 
-extension TimeDuration: _QueryRawRepresentable {
+extension TimeDuration: QueryRawRepresentable {
     public var rawValue: Double { return self.seconds }
 }
 
 @available(macOS 11.0, *)
-extension UTType: _QueryRawRepresentable {
+extension UTType: QueryRawRepresentable {
     public var rawValue: String { return self.identifier }
 }
 
-public protocol _QueryString: QueryEquatable { }
-extension String: _QueryString { }
-extension Optional: _QueryString where Wrapped: _QueryString { }
+public protocol QueryString: QueryEquatable { }
+extension String: QueryString { }
+extension Optional: QueryString where Wrapped: QueryString { }
 
-public protocol _QueryDate: _QueryComparable, QueryEquatable { }
-extension Date: _QueryDate { }
-extension Optional: _QueryDate where Wrapped: _QueryDate { }
+public protocol QueryDate: QueryComparable, QueryEquatable { }
+extension Date: QueryDate { }
+extension Optional: QueryDate where Wrapped: QueryDate { }
 
-public protocol _QueryBool: QueryEquatable { }
-extension Bool: _QueryBool { }
-extension Optional: _QueryBool where Wrapped: _QueryBool { }
+public protocol QueryBool: QueryEquatable { }
+extension Bool: QueryBool { }
+extension Optional: QueryBool where Wrapped: QueryBool { }
 
-public protocol _QueryFileType { }
-extension URL.FileType: _QueryFileType { }
-extension Optional: _QueryFileType where Wrapped: _QueryFileType { }
+public protocol QueryFileType { }
+extension URL.FileType: QueryFileType { }
+extension Optional: QueryFileType where Wrapped: QueryFileType { }
 
 @available(macOS 11.0, *)
-public protocol _QueryUTType { }
+public protocol QueryUTType { }
 @available(macOS 11.0, *)
-extension UTType: _QueryUTType { }
+extension UTType: QueryUTType { }
 @available(macOS 11.0, *)
-extension Optional: _QueryUTType where Wrapped == UTType { }
+extension Optional: QueryUTType where Wrapped == UTType { }
 
-public protocol _QueryCollection: QueryEquatable { associatedtype Element }
-extension Array: _QueryCollection { }
-extension Set: _QueryCollection { }
-extension Optional: _QueryCollection where Wrapped: _QueryCollection {
+public protocol QueryCollection: QueryEquatable { associatedtype Element }
+extension Array: QueryCollection { }
+extension Set: QueryCollection { }
+extension Optional: QueryCollection where Wrapped: QueryCollection {
     public typealias Element = Wrapped.Element
 }
 
-extension Int: _QueryComparable, QueryEquatable { }
-extension Int8: _QueryComparable, QueryEquatable { }
-extension Int16: _QueryComparable,QueryEquatable { }
-extension Int32: _QueryComparable, QueryEquatable { }
-extension Int64: _QueryComparable, QueryEquatable { }
-extension UInt: _QueryComparable, QueryEquatable { }
-extension UInt8: _QueryComparable, QueryEquatable { }
-extension UInt16: _QueryComparable, QueryEquatable { }
-extension UInt32: _QueryComparable, QueryEquatable { }
-extension UInt64: _QueryComparable, QueryEquatable { }
-extension Float: _QueryComparable, QueryEquatable { }
-extension Double: _QueryComparable, QueryEquatable { }
-extension CGFloat: _QueryComparable, QueryEquatable { }
+extension Int: QueryComparable, QueryEquatable { }
+extension Int8: QueryComparable, QueryEquatable { }
+extension Int16: QueryComparable,QueryEquatable { }
+extension Int32: QueryComparable, QueryEquatable { }
+extension Int64: QueryComparable, QueryEquatable { }
+extension UInt: QueryComparable, QueryEquatable { }
+extension UInt8: QueryComparable, QueryEquatable { }
+extension UInt16: QueryComparable, QueryEquatable { }
+extension UInt32: QueryComparable, QueryEquatable { }
+extension UInt64: QueryComparable, QueryEquatable { }
+extension Float: QueryComparable, QueryEquatable { }
+extension Double: QueryComparable, QueryEquatable { }
+extension CGFloat: QueryComparable, QueryEquatable { }
 
-protocol AnyRange {
+internal protocol AnyRange {
     associatedtype Bound
     var lowerBound: Bound { get }
     var upperBound: Bound { get }
@@ -999,7 +999,7 @@ public struct StringOptions: OptionSet {
     }
 }
 
-internal enum QueryDate {
+internal enum QueryDateRange {
     case now
     case today
     case yesterday
@@ -1012,7 +1012,7 @@ internal enum QueryDate {
     case same(Calendar.Component, Date)
 }
 
-internal extension QueryDate {
+internal extension QueryDateRange {
     static func values(for unit: Calendar.Component) -> (String, Int)? {
        switch unit {
        case .year: return ("$this_year", 1)

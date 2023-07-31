@@ -9,7 +9,7 @@ import Foundation
 
 public extension MetadataItem {
     struct FinderTag: Hashable {
-        public enum Color: Int, CaseIterable, _QueryRawRepresentable {
+        public enum Color: Int, CaseIterable, QueryRawRepresentable {
             case none
             case grey
             case green
