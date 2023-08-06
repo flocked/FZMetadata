@@ -36,7 +36,7 @@ import Foundation
  To filter the query result to match specific attribute value conditions, use the predicate property.
  
  With MetadataQuery, you can perform complex queries on the file system using various search parameters, such as search loction and metadata attributes like file name, type, creation date, modification date, and more.
- ```
+ ```swift
  query.searchLocations = [userDocumentURL]
  query.predicate = { $0.fileExtension = "doc" && $0.modificatonDate.today }
  query.resultsHandler = { items, diff in
@@ -46,7 +46,7 @@ import Foundation
  ```
  
  Monitoring of changes to the result can be enabled via `enableMonitoring`
- ```
+ ```swift
  query.predicate = { $0.modificationDate.today && $0.isFile }
  query.enabledMontoring()
  query.resultsHandler = { items, diff in
@@ -56,7 +56,7 @@ import Foundation
  ```
  
  It can also fetch metadata attributes for specific URLs.
- ```
+ ```swift
  query.urls = [myMovieURLs]
  query.attributes = [.duration, .pixelSize, .fileSize, .lastUsageDate]
  query.resultsHandler = { items, diff in
@@ -160,7 +160,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      - `== ClosedRange<Value>` between the values
      - `== Array<Value>` equales any of the values
      - `!= Array<Value>` equales none of the values
-     ```
+     ```swift
      query.predicate = { $0.fileName == "MyFile.doc" } // fileName is "MyFile.doc"
      query.predicate = { $0.fileExtension == ["mp4", "mov", "ts"] } // fileExtension is either "mp4", "mov" or "ts"
      query.predicate = { $0.fileSize.bytes >= 5000 } // fileSize is greater than or equal 5000 bytes
@@ -209,12 +209,12 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      - func `begins(with value: String)`
      - func `ends(with value: String)`
      - func `contains(_ value: String)`
-     ```
+     ```swift
      query.predicate = { $0.textContent.contains("important") } // textContent contains "important"
      query.predicate = { $0.fileName.begins(with: "img_") } // fileName begins with "img_"
      ```
      By default string value predicates are case and diacritic insensitive. To predicate case sensitive use c(_ ), diacritic sensitve d(_ ) or cd(_ ) for both case & diacritic sensitive:
-     ```
+     ```swift
      query.predicate = \.fsName *= c("Ant") // fsName begins with "Ant" case sensitive.
      query.predicate = \.fsName *= cd("Ömp") // fsName begins with "Ömp" case sensitive and diacritic sensitive.
 
@@ -230,14 +230,14 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      - `this(Calendar.Component)` this component (e.g. this week, this year)
      - `previous(Calendar.Component)` next component (e.g. previous week, previous year)
      - `next(Calendar.Component)` next component (e.g. next minute, next day)
-     ```
+     ```swift
      query.predicate = { $0.creationDate.yesterday } // creationDate was yesterday
      query.predicate = { $0.lastUsedDate.this(.week) } // lastUsedDate was this week
      query.predicate = \.fsContentChangeDate.last(.month) // fsContentChangeDate was last month
      ```
      
      Operators && (AND), || (OR) and ! (isNot) can be used:
-     ```
+     ```swift
      query.predicate = { $0.fileExtension == "mp4" && $0.fileSize.bytes > 5000 }
      query.predicate = { !($0.isDirectory && $0.directoryFilesCount > 100) }
      ```
@@ -286,7 +286,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      The result can be sorted by the relevance of the item's content via Attribute.queryContentRelevance.
           
      SortDescriptor can also be defined by using asc(_: Attribute) and dsc(_: Attribute) for ascending/descending order.
-     ```
+     ```swift
      query.sortedBy = [.asc(.fsCreationDate), <<.fsSize] // Sorted by ascending fsCreationDate & descending fsSize
      ```
      */
