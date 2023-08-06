@@ -40,8 +40,8 @@ import Foundation
  }
  query.start()
  ```
- 
- Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via FileMananger or NSMetadataItem.
+
+ Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger` or `NSMetadataItem`.
  */
 public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     public typealias ResultsHandler = ((_ items: [MetadataItem], _ difference: ResultDifference)->())
