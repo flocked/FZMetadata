@@ -8,70 +8,40 @@
 import Foundation
 
 /**
- MetadataQuery provides a way to search for files and to to fetch metadata attributes.
-
- MetadataQuery encapsulates the functionality provided by NSMetadataQuery which is also used by Spotlight and Finder.
- 
- MetadataQuery provides results in two ways:
- - By searching files at specific URLs or globally, optionally filtered by file metadata like last usage date, file size, etc.
- - By fetching large batches of metadata properties for specific URLs.
- - By monitoring for changes to directories and file metadata properties.
-  
- Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via FileMananger or NSMetadataItem.
-  
- After you start the query, the query is gathering the inital result of matching metadata items.When the query has found all the items, it calls your result handler.
- 
- If monitoring is enabled, the query monitors for changes to the result and
- 
- updates it's result live whenever the matching items change and
- 
- In addition to querying metadata, MetadataQuery provides notifications for changes to the search results, which allows your application to respond in real-time to changes in the file system.
-
- To
- 
- you receive batches of matching CSSearchableItem objects in the handler you implement for the foundItemsHandler property. When the query has returned all the items it found, it calls your completion handler and passes nil to indicate that it completed successfully.
- 
- Queries have two phases: the initial *isGatheringFiles* phase that collects all currently matching results and   a second *isMonitoring* phase when monitoring is enabled via *enableMonitoring()*
- By default, the receiver has no limitation on its search scope / search location. Use the searchScopes or searchLocations property to customize.
- To filter the query result to match specific attribute value conditions, use the predicate property.
- 
- With MetadataQuery, you can perform complex queries on the file system using various search parameters, such as search loction and metadata attributes like file name, type, creation date, modification date, and more.
+ An object that can search files and fetch metadata attributes for large batches of files.
+   
+ With `MetadataQuery`, you can perform complex queries on the file system using various search parameters, such as search loction and metadata attributes like file name, type, creation date, modification date, and more.
  ```swift
  query.searchLocations = [userDocumentURL]
  query.predicate = { $0.fileExtension = "doc" && $0.modificatonDate.today }
- query.resultsHandler = { items, diff in
+ query.resultsHandler = { items, _ in
  // the result
  }
  query.start()
  ```
  
- Monitoring of changes to the result can be enabled via `enableMonitoring`
+ It can also fetch metadata attributes for large batches of file URLs.
+ ```swift
+ query.urls = [myMovieURLs]
+ query.attributes = [.duration, .pixelSize, .fileSize, .lastUsageDate]
+ query.resultsHandler = { items, _ in
+ // the result
+ }
+ query.start()
+ ```
+ 
+ It can also montiro for changes via ``enableMonitoring()``.  The query calls your results handler, whenever new files match the query or file attributes change.
+ 
  ```swift
  query.predicate = { $0.modificationDate.today && $0.isFile }
- query.enabledMontoring()
+ query.enableMonitoring()
  query.resultsHandler = { items, diff in
  // the result handler gets called whenever new files get modified
  }
  query.start()
  ```
  
- It can also fetch metadata attributes for specific URLs.
- ```swift
- query.urls = [myMovieURLs]
- query.attributes = [.duration, .pixelSize, .fileSize, .lastUsageDate]
- query.resultsHandler = { items, diff in
- // the result
- }
- query.start()
- ```
- 
- It can also search for metadata provided by Spotlight, such as author, keywords, and comments.
- 
- Using the query is much fastly faster compared to manually fetch query large batches files. It encapsulates the functionality provided by NSMetadataQuery which is also used by Spotlight and Finder.
-
- MetadataQuery can be used to create live-updating search results, meaning that it can monitor the file system and automatically update the results as new files are added or removed. This makes it useful for applications that need to display file system contents in real-time, such as file browsers or media management tools.
-
- In addition to querying metadata, MetadataQuery provides notifications for changes to the search results, which allows your application to respond in real-time to changes in the file system.
+ Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via FileMananger or NSMetadataItem.
  */
 public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     public typealias ResultsHandler = ((_ items: [MetadataItem], _ difference: ResultDifference)->())
