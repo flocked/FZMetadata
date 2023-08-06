@@ -23,12 +23,12 @@ An abstraction of NSMetadataQuery for:
 The results handler gets called whenever new files meet the specified predicate at the search locations.
 ```
 let query = MetadataQuery()
-query.searchLocations = [downloadsFolderURL, documentsFolderURL]
+query.searchLocations = [.downloadsDirectory, .documentsDirectory]
 query.predicate = { 
     $0.fileTypes(.image, .video) && 
-    $0.dateAdded.thisWeek && 
+    $0.dateAdded.isThisWeek && 
     $0.fileSize.megabytes >= 10 
-}  // image & video files, added this week, 10mb or larger
+}  // Image & videos files, added this week, large than 10mb
 query.resultsHandler = { files in
 // found files
 }
