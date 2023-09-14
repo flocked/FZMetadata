@@ -42,7 +42,7 @@ public extension MetadataQuery {
         }
     }
 }
-#elseif os(iOS)
+#elseif canImport(UIKit)
 public extension MetadataQuery {
     /// Search scopes for where the metadata query searches files.
     enum SearchScope: String {

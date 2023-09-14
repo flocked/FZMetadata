@@ -5,6 +5,7 @@
 //  Created by Florian Zand on 30.03.23.
 //
 
+
 import Foundation
 
 public extension MetadataItem {
@@ -30,7 +31,7 @@ public extension MetadataItem {
                 case .orange: return "orange"
                 }
             }
-           public var value: NSColor {
+           public var value: NSUIColor {
                 switch self {
                 case .none: return .clear
                 case .grey: return .systemGray
