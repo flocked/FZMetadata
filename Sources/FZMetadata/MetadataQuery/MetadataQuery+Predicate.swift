@@ -128,6 +128,19 @@ public extension MetadataQuery.Predicate where T == MetadataItem {
     var isAlias: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
     }
+    
+    func fileTypes(_ types: URL.FileType...) -> MetadataQuery.Predicate<Bool> {
+        return self.fileTypes(types)
+    }
+    
+    func fileTypes(_ types: [URL.FileType]) -> MetadataQuery.Predicate<Bool> {
+        let keyPath: PartialKeyPath<MetadataItem> = \.fileType
+        if types.count == 1, let identifier = types.first?.identifier {
+            return .comparison(keyPath.mdItemKey, .equalTo, identifier)
+        } else {
+            return .or(keyPath.mdItemKey,.equalTo, types.compactMap({$0.identifier}))
+        }
+    }
 }
 
 // MARK: Bool
@@ -211,19 +224,6 @@ extension MetadataQuery.Predicate where T: QueryEquatable {
 
 // MARK: FileType
 extension MetadataQuery.Predicate where T: QueryFileType {
-    public func fileTypes(_ types: URL.FileType...) -> MetadataQuery.Predicate<Bool> {
-        return self.fileTypes(types)
-    }
-    
-    public func fileTypes(_ types: [URL.FileType]) -> MetadataQuery.Predicate<Bool> {
-        let keyPath: PartialKeyPath<MetadataItem> = \.fileType
-        if types.count == 1, let identifier = types.first?.identifier {
-            return .comparison(keyPath.mdItemKey, .equalTo, identifier)
-        } else {
-            return .or(keyPath.mdItemKey,.equalTo, types.compactMap({$0.identifier}))
-        }
-    }
-    
     public static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == URL.FileType {
         return .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
     }
