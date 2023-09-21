@@ -24,6 +24,7 @@ extension MetadataQuery {
             case descending
         }
         
+        /*
         /**
          Creates a sort descriptor from a given metadata item kexpath.
 
@@ -35,6 +36,8 @@ extension MetadataQuery {
                 super.init(key: attribute.rawValue, ascending: (order == .ascending))
         }
         
+        */
+        
         /**
          Creates a sort descriptor with ascending order from the specified metadata attribute.
 
@@ -42,7 +45,7 @@ extension MetadataQuery {
             - keypath: The keypath to the comparable metadata attribute.
          */
         public static func asc(_ attribute: MetadataItem.Attribute) -> SortDescriptor  {
-            SortDescriptor(attribute, order: .ascending)
+            SortDescriptor(key: attribute.rawValue, ascending: true)
         }
         
         /**
@@ -52,22 +55,19 @@ extension MetadataQuery {
             - keypath: The keypath to the comparable metadata attribute.
          */
         public static func desc(_ attribute: MetadataItem.Attribute) -> SortDescriptor  {
-            SortDescriptor(attribute, order: .ascending)
+            SortDescriptor(key: attribute.rawValue, ascending: false)
         }
         
-                
-        required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
-        }
+
     }
 }
 
 // MARK: Operator
 
 public prefix func >> (lhs: MetadataItem.Attribute) -> MetadataQuery.SortDescriptor {
-    MetadataQuery.SortDescriptor(lhs, order: .ascending)
+    MetadataQuery.SortDescriptor(key: lhs.rawValue, ascending: true)
 }
 
 public prefix func << (lhs: MetadataItem.Attribute) -> MetadataQuery.SortDescriptor {
-    MetadataQuery.SortDescriptor(lhs, order: .descending)
+    MetadataQuery.SortDescriptor(key: lhs.rawValue, ascending: false)
 }
