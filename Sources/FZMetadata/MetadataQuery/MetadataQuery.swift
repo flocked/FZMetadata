@@ -458,10 +458,14 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     @objc internal func queryGatheringFinished(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery GatheringFinished")
         self.runWithPausedMonitoring {
-            Swift.debugPrint("MetadataQuery GatheringFinished 1", self.results.count)
+            Swift.debugPrint("MetadataQuery GatheringFinished 1")
             self.stateHandler?(.isMonitoring)
-            Swift.debugPrint("MetadataQuery GatheringFinished 2", ResultDifference.added(_results))
-            self.resultsHandler?(self.results, .added(_results))
+            Swift.debugPrint("MetadataQuery GatheringFinished 2")
+            let results = self.results
+            let diff = ResultDifference.added(_results)
+            DispatchQueue.main.async {
+                self.resultsHandler?(results, diff)
+            }
             Swift.debugPrint("MetadataQuery GatheringFinished 2")
             // updateResultAdditions()
         }
