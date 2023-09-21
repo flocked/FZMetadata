@@ -62,7 +62,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         case isStopped
     }
     
-    public let query = NSMetadataQuery()
+    internal let query = NSMetadataQuery()
     
     public var resultsHandler: ResultsHandler? = nil
     public typealias ResultsHandler = ((_ items: [MetadataItem], _ difference: ResultDifference)->())
