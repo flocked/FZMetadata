@@ -460,7 +460,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         self.runWithPausedMonitoring {
             Swift.debugPrint("MetadataQuery GatheringFinished 1")
             self.stateHandler?(.isMonitoring)
-            Swift.debugPrint("MetadataQuery GatheringFinished 2")
+            Swift.debugPrint("MetadataQuery GatheringFinished 2", self.resultsHandler != nil)
             self.resultsHandler?(self.results, .added(_results))
             Swift.debugPrint("MetadataQuery GatheringFinished 2")
             // updateResultAdditions()
