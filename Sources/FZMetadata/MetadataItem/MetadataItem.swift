@@ -172,9 +172,9 @@ public class MetadataItem {
         get { self.value(\.fileExtensionIsHidden) } }
     
     /// The type of the file.
-    public var fileType: URL.FileType? {
+    public var fileType: FileType? {
         get {  if let contentTypeTree: [String] = self.value(\.contentTypeTree) {
-            return URL.FileType(contentTypeTree: contentTypeTree)
+            return FileType(contentTypeTree: contentTypeTree)
         }
             return nil
         }

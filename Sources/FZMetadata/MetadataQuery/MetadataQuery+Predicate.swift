@@ -129,11 +129,11 @@ public extension MetadataQuery.Predicate where T == MetadataItem {
         .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
     }
     
-    func fileTypes(_ types: URL.FileType...) -> MetadataQuery.Predicate<Bool> {
+    func fileTypes(_ types: FileType...) -> MetadataQuery.Predicate<Bool> {
         return self.fileTypes(types)
     }
     
-    func fileTypes(_ types: [URL.FileType]) -> MetadataQuery.Predicate<Bool> {
+    func fileTypes(_ types: [FileType]) -> MetadataQuery.Predicate<Bool> {
         let keyPath: PartialKeyPath<MetadataItem> = \.fileType
         if types.count == 1, let identifier = types.first?.identifier {
             return .comparison(keyPath.mdItemKey, .equalTo, identifier)
@@ -224,21 +224,21 @@ extension MetadataQuery.Predicate where T: QueryEquatable {
 
 // MARK: FileType
 extension MetadataQuery.Predicate where T: QueryFileType {
-    public static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == URL.FileType {
+    public static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
         return .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
     }
     
-    public static func != (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == URL.FileType {
+    public static func != (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
         return .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
     }
     
     /// Checks if an element equals any given values.
-    public static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == URL.FileType  {
+    public static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == FileType  {
         .or(lhs.mdKey,.equalTo, rhs.compactMap({$0.identifier}))
     }
     
     /// Checks if an element equals any given values.
-    public static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == URL.FileType  {
+    public static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == FileType  {
         .and(lhs.mdKey,.notEqualTo, rhs.compactMap({$0.identifier}))
     }
 }
@@ -910,7 +910,7 @@ extension Optional: QueryBool where Wrapped: QueryBool { }
 
 /// Conforms `FileType` to be used in a metadata query predicate.
 public protocol QueryFileType { }
-extension URL.FileType: QueryFileType { }
+extension FileType: QueryFileType { }
 extension Optional: QueryFileType where Wrapped: QueryFileType { }
 
 /// Conforms `UTType` to be used in a metadata query predicate.
@@ -1019,7 +1019,7 @@ internal extension QueryDateRange {
     }
 }
 
-extension URL.FileType {
+extension FileType {
     internal var metadataPredicate: NSPredicate {
         let key: NSExpression
         let type: NSComparisonPredicate.Operator
