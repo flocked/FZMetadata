@@ -99,8 +99,11 @@ public class MetadataItem {
     
     internal func value<T>(for attribute: String) -> T? {
         if let value = self.values[attribute] as? T {
-            return value } else if let value: T = item.value(for: attribute) {
-                return value
+            return value } else {
+                Swift.print("missing", attribute, "values", self.values.keys)
+                if let value: T = item.value(for: attribute) {
+                    return value
+                }
             }
         return nil
     }
