@@ -9,6 +9,7 @@ import Foundation
 
 internal extension NSMetadataItem {
     func value<T>(for attribute: String) -> T? {
+        Swift.print("NSMetadataItem valueFor", attribute)
         return self.value(forAttribute: attribute) as? T
     }
 }
