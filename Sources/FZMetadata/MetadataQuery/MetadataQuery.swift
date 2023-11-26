@@ -509,11 +509,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     public func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
-        if let path: String = result.value(for: "kMDItemPath") {
-            return MetadataItem(url: URL(fileURLWithPath: path), values: [:])
-        }
-        let item = MetadataItem(item: result)
-        return item
+        return MetadataItem(item: result)
     }
         
     public override init() {
