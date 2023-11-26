@@ -395,7 +395,9 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     internal func result(at index: Int) -> MetadataItem? {
         let result = self.query.result(at: index) as? MetadataItem
-        result?.values = resultAttributeValues(at: index)
+        var values = resultAttributeValues(at: index)
+       // values["kMDItemPath"] = result?.path
+        result?.values = values
         return result
     }
     
@@ -507,6 +509,9 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     public func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
+        if let path: String = result.value(for: "kMDItemPath") {
+            return MetadataItem(url: URL(fileURLWithPath: path), values: [:])
+        }
         let item = MetadataItem(item: result)
         return item
     }

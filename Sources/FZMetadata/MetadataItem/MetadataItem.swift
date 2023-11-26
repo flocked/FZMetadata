@@ -32,7 +32,11 @@ public extension URL {
  ```
  */
 public class MetadataItem {
-    internal let item: NSMetadataItem
+    internal var item: NSMetadataItem {
+        _item ?? NSMetadataItem(url: _url!)!
+    }
+    internal let _item: NSMetadataItem?
+    internal var _url: URL? = nil
     internal var values: [String:Any] = [:]
     
     /**
@@ -44,7 +48,7 @@ public class MetadataItem {
      - Returns: A metadata self.
      */
     public init(item: NSMetadataItem) {
-        self.item = item
+        self._item = item
         self.values = [:]
     }
     
@@ -59,7 +63,7 @@ public class MetadataItem {
      */
     public init?(url: URL) {
         if let item = NSMetadataItem(url: url) {
-            self.item = item
+            self._item = item
             var values: [String:Any] = [:]
             values[NSMetadataItemURLKey] = url
             self.values = values
@@ -68,9 +72,15 @@ public class MetadataItem {
         }
     }
     
+    internal init(url: URL, values: [String:Any]) {
+        self._item = nil
+        self.values = values
+        self._url = url
+    }
+    
     internal init?(url: URL, values: [String:Any]? = nil) {
         if let item = NSMetadataItem(url: url) {
-            self.item = item
+            self._item = item
             var values = values ?? [:]
             values[NSMetadataItemURLKey] = url
             self.values = values
@@ -137,6 +147,9 @@ public class MetadataItem {
     
     /// The url of the self.
     public var url: URL? {
+        if let path = values["kMDItemPath"] as? String {
+            return URL(fileURLWithPath: path)
+        }
         if let url = self.value(\.url) {
             return url
         } else if let path = self.value(\.path) {
