@@ -365,11 +365,10 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      */
     public var results: [MetadataItem] {
         self.updateResults()
-        Swift.print("result values", self._results.first?.values.keys ?? "nil")
         return self._results
     }
     
-    public var resultsCount: Int {
+    internal var resultsCount: Int {
         query.resultCount
     }
     
@@ -397,21 +396,17 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         return indexes.compactMap({self.result(at: $0)})
     }
     
-    public func result(at index: Int) -> MetadataItem? {
+    internal func result(at index: Int) -> MetadataItem? {
         let result = self.query.result(at: index) as? MetadataItem
         var values = resultAttributeValues(at: index)
     //    values["kMDItemPath"] = result?.path
-        result?.values = values
+        result?.values = resultAttributeValues(at: index)
         return result
     }
     
     internal func resultAttributeValues(at index: Int) -> [String: Any] {
+        Swift.print("allAttributeKeys", allAttributeKeys)
         return self.query.values(of: allAttributeKeys, forResultsAt: index)
-    }
-    
-    internal func resultAttributeValues(for item: MetadataItem) -> [String: Any] {
-        let index = self.query.index(ofResult: item)
-        return self.resultAttributeValues(at: index)
     }
     
     internal var allAttributeKeys: [String] {
