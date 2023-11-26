@@ -118,6 +118,7 @@ public class MetadataItem {
     }
     
     internal func value<T, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
+        Swift.print("value", keyPath.stringValue, keyPath.mdItemKey)
         if let value: T = self.value(for: keyPath.mdItemKey) {
            return value
         }
