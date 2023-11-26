@@ -101,7 +101,7 @@ public class MetadataItem {
         if let value = self.values[attribute] as? T {
             return value } else {
                 if attribute != "kMDItemPath" {
-                    Swift.print("missing", attribute, "values", self.values.keys)
+                 //   Swift.print("missing", attribute, "values", self.values.keys)
                 }
                 if let value: T = item.value(for: attribute) {
                     return value
@@ -118,6 +118,15 @@ public class MetadataItem {
     }
     
     internal func value<T, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
+        if keyPath != \.path {
+            let attribute = keyPath.mdItemKey
+            if let value = self.values[attribute] as? T { } else {
+                Swift.print("missing", attribute, keyPath.stringValue, "values", self.values.keys)
+                    if let value: T = item.value(for: attribute) {
+                        return value
+                    }
+                }
+        }
         if let value: T = self.value(for: keyPath.mdItemKey) {
            return value
         }
