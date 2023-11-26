@@ -369,6 +369,10 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         return self._results
     }
     
+    public var resultsCount: Int {
+        query.resultCount
+    }
+    
     internal var _results: [MetadataItem] = []
     internal func updateResults() {
         _results = self.results(at: Array(0..<self.query.resultCount))
@@ -393,7 +397,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         return indexes.compactMap({self.result(at: $0)})
     }
     
-    internal func result(at index: Int) -> MetadataItem? {
+    public func result(at index: Int) -> MetadataItem? {
         let result = self.query.result(at: index) as? MetadataItem
         var values = resultAttributeValues(at: index)
     //    values["kMDItemPath"] = result?.path
