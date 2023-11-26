@@ -32,11 +32,7 @@ public extension URL {
  ```
  */
 public class MetadataItem {
-    internal var item: NSMetadataItem {
-        _item ?? NSMetadataItem(url: _url!)!
-    }
-    internal let _item: NSMetadataItem?
-    internal var _url: URL? = nil
+    internal let item: NSMetadataItem
     internal var values: [String:Any] = [:]
     
     /**
@@ -48,7 +44,7 @@ public class MetadataItem {
      - Returns: A metadata self.
      */
     public init(item: NSMetadataItem) {
-        self._item = item
+        self.item = item
         self.values = [:]
     }
     
@@ -63,7 +59,7 @@ public class MetadataItem {
      */
     public init?(url: URL) {
         if let item = NSMetadataItem(url: url) {
-            self._item = item
+            self.item = item
             var values: [String:Any] = [:]
             values[NSMetadataItemURLKey] = url
             self.values = values
@@ -72,15 +68,9 @@ public class MetadataItem {
         }
     }
     
-    internal init(url: URL, values: [String:Any]) {
-        self._item = nil
-        self.values = values
-        self._url = url
-    }
-    
     internal init?(url: URL, values: [String:Any]? = nil) {
         if let item = NSMetadataItem(url: url) {
-            self._item = item
+            self.item = item
             var values = values ?? [:]
             values[NSMetadataItemURLKey] = url
             self.values = values
@@ -90,36 +80,25 @@ public class MetadataItem {
     }
 #endif
     
-    internal var queryAttributes: [String] {
-        return Array(values.keys)
-    }
-    
-    internal var _availableAttributes: [String] {
-        return (item.attributes + queryAttributes).uniqued()
-    }
     /**
      An array containing the attributes for the metadata item’s values.
 
      - Returns: This property contains an array of attributes, representing the values available from this metadata self. For a list of possible keys, see Attributes.
      */
     public var availableAttributes: [Attribute] {
-        let attributes = self._availableAttributes
+        let attributes = (values.keys + item.attributes).uniqued().sorted()
         return attributes.compactMap({Attribute(rawValue: $0)})
     }
     
     internal func value<T>(for attribute: String) -> T? {
         if let value = self.values[attribute] as? T {
-            return value } else {
-                if attribute != "kMDItemPath" {
-                 //   Swift.print("missing", attribute, "values", self.values.keys)
-                }
-                if let value: T = item.value(for: attribute) {
-                    return value
-                }
-            }
+            return value
+        } else if let value: T = item.value(for: attribute) {
+            return value
+        }
         return nil
     }
-        
+    
     internal func value<T: RawRepresentable, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
         if let rawValue: T.RawValue = self.value(for: keyPath.mdItemKey) {
            return T(rawValue: rawValue)
@@ -128,15 +107,6 @@ public class MetadataItem {
     }
     
     internal func value<T, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
-        if keyPath != \.path {
-            let attribute = keyPath.mdItemKey
-            if let value = self.values[attribute] as? T { } else {
-                Swift.print("missing", attribute, keyPath.stringValue, "values", self.values.keys)
-                    if let value: T = item.value(for: attribute) {
-                        return value
-                    }
-                }
-        }
         if let value: T = self.value(for: keyPath.mdItemKey) {
            return value
         }
@@ -147,15 +117,10 @@ public class MetadataItem {
     
     /// The url of the self.
     public var url: URL? {
-        if let path = values["kMDItemPath"] as? String {
+        if let path = self.values["kMDItemPath"] as? String {
             return URL(fileURLWithPath: path)
         }
-        if let url = self.value(\.url) {
-            return url
-        } else if let path = self.value(\.path) {
-            return URL(fileURLWithPath: path)
-        }
-        return nil
+        return self.value(\.url)
     }
     
     /// The full path to the file.
@@ -164,7 +129,11 @@ public class MetadataItem {
     
     /// The file name of the item including extension.
     public var fileName: String? {
-        get { self.value(\.fileName) ?? self.url?.lastPathComponent } }
+        get { 
+            if let path = self.values["kMDItemPath"] as? String {
+                return URL(fileURLWithPath: path).lastPathComponent
+            }
+            return self.value(\.fileName) ?? self.url?.lastPathComponent } }
     
     /// The display name of the item, which may be different then the file system name.
     public var displayName: String? {
@@ -179,10 +148,10 @@ public class MetadataItem {
         get { self.url?.pathExtension } }
     
     /// The size of of the file in bytes.
-    public var fileSizeBytes: Int? {
+    internal var fileSizeBytes: Int? {
         get { self.value(\.fileSizeBytes) } }
     
-    /// The size of of the file as DataSize.
+    /// The size of of the file as `DataSize`.
     public var fileSize: DataSize? {
         if let bytes = fileSizeBytes {
             return DataSize(bytes)
@@ -668,7 +637,7 @@ public class MetadataItem {
     
     // MARK: - Media
     
-    /// The duration, as Duration, of the content of file. Usually for videos and audio.
+    /// The duration of the content of file. Usually for videos and audio.
     public var duration: TimeDuration? {
         get { if let durationSeconds = durationSeconds {
             return TimeDuration(durationSeconds)}
@@ -676,7 +645,7 @@ public class MetadataItem {
         } }
     
     /// The duration, in seconds, of the content of file. Usually for videos and audio.
-    public var durationSeconds: Double? {
+    internal var durationSeconds: Double? {
         get { self.value(\.durationSeconds) } }
     
     /// The media types (video, sound) present in the content.

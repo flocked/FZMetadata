@@ -8,7 +8,7 @@
 import Foundation
 
 extension MetadataItem     {
-    public enum Attribute: String, CaseIterable {
+    public enum Attribute: String, CaseIterable, Comparable, Hashable {
         // MARK: - Common
         case url = "kMDItemURL"
         case path = "kMDItemPath"
@@ -228,6 +228,9 @@ extension MetadataItem     {
             }
             return [self.rawValue]
         }
-
+        
+        public static func < (lhs: Self, rhs: Self) -> Bool {
+            lhs.rawValue < rhs.rawValue
+        }
     }
 }

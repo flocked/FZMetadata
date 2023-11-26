@@ -396,7 +396,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     internal func result(at index: Int) -> MetadataItem? {
         let result = self.query.result(at: index) as? MetadataItem
         var values = resultAttributeValues(at: index)
-       // values["kMDItemPath"] = result?.path
+        values["kMDItemPath"] = result?.path
         result?.values = values
         return result
     }
