@@ -404,7 +404,6 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     internal func resultAttributeValues(at index: Int) -> [String: Any] {
-        Swift.print("allAttributeKeys", allAttributeKeys)
         return self.query.values(of: allAttributeKeys, forResultsAt: index)
     }
     
