@@ -365,6 +365,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      */
     public var results: [MetadataItem] {
         self.updateResults()
+        Swift.print("result values", self._results.first?.values.keys ?? "nil")
         return self._results
     }
     

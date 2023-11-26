@@ -885,7 +885,38 @@ extension DataSize: QueryRawRepresentable {
     public var rawValue: Int { return self.bytes }
 }
 
-extension TimeDuration: QueryRawRepresentable {
+/*
+extension MetadataQuery.Predicate where T == DataSize {
+    var megabytes: DataSizePart {
+        get { .gigabytes(3) }
+        set { }
+    }
+}
+
+enum DataSizePart: QueryRawRepresentable {
+    var rawValue: Int {
+        switch self {
+        case .kilobytes(let value):
+            return DataSize.kilobytes(value).bytes
+        case .megabytes(let value):
+            return DataSize.megabytes(value).bytes
+        case .gigabytes(let value):
+            return DataSize.gigabytes(value).bytes
+        case .terabytes(let value):
+            return DataSize.terabytes(value).bytes
+        case .petabytes(let value):
+            return DataSize.petabytes(value).bytes
+        }
+    }
+    case kilobytes(Double)
+    case megabytes(Double)
+    case gigabytes(Double)
+    case terabytes(Double)
+    case petabytes(Double)
+}
+*/
+
+extension TimeDuration: QueryRawRepresentable, QueryComparable {
     public var rawValue: Double { return self.seconds }
 }
 
