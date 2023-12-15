@@ -11,7 +11,7 @@ extension MetadataQuery {
     /** 
      A description of how to order the result of a query according to a metadata attribute.
     
-     SortDescriptor can also be created by prependding `>>` (ascending) or `<<` (descending) to a metadata attribute.
+     SortDescriptor can also be created by prependding `>>` ror an ascending, or `<<` (descending) to a metadata attribute.
      
      ```swift
       query.sortedBy = [>>.creationDate, <<.fileSize] // Sorts by ascending creationDate & descending fileSize

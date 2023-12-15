@@ -365,7 +365,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
             postResults(results, difference: diff)
         }
         
-        if isMonitoring == false {
+        if isMonitoring {
             self.stateHandler?(.isMonitoring)
         } else {
             stop()
