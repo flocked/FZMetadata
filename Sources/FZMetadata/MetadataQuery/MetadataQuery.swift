@@ -52,7 +52,7 @@ import Foundation
  */
 public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     /// The state of the query.
-    public enum State {
+    public enum State: Int {
         /// The query is in it's initial phase of gathering matching items.
         case isGatheringFiles
         
@@ -360,10 +360,15 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     @objc func queryGatheringFinished(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery gatheringFinished")
         self.runWithPausedMonitoring {
-            self.stateHandler?(.isMonitoring)
             let results = self.results
             let diff = ResultsDifference.added(_results)
             postResults(results, difference: diff)
+        }
+        
+        if isMonitoring == false {
+            self.stateHandler?(.isMonitoring)
+        } else {
+            stop()
         }
     }
     
