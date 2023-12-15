@@ -29,7 +29,7 @@ extension MetadataQuery {
                     }
                 }
                 self.items = items
-                self.subgroups =  nsResultGroup.subgroups?.compactMap({Self(nsResultGroup: $0)})
+                subgroups =  nsResultGroup.subgroups?.compactMap({Self(nsResultGroup: $0)})
             } else {
                 return nil
             }

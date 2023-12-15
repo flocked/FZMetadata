@@ -9,7 +9,7 @@ import Foundation
 
 internal extension NSMetadataItem {
     func value<T>(for attribute: String) -> T? {
-        return self.value(forAttribute: attribute) as? T
+        return value(forAttribute: attribute) as? T
     }
 }
 

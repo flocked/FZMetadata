@@ -34,7 +34,7 @@ public extension MetadataQuery {
         }
         
         internal var string: String {
-            return "$[\(self.contains(.caseSensitive) ? "" : "c")\(self.contains(.diacriticSensitive) ? "" : "d")\(self.contains(.wordBased) ? "w" : "")]"
+            return "$[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
         }
         
         public init(extracting value: String) {
@@ -71,7 +71,7 @@ public extension MetadataQuery {
 public struct StringOptions: OptionSet {
     public let rawValue: Int8
     public init(rawValue: Int8) {
-        self.rawValue = rawValue
+        rawValue = rawValue
     }
     /// Case sensitive.
     public static let caseSensitive = StringOptions(rawValue: 1)
@@ -92,7 +92,7 @@ public struct StringOptions: OptionSet {
     internal static let dw: Self = [.d, .w]
     
     internal var string: String {
-        return "$[\(self.contains(.caseSensitive) ? "" : "c")\(self.contains(.diacriticSensitive) ? "" : "d")\(self.contains(.wordBased) ? "w" : "")]"
+        return "$[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
     }
     
     public init(extracting value: String) {

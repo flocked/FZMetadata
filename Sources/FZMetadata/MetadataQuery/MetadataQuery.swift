@@ -74,15 +74,15 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     /// The handler that gets called when the state changes.
     public var stateHandler: ((_ state: State)->())? = nil
 
-    var isRunning: Bool { return self.query.isStarted }
-    var isGathering: Bool { return self.query.isGathering }
-    var isStopped: Bool { return self.query.isStopped }
-   // var isMonitoring: Bool { return self.query.isStopped == false && self.query.isGathering == false  }
+    var isRunning: Bool { return query.isStarted }
+    var isGathering: Bool { return query.isGathering }
+    var isStopped: Bool { return query.isStopped }
+   // var isMonitoring: Bool { return query.isStopped == false && query.isGathering == false  }
     
     /// The state of the query.
     public var state: State {
-        guard self.isStopped == false else { return .isStopped }
-        return (self.isGathering == true) ? .isGatheringFiles : .isMonitoring
+        guard isStopped == false else { return .isStopped }
+        return (isGathering == true) ? .isGatheringFiles : .isMonitoring
     }
     /**
      An array of URLs whose metadata attributes are gathered by the query.
@@ -92,7 +92,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
     public var urls: [URL] {
-        get { (self.query.searchItems as? [URL]) ?? [] }
+        get { (query.searchItems as? [URL]) ?? [] }
         set { query.searchItems = newValue.isEmpty ? nil : (newValue as [NSURL]) } }
     
     /**
@@ -141,7 +141,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      */
     public var predicate: ((Predicate<MetadataItem>)->(Predicate<Bool>))? {
         didSet {
-            self.query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
+            query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
         }
     }
         
@@ -155,8 +155,8 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      The query can alternativly search globally or at specific scopes via ``searchScopes``.
      */
     public var searchLocations: [URL] {
-        get { self.query.searchScopes.compactMap({$0 as? URL}) }
-        set { self.query.searchScopes = newValue }
+        get { query.searchScopes.compactMap({$0 as? URL}) }
+        set { query.searchScopes = newValue }
     }
                 
     /**
@@ -169,8 +169,8 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
     public var searchScopes: [SearchScope] {
-        get { self.query.searchScopes.compactMap({$0 as? String}).compactMap({SearchScope(rawValue: $0)}) }
-        set {  self.query.searchScopes = newValue.compactMap({$0.rawValue}) }
+        get { query.searchScopes.compactMap({$0 as? String}).compactMap({SearchScope(rawValue: $0)}) }
+        set {  query.searchScopes = newValue.compactMap({$0.rawValue}) }
     }
     
     /**
@@ -193,14 +193,14 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
     public var sortedBy: [SortDescriptor]  {
-        set { self.query.sortDescriptors = newValue }
-        get { self.query.sortDescriptors.compactMap({$0 as? SortDescriptor}) }
+        set { query.sortDescriptors = newValue }
+        get { query.sortDescriptors.compactMap({$0 as? SortDescriptor}) }
     }
     
     /// The interval (in seconds) at which notification of updated results occurs. The default value is 1.0 seconds.
     public var updateNotificationInterval: TimeInterval {
-        get { self.query.notificationBatchingInterval }
-        set { self.query.notificationBatchingInterval = newValue } }
+        get { query.notificationBatchingInterval }
+        set { query.notificationBatchingInterval = newValue } }
     
     /**
      The queue on whicht results handler gets called.
@@ -208,18 +208,18 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      Use this property to decouple the processing of results from the thread used to execute the query. This makes it easier to synchronize query result processing with other related operations—such as updating the data model or user interface—which you might want to perform on the main queue.
      */
     public var operationQueue: OperationQueue? {
-        get { self.query.operationQueue }
-        set { self.query.operationQueue = newValue } }
+        get { query.operationQueue }
+        set { query.operationQueue = newValue } }
     
     /// Starts the query, if it isn't running and resets the current result.
     public func start()  {
         func startQuery() {
-            if self.query.start() == true {
-                self.resetResults()
+            if query.start() == true {
+                resetResults()
             }
         }
         
-        if let operationQueue = self.operationQueue {
+        if let operationQueue = operationQueue {
             operationQueue.addOperation{
                 startQuery()
             }
@@ -230,20 +230,20 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     /// Stops the  current query from gathering any further results.
     public func stop() {
-        if (self.isStopped == false) {
-            self.stateHandler?(.isStopped)
+        if (isStopped == false) {
+            stateHandler?(.isStopped)
         }
         query.stop()
     }
     
     func reset() {
-        self.resultsHandler = nil
-        self.searchScopes = []
-        self.urls = []
-        self.predicate = nil
-        self.attributes = []
-        self.groupingAttributes = []
-        self.sortedBy = []
+        resultsHandler = nil
+        searchScopes = []
+        urls = []
+        predicate = nil
+        attributes = []
+        groupingAttributes = []
+        sortedBy = []
     }
     
     func runWithPausedMonitoring(_ block: ()->()) {
@@ -261,8 +261,8 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      The array contains ``MetadataItem`` objects. Accessing the result before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
      */
     public var results: [MetadataItem] {
-        self.updateResults()
-        return self._results
+        updateResults()
+        return _results
     }
     
     var resultsCount: Int {
@@ -271,7 +271,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     var _results: [MetadataItem] = []
     func updateResults() {
-        _results = self.results(at: Array(0..<self.query.resultCount))
+        _results = results(at: Array(0..<query.resultCount))
     }
     
     func resetResults() {
@@ -279,24 +279,24 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     func results(at indexes: [Int]) -> [MetadataItem] {
-        return indexes.compactMap({self.result(at: $0)})
+        return indexes.compactMap({result(at: $0)})
     }
     
     func result(at index: Int) -> MetadataItem? {
-        let result = self.query.result(at: index) as? MetadataItem
+        let result = query.result(at: index) as? MetadataItem
     //    values["kMDItemPath"] = result?.path
         result?.values = resultAttributeValues(at: index)
         return result
     }
     
     func resultAttributeValues(at index: Int) -> [String: Any] {
-        return self.query.values(of: allAttributeKeys, forResultsAt: index)
+        return query.values(of: allAttributeKeys, forResultsAt: index)
     }
     
     var allAttributeKeys: [String] {
-        var attributes = self.query.valueListAttributes
-        attributes = attributes + self.sortedBy.compactMap({$0.key})
-        attributes = attributes + self.groupingAttributes.compactMap({$0.rawValue}) + ["kMDQueryResultContentRelevance"]
+        var attributes = query.valueListAttributes
+        attributes = attributes + sortedBy.compactMap({$0.key})
+        attributes = attributes + groupingAttributes.compactMap({$0.rawValue}) + ["kMDQueryResultContentRelevance"]
         return attributes.uniqued()
     }
     
@@ -305,7 +305,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     var sortingAttributes: [MetadataItem.Attribute] {
-        self.sortedBy.compactMap({MetadataItem.Attribute(rawValue: $0.key ?? "_")})
+        sortedBy.compactMap({MetadataItem.Attribute(rawValue: $0.key ?? "_")})
     }
     
     /**
@@ -314,7 +314,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      These groups are based on the ``groupingAttributes``.
      */
     public var groupedResults: [ResultGroup] {
-        return self.query.groupedResults.compactMap({ResultGroup(nsResultGroup: $0)})
+        return query.groupedResults.compactMap({ResultGroup(nsResultGroup: $0)})
     }
     
     /**
@@ -323,14 +323,14 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
     public func enableMonitoring() {
-        self.query.enableUpdates()
-        self.isMonitoring = true
+        query.enableUpdates()
+        isMonitoring = true
     }
     
     /// Disables the monitoring of changes to the result.
     public func disableMonitoring() {
-        self.query.disableUpdates()
-        self.isMonitoring = false
+        query.disableUpdates()
+        isMonitoring = false
     }
     
     /**
@@ -353,20 +353,20 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     @objc func queryGatheringDidStart(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery gatheringDidStart")
-        self.resetResults()
-        self.stateHandler?(.isGatheringFiles)
+        resetResults()
+        stateHandler?(.isGatheringFiles)
     }
     
     @objc func queryGatheringFinished(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery gatheringFinished ")
-        self.runWithPausedMonitoring {
-            let results = self.results
+        runWithPausedMonitoring {
+            let results = results
             let diff = ResultsDifference.added(_results)
             postResults(results, difference: diff)
         }
         
         if isMonitoring {
-            self.stateHandler?(.isMonitoring)
+            stateHandler?(.isMonitoring)
         } else {
             stop()
         }
@@ -378,7 +378,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     @objc func queryUpdated(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery updated")
-        self.runWithPausedMonitoring {
+        runWithPausedMonitoring {
             let added: [MetadataItem] =  (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
             let removed: [MetadataItem] =  (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
             let changed: [MetadataItem] = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
@@ -388,7 +388,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
             _results.remove(removed)
             _results = _results + added
             if (changed.isEmpty == false) {
-                (changed + added).forEach({ _results.move($0, to: self.query.index(ofResult: $0) + 1) })
+                (changed + added).forEach({ _results.move($0, to: query.index(ofResult: $0) + 1) })
             }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
             postResults(_results, difference: diff)
@@ -401,15 +401,15 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
                 self.resultsHandler?(items, difference)
             }
         } else {
-            self.resultsHandler?(items, difference)
+            resultsHandler?(items, difference)
         }
     }
      
     func addObserver() {
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering , object: self.query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering , object: self.query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: self.query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: self.query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering , object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering , object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
     
     func removeObserver() {
@@ -422,9 +422,9 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         
     public override init() {
         super.init()
-        self.reset()
-        self.addObserver()
-        self.query.delegate = self
+        reset()
+        addObserver()
+        query.delegate = self
     }
 }
 
