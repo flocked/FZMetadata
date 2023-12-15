@@ -19,9 +19,10 @@ internal extension NSPredicate {
     }
 }
 
-public extension MetadataQuery {
+extension MetadataQuery {
+    /// A predicate for filtering the results of a query.
     @dynamicMemberLookup
-     struct Predicate<T> {
+    public struct Predicate<T> {
         internal typealias ComparisonOperator = NSComparisonPredicate.Operator
         
         /// This initaliser should be used from callers who require queries on primitive collections.
@@ -105,14 +106,17 @@ public extension MetadataQuery {
 
 // MARK: MetadataItem
 public extension MetadataQuery.Predicate where T == MetadataItem {
+    /// The item is either a file, directory, volume or alias file.
     var any: MetadataQuery.Predicate<String> {
         .init("*")
     }
     
+    /// Checks if an item is a file.
     var isFile: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.data")
     }
     
+    /// Checks if an item is a directory.
     var isDirectory: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.folder")
     }
@@ -121,14 +125,17 @@ public extension MetadataQuery.Predicate where T == MetadataItem {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.item")
     }
     
+    /// Checks if an item is a volume.
     var isVolume: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.volume")
     }
     
+    /// Checks if an item is a alias file.
     var isAlias: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
     }
     
+    /*
     func fileTypes(_ types: FileType...) -> MetadataQuery.Predicate<Bool> {
         return self.fileTypes(types)
     }
@@ -141,6 +148,7 @@ public extension MetadataQuery.Predicate where T == MetadataItem {
             return .or(keyPath.mdItemKey,.equalTo, types.compactMap({$0.identifier}))
         }
     }
+    */
 }
 
 // MARK: Bool
@@ -177,10 +185,12 @@ extension MetadataQuery.Predicate where T: Equatable {
  */
 
 extension MetadataQuery.Predicate where T: QueryEquatable {
+    /// Checks if an element isn't nil.
     public var isNotNil: MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .like,  "*")
     }
     
+    /// Checks if an element is nil.
     public var isNil: MetadataQuery.Predicate<Bool> {
         .not(self.isNotNil)
     }
@@ -194,7 +204,6 @@ extension MetadataQuery.Predicate where T: QueryEquatable {
             return .not(isNotNil)
         }
     }
-    
     
     /// Checks if an element doesn't equal a given value.
     public static func != (_ lhs: Self, _ rhs: T.Wrapped?) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol {
@@ -246,22 +255,22 @@ extension MetadataQuery.Predicate where T: QueryFileType {
 
 // MARK: Comparable
 extension MetadataQuery.Predicate where T: QueryComparable {
-    /// Checks if an element equals is greater than given value.
+    /// Checks if an element is greater than a given value.
     public static func > (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .greaterThan,  rhs)
     }
 
-    /// Checks if an element equals is greater than or equal to given value.
+    /// Checks if an element is greater than or equal to given value.
     public static func >= (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .greaterThanOrEqualTo,  rhs)
     }
 
-    /// Checks if an element equals is less than given value.
+    /// Checks if an element is less than a given value.
     public static func < (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .lessThan,  rhs)
     }
 
-    /// Checks if an element equals is less than or equal to given value.
+    /// Checks if an element is less than or equal to given value.
     public static func <= (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .lessThanOrEqualTo,  rhs)
     }
@@ -470,105 +479,143 @@ extension MetadataQuery.Predicate where T: QueryUTType {
 // MARK: String
 extension MetadataQuery.Predicate where T: QueryString {
     /**
-     /// Checks if a string contains a given string.
-     - parameter value: value used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string contains a given string.
+     
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
      */
     public func contains(_ value: String,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .contains, value, options)
     }
     
     /**
-     /// Checks if a string contains any of a given strings.
-     - parameter values: values used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string contains any of the given strings.
+     
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
      */
     public func contains<C: Collection<String>>(any values: C,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .or(mdKey, .contains, Array(values), [options])
     }
     
     /**
-     /// Checks if a string begins with a given string.
-     - parameter value: value used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string begins with a given string.
+     
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
      */
     public func begins(with value: String,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .beginsWith, value, options)
     }
     
     /**
-     /// Checks if a string begins with any of given strings.
-     - parameter values: values used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string begins with any of the given strings.
+     
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
      */
     public func begins<C: Collection<String>>(withAny values: C,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .or(mdKey, .beginsWith, Array(values), [options])
     }
         
     /**
-     /// Checks if a string ends with a given string.
-     - parameter value: value used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string ends with a given string.
+     
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
      */
     public func ends(with value: String,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .endsWith, value, options)
     }
     
     /**
-     /// Checks if a string ends with any of given strings.
-     - parameter values: values used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string ends with any of the given strings.
+     
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
      */
     public func ends<C: Collection<String>>(withAny values: C,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .or(mdKey, .endsWith, Array(values), [options])
     }
     
     /**
-     /// Checks if a string equals to a given string.
-     - parameter value: value used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string equals to a given string.
+     
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
      */
     public func equals(_ value: String,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .equalTo, value, options)
     }
     
     /**
-     /// Checks if a string equals to any of given strings.
-     - parameter values: values used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string equals to any of the given strings.
+     
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
      */
     public func equals<C: Collection<String>>(any values: C,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .or(mdKey, .equalTo, Array(values), [options])
     }
     
     /**
-     /// Checks if a string doesn't equal to a given string.
-     - parameter value: value used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string doesn't equal to a given string.
+
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
      */
     public func equalsNot(_ value: String,  _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .notEqualTo, value, options)
     }
     
     /**
-     /// Checks if a string doesn't equal to any of given strings.
-     - parameter values: values used.
-     - parameter options: A Set of string options used to evaluate the search query.
+     Checks if a string doesn't equal to any of the given strings.
+     
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
      */
     public func equalsNot<C: Collection<String>>(_ values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .or(mdKey, .notEqualTo, Array(values), [options])
     }
  
-    public static func *== (_ lhs: MetadataQuery.Predicate<T>, _ rhs: String) -> MetadataQuery.Predicate<Bool> {
-        .comparison(lhs.mdKey, .beginsWith, rhs)
+    /// Checks if a string begins with a given string.
+    public static func *== (_ lhs: MetadataQuery.Predicate<T>, _ value: String) -> MetadataQuery.Predicate<Bool> {
+        .comparison(lhs.mdKey, .beginsWith, value)
     }
     
+    /// Checks if a string begins with any of the given strings.
+    public static func *== <C: Collection<String>>(_ lhs: MetadataQuery.Predicate<T>, _ values: C) -> MetadataQuery.Predicate<Bool> {
+        .or(lhs.mdKey, .beginsWith, Array(values))
+    }
+    
+    /// Checks if a string contains a given string.
     public static func *=* (_ lhs: MetadataQuery.Predicate<T>, _ rhs: String) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .contains, rhs)
     }
     
+    /// Checks if a string contains any of the given strings.
+    public static func *=* <C: Collection<String>>(_ lhs: MetadataQuery.Predicate<T>, _ values: C) -> MetadataQuery.Predicate<Bool> {
+        .or(lhs.mdKey, .contains, Array(values))
+    }
+    
+    /// Checks if a string ends with a given string.
     public static func ==* (_ lhs: MetadataQuery.Predicate<T>, _ rhs: String) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .endsWith, rhs)
+    }
+    
+    /// Checks if a string ends with any of the given strings.
+    public static func ==* <C: Collection<String>>(_ lhs: MetadataQuery.Predicate<T>, _ values: C) -> MetadataQuery.Predicate<Bool> {
+        .or(lhs.mdKey, .endsWith, Array(values))
     }
 }
 
@@ -763,12 +810,12 @@ public enum QueryStringOption {
 
 // MARK: Collection
 extension MetadataQuery.Predicate where T: QueryCollection {
-    /// Checks if an element exists in this collection.
+    /// Checks if the collection contains the given value.
     public func contains(_ value: T.Element) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .equalTo, value)
     }
     
-    /// Checks if an element doesn't exist in this collection.
+    /// Checks if the collection doesn't contain the given value.
     public func containsNot(_ value: T.Element) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .notEqualTo, value)
     }
@@ -783,10 +830,12 @@ extension MetadataQuery.Predicate where T: QueryCollection {
         .and(mdKey, .notEqualTo, Array(collection))
     }
     
+    /// Checks if the collection contains the given value.
     public static func == (_ lhs: MetadataQuery.Predicate<T>, _ rhs: T.Element) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .equalTo, rhs)
     }
     
+    /// Checks if the collection doesn't contain the given value.
     public static func != (_ lhs: MetadataQuery.Predicate<T>, _ rhs: T.Element) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .notEqualTo, rhs)
     }
