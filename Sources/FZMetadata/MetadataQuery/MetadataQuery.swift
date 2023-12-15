@@ -463,13 +463,29 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     /**
+     Enables the monitoring of changes to the result.
+     
+     By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
+     */
+    public func enableMonitoring() {
+        self.query.enableUpdates()
+        self.isMonitoring = true
+    }
+    
+    /// Disables the monitoring of changes to the result.
+    public func disableMonitoring() {
+        self.query.disableUpdates()
+        self.isMonitoring = false
+    }
+    
+    /**
      A Boolean value indicating whether the monitoring of changes to the result is enabled.
      
      If `true` the ``resultsHandler-swift.property`` gets called whenever the results changes.
      
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
-    public var isMonitoring = false {
+    var isMonitoring = false {
         didSet {
             guard oldValue != isMonitoring else { return }
             if isMonitoring {
