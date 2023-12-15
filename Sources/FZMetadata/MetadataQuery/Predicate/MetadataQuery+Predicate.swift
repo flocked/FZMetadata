@@ -160,6 +160,7 @@ extension MetadataQuery.Predicate where T == Bool {
     public static func && (_ lhs: Self, _ rhs: Self) -> MetadataQuery.Predicate<Bool> {
         .and([lhs, rhs])
     }
+    
     public static func || (_ lhs: Self, _ rhs: Self) -> MetadataQuery.Predicate<Bool> {
         .or([lhs, rhs])
     }

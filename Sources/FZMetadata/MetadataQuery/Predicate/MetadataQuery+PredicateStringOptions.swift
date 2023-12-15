@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  PredicateStringOptions.swift
 //  
 //
 //  Created by Florian Zand on 06.08.23.
@@ -8,18 +8,18 @@
 import Foundation
 
 public extension MetadataQuery {
-    /// Options for how the query should search a string value.
+    /// Options for string comparison in metadata query predicates.
     struct PredicateStringOptions: OptionSet {
-        /// Case sensitive.
+        /// Case-sensitive predicate.
         public static let caseSensitive = Self(rawValue: 1)
-        /// Sensitive to diacritical marks.
+        /// Diacritic-sensitive predicate.
         public static let diacriticSensitive = Self(rawValue: 2)
         
-        /// Case sensitive.
+        /// Case-sensitive predicate.
         public static let c = Self(rawValue: 1)
-        /// Sensitive to diacritical marks.
+        /// Diacritic-sensitive predicate.
         public static let d = Self(rawValue: 2)
-        /// Case and diacritical sensitive.
+        /// Case and diacritical-sensitive predicate.
         public static let cd: Self = [.c, .d]
         
         internal static let wordBased = Self(rawValue: 3)

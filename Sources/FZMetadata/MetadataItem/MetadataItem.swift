@@ -244,9 +244,7 @@ public class MetadataItem {
     /// Date this item is due (e.g. for a calendar event file).
     public var dueDate: Date? {
         get { self.value(for: \.dueDate) }
-        set { 
-            url?.resources.downloadDate
-            self.setExplicity(\.dueDate, to: newValue) } }
+        set { self.setExplicity(\.dueDate, to: newValue) } }
     
     /// Number of files in a directory.
     public var directoryFilesCount: Int? {
@@ -969,7 +967,6 @@ public class MetadataItem {
 
 public extension MetadataItem {
     func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
-        var value = value
         if keyPath == \.pixelSize, let value = value as? CGSize {
             self.setExplicity(\.pixelWidth, to: Double(value.width))
             self.setExplicity(\.pixelHeight, to: Double(value.height))
