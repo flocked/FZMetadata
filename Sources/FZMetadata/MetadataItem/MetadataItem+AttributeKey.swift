@@ -213,7 +213,6 @@ internal extension MetadataItem {
             \.isLikelyJunk : "kMDItemIsLikelyJunk",
 
             \.queryContentRelevance : "kMDQueryResultContentRelevance",
-                          
         ]
 }
 
