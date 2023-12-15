@@ -70,7 +70,3 @@ query.resultsHandler = { files, _ in
 }
 query.start()
 ```
-
-### Query Predicates
-
-Predicates are constructed by using 
