@@ -358,7 +358,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     @objc func queryGatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished")
+        Swift.debugPrint("MetadataQuery gatheringFinished ")
         self.runWithPausedMonitoring {
             let results = self.results
             let diff = ResultsDifference.added(_results)
