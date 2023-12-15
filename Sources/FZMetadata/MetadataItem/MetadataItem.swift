@@ -184,7 +184,7 @@ public class MetadataItem {
     public var contentTypeTree: [String]? {
         get { self.value(\.contentTypeTree) } }
     
-    @available(macOS 11.0, iOS 14.0, *)
+    @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
     /// The content type of the file as UTType.
     public var contentUTType: UTType? {
         get { if let type = self.contentType { return UTType(type) }

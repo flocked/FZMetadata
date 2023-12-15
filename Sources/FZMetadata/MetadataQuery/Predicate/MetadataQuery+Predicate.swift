@@ -415,7 +415,7 @@ extension MetadataQuery.Predicate where T: QueryDate {
 }
 
 // MARK: UTType
-@available(macOS 11.0, *)
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension MetadataQuery.Predicate where T: QueryUTType {
     /// Checks iif the content type is a subtype of a given type.
     public func subtype(of type: UTType) -> MetadataQuery.Predicate<Bool> {
@@ -920,7 +920,7 @@ extension TimeDuration: QueryRawRepresentable, QueryComparable {
     public var rawValue: Double { return self.seconds }
 }
 
-@available(macOS 11.0, *)
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension UTType: QueryRawRepresentable {
     public var rawValue: String { return self.identifier }
 }
@@ -945,11 +945,11 @@ extension FileType: QueryFileType { }
 extension Optional: QueryFileType where Wrapped: QueryFileType { }
 
 /// Conforms `UTType` to be used in a metadata query predicate.
-@available(macOS 11.0, *)
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 public protocol QueryUTType { }
-@available(macOS 11.0, *)
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension UTType: QueryUTType { }
-@available(macOS 11.0, *)
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension Optional: QueryUTType where Wrapped == UTType { }
 
 /// Conforms `Collection` to be used in a metadata query predicate.
