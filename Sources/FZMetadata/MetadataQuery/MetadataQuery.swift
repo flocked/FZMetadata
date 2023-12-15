@@ -123,148 +123,21 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     
     /**
      The predicate used to filter query results.
+               
+     Predicates can be defined by comparing ``MetadataItem`` properties to values using operators and functions. For example:
+     
+     ```swift
+     // fileName begins with "vid",fileSize is larger or equal 1gb and creationDate is before otherDate.
+     query.predicate = {
+        $0.fileName.begins(with: "vid") &&
+        $0.fileSize.gigabytes >= 1 &&
+        $0.creationDate.isBefore(otherDate)
+     }
+     ```
      
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
-     
-     ### Operators
-     Search predicate's can be defined by comparing MetadataItem properties to values. Depending on the property type there are different operators and functions available.
-     
-     ## General
-     - ``Predicate-swift.struct/isFile``
-     - ``Predicate-swift.struct/isDirectory``
-     - ``Predicate-swift.struct/isAlias``
-     - ``Predicate-swift.struct/isVolume``
-     - ``Predicate-swift.struct/any``  (either file, directory, alias or volume)
 
-     ```swift
-     // is a file
-     { $0.isFile }
-     
-     // is not an alias file
-     { $0.isAlias == false }
-     
-     // is any
-     { $0.any }
-     ```
-     
-     ## Equatable
-     - `==`
-     - `!=`
-     - `== [Value]`  // equales any
-     - `!= [Value]` // equales none
-     - `&&`
-     - `||`
-     - `!(_)`
-     - ``Predicate-swift.struct/isNil``
-     - ``Predicate-swift.struct/isNotNil``
-
-     ```swift
-     // fileName is "MyFile.doc" and creator isn't "Florian"
-     query.predicate = { $0.fileName == "MyFile.doc" && $0.creater != "Florian"}
-     
-     // fileExtension is either "mp4", "mov" or "ts"
-     query.predicate = { $0.fileExtension == ["mp4", "mov", "ts"] }
-     
-     // fileExtension isn't "mp3", "wav" and aiff
-     query.predicate = { $0.fileExtension != ["mp3", "wav", "aiff"] }
-     
-     // downloadedDate is not nil
-     query.predicate = { $0.downloadedDate.isNotNil }
-     ```
-     
-     ## Comparable
-     - `>`
-     - `>=`
-     - `<`
-     - `<=`
-     - `between(Range)` OR `== Range`
-     
-     ```swift
-     // fileSize is greater than or equal to 1 gb
-     { $0.fileSize.gigabytes >= 1 }
-     
-     // // fileSize is between 500 and 1000 mb
-     { $0.fileSize.megabytes.between(500...1000) }
-     { $0.fileSize.megabytes == 500...1000 }
-     ```
-     
-     ## String
-     - ``Predicate-swift.struct/begins(with:_:)`` OR  `*== String`
-     - ``Predicate-swift.struct/ends(with:_:)`` OR  `==* String`
-     - ``Predicate-swift.struct/contains(_:_:)`` OR `*=* String`
-     
-     ```swift
-     // fileName ends with ".doc"
-     { $0.fileName.ends(with: ".doc") }
-     { $0.fileName ==*  ".doc" }
-     
-     // fileName contains "MyFile"
-     { $0.fileName.contains("MyFile") }
-     { $0.fileName *=*  "MyFile" }
-     ```
-     
-     By default string predicates are case and diacritic-insensitive. 
-     
-     Use ``PredicateStringOptions/c`` for case-sensitive, ``PredicateStringOptions/d``, for diacritic-sensitve and ``PredicateStringOptions/cd`` for both case & diacritic sensitive predicates.
-          
-     ```swift
-     // case-sensitive
-     { $0.fileName.begins(with: "MyF", .c) }
-
-     // case and diacritic-sensitive
-     { $0.fileName.begins(with: "MyF", .cd) }
-     ```
-     
-     ## Date
-     - ``Predicate-swift.struct/isNow``
-     - ``Predicate-swift.struct/isToday``
-     - ``Predicate-swift.struct/isYesterday``
-     - ``Predicate-swift.struct/isSameDay(as:)``
-     - ``Predicate-swift.struct/isThisWeek``
-     - ``Predicate-swift.struct/isLastWeek``
-     - ``Predicate-swift.struct/isSameWeek(as:)``
-     - ``Predicate-swift.struct/isThisMonth``
-     - ``Predicate-swift.struct/isLastMonth``
-     - ``Predicate-swift.struct/isSameMonth(as:)``
-     - ``Predicate-swift.struct/isThisYear``
-     - ``Predicate-swift.struct/isLastYear``
-     - ``Predicate-swift.struct/isSameYear(as:)``
-     - ``Predicate-swift.struct/isBefore(_:)``
-     - ``Predicate-swift.struct/isAfter(_:)``
-     - ``Predicate-swift.struct/within(_:_:)``
-
-     ```swift
-     // is today
-     { $0.creationDate.isToday }
-     
-     // is same week as otherDate
-     { $0.creationDate.isSameWeek(as: otherDate) }
-     
-     // is within 4 weeks
-     { $0.creationDate.within(4, .week) }
-     ```
-     
-     ## Collection
-     - ``Predicate-swift.struct/contains(_:)``  OR `== Element`
-     - ``Predicate-swift.struct/containsNot(_:)``  OR `!= Element`
-     - ``Predicate-swift.struct/contains(any:)``
-     - ``Predicate-swift.struct/containsNot(any:)``
-     
-     ```swift
-     // finderTags contains "red"
-     { $0.finderTags.contains("red") }
-     { $0.finderTags == "red" }
-     
-     // finderTags doesn't contain "red"
-     { $0.finderTags.containsNot("blue") }
-     { $0.finderTags != "red" }
-
-     // finderTags contains "red", "yellow" or `green`.
-     { $0.finderTags.contains(any: ["red", "yellow", "green"]) }
-     
-     // finderTags doesn't contain "red", "yellow" or `green`.
-     { $0.finderTags.containsNot(any: ["red", "yellow", "green"]) }
-     ```
+     **For more details about how to construct a predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
     public var predicate: ((Predicate<MetadataItem>)->(Predicate<Bool>))? {
         didSet {
@@ -324,17 +197,13 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         get { self.query.sortDescriptors.compactMap({$0 as? SortDescriptor}) }
     }
     
-    /** 
-     The interval (in seconds) at which notification of updated results occurs.
-     
-     The default value is 1.0 seconds.
-     */
+    /// The interval (in seconds) at which notification of updated results occurs. The default value is 1.0 seconds.
     public var updateNotificationInterval: TimeInterval {
         get { self.query.notificationBatchingInterval }
         set { self.query.notificationBatchingInterval = newValue } }
     
     /**
-     The queue on which query result notifications are posted.
+     The queue on whicht results handler gets called.
      
      Use this property to decouple the processing of results from the thread used to execute the query. This makes it easier to synchronize query result processing with other related operations—such as updating the data model or user interface—which you might want to perform on the main queue.
      */
@@ -342,32 +211,29 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         get { self.query.operationQueue }
         set { self.query.operationQueue = newValue } }
     
-    /**
-     Starts the query, if it isn't running and resets the current result.
-     */
+    /// Starts the query, if it isn't running and resets the current result.
     public func start()  {
+        func startQuery() {
+            if self.query.start() == true {
+                self.resetResults()
+            }
+        }
+        
         if let operationQueue = self.operationQueue {
             operationQueue.addOperation{
-                self.startQuery()
+                startQuery()
             }
         } else {
-            self.startQuery()
+            startQuery()
         }
     }
-    /**
-     Stops the  current query from gathering any further results.
-     */
+    
+    /// Stops the  current query from gathering any further results.
     public func stop() {
         if (self.isStopped == false) {
             self.stateHandler?(.isStopped)
         }
         query.stop()
-    }
-    
-    func startQuery() {
-        if self.query.start() == true {
-            self._results = []
-        }
     }
     
     func reset() {
@@ -406,17 +272,6 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     var _results: [MetadataItem] = []
     func updateResults() {
         _results = self.results(at: Array(0..<self.query.resultCount))
-    }
-    
-    func updateResultAddition() {
-        self.runWithPausedMonitoring {
-            let changeCount = (query.resultCount - _results.count)
-            if (changeCount != 0) {
-                let added =  results(at: Array(_results.count..<changeCount))
-                _results = _results + added
-                self.resultsHandler?(self.results, .added(added))
-            }
-        }
     }
     
     func resetResults() {
@@ -508,9 +363,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
             self.stateHandler?(.isMonitoring)
             let results = self.results
             let diff = ResultsDifference.added(_results)
-            DispatchQueue.main.async {
-                self.resultsHandler?(results, diff)
-            }
+            postResults(results, difference: diff)
         }
     }
     
@@ -532,7 +385,18 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
             if (changed.isEmpty == false) {
                 (changed + added).forEach({ _results.move($0, to: self.query.index(ofResult: $0) + 1) })
             }
-            resultsHandler?(_results, ResultsDifference(added: added, removed: removed, changed: changed))
+            let diff = ResultsDifference(added: added, removed: removed, changed: changed)
+            postResults(_results, difference: diff)
+        }
+    }
+    
+    func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
+        if let operationQueue = operationQueue {
+            operationQueue.addOperation{
+                self.resultsHandler?(items, difference)
+            }
+        } else {
+            self.resultsHandler?(items, difference)
         }
     }
      

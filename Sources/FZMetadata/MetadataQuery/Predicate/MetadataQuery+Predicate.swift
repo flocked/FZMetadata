@@ -20,7 +20,152 @@ internal extension NSPredicate {
 }
 
 extension MetadataQuery {
-    /// A predicate for filtering the results of a query.
+    /**
+     A predicate for filtering the results of a query.
+     
+     ### Operators
+     Predicates can be defined by comparing MetadataItem properties to values using operators and functions. 
+     
+     Depending on the property type there are different operators and functions available:
+     
+     ## General
+     - ``Predicate-swift.struct/isFile``
+     - ``Predicate-swift.struct/isDirectory``
+     - ``Predicate-swift.struct/isAlias``
+     - ``Predicate-swift.struct/isVolume``
+     - ``Predicate-swift.struct/any``  (either file, directory, alias or volume)
+
+     ```swift
+     // is a file
+     { $0.isFile }
+     
+     // is not an alias file
+     { $0.isAlias == false }
+     
+     // is any
+     { $0.any }
+     ```
+     
+     ## Equatable
+     - `==`
+     - `!=`
+     - `== [Value]`  // equales any
+     - `!= [Value]` // equales none
+     - `&&`
+     - `||`
+     - `!(_)`
+     - ``Predicate-swift.struct/isNil``
+     - ``Predicate-swift.struct/isNotNil``
+
+     ```swift
+     // fileName is "MyFile.doc" and creator isn't "Florian"
+     query.predicate = { $0.fileName == "MyFile.doc" && $0.creater != "Florian"}
+     
+     // fileExtension is either "mp4", "mov" or "ts"
+     query.predicate = { $0.fileExtension == ["mp4", "mov", "ts"] }
+     
+     // fileExtension isn't "mp3", "wav" and aiff
+     query.predicate = { $0.fileExtension != ["mp3", "wav", "aiff"] }
+     
+     // downloadedDate is not nil
+     query.predicate = { $0.downloadedDate.isNotNil }
+     ```
+     
+     ## Comparable
+     - `>`
+     - `>=`
+     - `<`
+     - `<=`
+     - `between(Range)` OR `== Range`
+     
+     ```swift
+     // fileSize is greater than or equal to 1 gb
+     { $0.fileSize.gigabytes >= 1 }
+     
+     // // fileSize is between 500 and 1000 mb
+     { $0.fileSize.megabytes.between(500...1000) }
+     { $0.fileSize.megabytes == 500...1000 }
+     ```
+     
+     ## String
+     - ``Predicate-swift.struct/begins(with:_:)`` OR  `*== String`
+     - ``Predicate-swift.struct/ends(with:_:)`` OR  `==* String`
+     - ``Predicate-swift.struct/contains(_:_:)`` OR `*=* String`
+     
+     ```swift
+     // fileName ends with ".doc"
+     { $0.fileName.ends(with: ".doc") }
+     { $0.fileName ==*  ".doc" }
+     
+     // fileName contains "MyFile"
+     { $0.fileName.contains("MyFile") }
+     { $0.fileName *=*  "MyFile" }
+     ```
+     
+     By default string predicates are case and diacritic-insensitive.
+     
+     Use ``PredicateStringOptions/c`` for case-sensitive, ``PredicateStringOptions/d``, for diacritic-sensitve and ``PredicateStringOptions/cd`` for both case & diacritic sensitive predicates.
+          
+     ```swift
+     // case-sensitive
+     { $0.fileName.begins(with: "MyF", .c) }
+
+     // case and diacritic-sensitive
+     { $0.fileName.begins(with: "MyF", .cd) }
+     ```
+     
+     ## Date
+     - ``Predicate-swift.struct/isNow``
+     - ``Predicate-swift.struct/isToday``
+     - ``Predicate-swift.struct/isYesterday``
+     - ``Predicate-swift.struct/isSameDay(as:)``
+     - ``Predicate-swift.struct/isThisWeek``
+     - ``Predicate-swift.struct/isLastWeek``
+     - ``Predicate-swift.struct/isSameWeek(as:)``
+     - ``Predicate-swift.struct/isThisMonth``
+     - ``Predicate-swift.struct/isLastMonth``
+     - ``Predicate-swift.struct/isSameMonth(as:)``
+     - ``Predicate-swift.struct/isThisYear``
+     - ``Predicate-swift.struct/isLastYear``
+     - ``Predicate-swift.struct/isSameYear(as:)``
+     - ``Predicate-swift.struct/isBefore(_:)``
+     - ``Predicate-swift.struct/isAfter(_:)``
+     - ``Predicate-swift.struct/within(_:_:)``
+
+     ```swift
+     // is today
+     { $0.creationDate.isToday }
+     
+     // is same week as otherDate
+     { $0.creationDate.isSameWeek(as: otherDate) }
+     
+     // is within 4 weeks
+     { $0.creationDate.within(4, .week) }
+     ```
+     
+     ## Collection
+     - ``Predicate-swift.struct/contains(_:)``  OR `== Element`
+     - ``Predicate-swift.struct/containsNot(_:)``  OR `!= Element`
+     - ``Predicate-swift.struct/contains(any:)``
+     - ``Predicate-swift.struct/containsNot(any:)``
+     
+     ```swift
+     // finderTags contains "red"
+     { $0.finderTags.contains("red") }
+     { $0.finderTags == "red" }
+     
+     // finderTags doesn't contain "red"
+     { $0.finderTags.containsNot("blue") }
+     { $0.finderTags != "red" }
+
+     // finderTags contains "red", "yellow" or `green`.
+     { $0.finderTags.contains(any: ["red", "yellow", "green"]) }
+     
+     // finderTags doesn't contain "red", "yellow" or `green`.
+     { $0.finderTags.containsNot(any: ["red", "yellow", "green"]) }
+     ```
+     
+     */
     @dynamicMemberLookup
     public struct Predicate<T> {
         internal typealias ComparisonOperator = NSComparisonPredicate.Operator
