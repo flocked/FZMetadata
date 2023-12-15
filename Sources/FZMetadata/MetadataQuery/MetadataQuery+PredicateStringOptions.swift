@@ -10,10 +10,6 @@ import Foundation
 public extension MetadataQuery {
     /// Options for how the query should search a string value.
     struct PredicateStringOptions: OptionSet {
-        public let rawValue: Int8
-        public init(rawValue: Int8) {
-            self.rawValue = rawValue
-        }
         /// Case sensitive.
         public static let caseSensitive = Self(rawValue: 1)
         /// Sensitive to diacritical marks.
@@ -31,6 +27,11 @@ public extension MetadataQuery {
         internal static let cdw: Self = [.c, .d, .w]
         internal static let cw: Self = [.c, .w]
         internal static let dw: Self = [.d, .w]
+        
+        public let rawValue: Int8
+        public init(rawValue: Int8) {
+            self.rawValue = rawValue
+        }
         
         internal var string: String {
             return "$[\(self.contains(.caseSensitive) ? "" : "c")\(self.contains(.diacriticSensitive) ? "" : "d")\(self.contains(.wordBased) ? "w" : "")]"

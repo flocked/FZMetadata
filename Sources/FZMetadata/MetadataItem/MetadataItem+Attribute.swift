@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension MetadataItem     {
-    public enum Attribute: String, CaseIterable, Comparable, Hashable {
+extension MetadataItem {
+    public enum Attribute: String, Hashable {
         // MARK: - Common
         case url = "kMDItemURL"
         case path = "kMDItemPath"
@@ -203,6 +203,10 @@ extension MetadataItem     {
         case receivedSenderHandles = "kMDItemUserSharedReceivedSenderHandle"
         case receivedTypes = "kMDItemUserSharedReceivedTransport"
         case isLikelyJunk = "kMDItemIsLikelyJunk"
+        
+        /// The relevance of the item in a metadata query.
+        case queryRelevance = "kMDQueryResultContentRelevance"
+
         
         internal static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap({Self(rawValue: $0)})

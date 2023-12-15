@@ -7,40 +7,31 @@
 
 import Foundation
 
-public extension MetadataQuery {
-    struct Result {
-        let items: [MetadataItem]
-        let added: [MetadataItem]
-        let removed: [MetadataItem]
-        let changed: [MetadataItem]
-                
-        internal init(_ items: [MetadataItem], added: [MetadataItem] = [], removed: [MetadataItem] = [], changed: [MetadataItem] = []) {
-            self.items = items
-            self.added = added
-            self.removed = removed
-            self.changed = changed
-        }
-    }
-}
 
-public extension MetadataQuery {
-    struct ResultDifference: Hashable {
+extension MetadataQuery {
+    /// The results difference of a query compared to the previous results.
+    public struct ResultsDifference: Hashable {
+        /// Added items compared to the previous results.
         public let added: [MetadataItem]
+        
+        /// Removed items compared to the previous results.
         public let removed: [MetadataItem]
+        
+        /// Changed items compared to the previous results.
         public let changed: [MetadataItem]
         
-        internal init(added: [MetadataItem] = [], removed: [MetadataItem] = [], changed: [MetadataItem] = []) {
+        init(added: [MetadataItem] = [], removed: [MetadataItem] = [], changed: [MetadataItem] = []) {
             self.added = added
             self.removed = removed
             self.changed = changed
         }
                 
-        internal static var none: ResultDifference {
-            return ResultDifference()
+        static var none: ResultsDifference {
+            return ResultsDifference()
         }
         
-        internal static func added(_ items: [MetadataItem]) -> ResultDifference {
-            return ResultDifference(added: items)
+        static func added(_ items: [MetadataItem]) -> ResultsDifference {
+            return ResultsDifference(added: items)
         }
     }
 }

@@ -388,6 +388,43 @@ extension MetadataQuery.Predicate where T: QueryDate {
     public func isAfter(_ date: Date) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .greaterThan, date)
     }
+        
+    /**
+     Checks if a date is at the same calendar unit as today.
+     
+     Example:
+     ```swift
+     // creationDate was this week.
+     { $0.creationDate.this(.week) }
+     
+     // creationDate was this year.
+     { $0.creationDate.this(.year) }
+     ```
+     */
+     public func this(_ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
+         .init(query(for: .this(unit), mdKey: mdKey))
+     }
+    
+    /**
+     Checks if a date is within the last `amout` of  calendar units.
+     
+     Example:
+     ```swift
+     // creationDate was within the last 8 weeks.
+     { $0.creationDate.within(8, .week) }
+     
+     // creationDate was within the last 2 years.
+     { $0.creationDate.within(2, .year) }
+     ```
+     */
+     public func within(_ amout: Int, _ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
+         .init(query(for: .last(amout, unit), mdKey: mdKey))
+     }
+    
+    /// Checks if a date is between the specified date interval.
+    public func between(_ interval: DateInterval) -> MetadataQuery.Predicate<Bool> {
+        .between(mdKey, [interval.start, interval.end])
+    }
     
     /*
     /// Checks if a date is last week.
@@ -400,14 +437,6 @@ extension MetadataQuery.Predicate where T: QueryDate {
          .init(query(for: .last(1, .year), mdKey: mdKey))
      }
      */
-    
-     public func this(_ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
-         .init(query(for: .this(unit), mdKey: mdKey))
-     }
-    
-     public func within(_ value: Int, _ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
-         .init(query(for: .last(value, unit), mdKey: mdKey))
-     }
      
      internal func query(for queryDate: QueryDateRange, mdKey: String) -> NSPredicate {
          return PredicateBuilder.between(mdKey, values: queryDate.values)
@@ -739,16 +768,17 @@ extension MetadataQuery.Predicate where T: QueryCollection {
         .comparison(mdKey, .equalTo, value)
     }
     
+    /// Checks if an element doesn't exist in this collection.
     public func containsNot(_ value: T.Element) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .notEqualTo, value)
     }
     
-    /// Checks if any elements contained in a given array are present in the collection.
+    /// Checks if the collection contains any of the given elements.
     public func contains<U: Sequence>(any collection: U) -> MetadataQuery.Predicate<Bool> where U.Element == T.Element {
         .or(mdKey, .equalTo, Array(collection))
     }
     
-    /// Checks if any elements contained in a given array are present in the collection.
+    /// Checks if the collection doesn't contain any of the given elements.
     public func containsNot<U: Sequence>(any collection: U) -> MetadataQuery.Predicate<Bool> where U.Element == T.Element {
         .and(mdKey, .notEqualTo, Array(collection))
     }

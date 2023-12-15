@@ -7,17 +7,19 @@
 
 import Foundation
 
-public extension MetadataQuery {
-    /// The ResultGroup represents a collection of grouped attribute results returned by a metadata query.
-    struct ResultGroup {
+extension MetadataQuery {
+    /// The result of a query grouped by the metadata attributes specified in ``groupingAttributes``.
+    public struct ResultGroup {
         /// The metadata attribute of the group.
         public var attribute: MetadataItem.Attribute
-        /// An array containing the result group’s metadata items.
+        
+        /// An array containing the group’s metadata items.
         public var items: [MetadataItem]
-        /// An array containing the result group’s subgroups.
+        
+        /// An array containing the group’s subgroups.
         public var subgroups: [ResultGroup]?
         
-        internal init?(nsResultGroup: NSMetadataQueryResultGroup) {
+        init?(nsResultGroup: NSMetadataQueryResultGroup) {
             if let attribute = MetadataItem.Attribute(rawValue: nsResultGroup.attribute ) {
                 self.attribute = attribute
                 var items = [MetadataItem]()
