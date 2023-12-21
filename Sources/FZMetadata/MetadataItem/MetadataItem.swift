@@ -308,11 +308,15 @@ public class MetadataItem {
     public var finderTags: [String]? {
         get { value(for: \.finderTags)?.compactMap({$0.replacingOccurrences(of: "\n6", with:"")}) }
         set { 
+            #if os(macOS)
             if let url = url {
                 url.resources.tags = newValue ?? []
             } else {
                 setExplicity(\.finderTags, to: newValue?.compactMap({$0 + "\n6"}))
             }
+            #else
+            setExplicity(\.finderTags, to: newValue?.compactMap({$0 + "\n6"}))
+            #endif
         }
     }
     
