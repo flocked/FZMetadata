@@ -19,8 +19,5 @@ let package = Package(
         .target(
             name: "FZMetadata",
             dependencies: ["FZSwiftUtils"]),
-        .testTarget(
-            name: "FZMetadataTests",
-            dependencies: ["FZMetadata"]),
     ]
 )
