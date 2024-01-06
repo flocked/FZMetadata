@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension MetadataItem {
+extension MetadataItem {
     /// A finder tag.
     enum FinderTag: String, CaseIterable, QueryRawRepresentable {
         /// A finder tag with no color.
@@ -63,7 +63,7 @@ import AppKit
 
 extension NSWorkspace {
     /// The available finder tags.
-    public var finderTags: [MetadataItem.FinderTag] {
+    var finderTags: [MetadataItem.FinderTag] {
         return fileLabels.compactMap({MetadataItem.FinderTag(rawValue: $0)})
     }
 }
