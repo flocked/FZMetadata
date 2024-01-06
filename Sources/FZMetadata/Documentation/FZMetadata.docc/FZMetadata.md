@@ -92,4 +92,3 @@ query.start()
 ### File Query
 
 - ``MetadataQuery``
-- <doc:MetadataQuery+Predicate+Conformance>

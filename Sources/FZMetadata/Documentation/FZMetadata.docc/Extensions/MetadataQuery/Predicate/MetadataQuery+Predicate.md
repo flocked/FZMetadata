@@ -2,6 +2,11 @@
 
 ## Topics
 
+### Accessing Metadata attributes
+
+- ``subscript(dynamicMember:)-4qgjn``
+- ``subscript(dynamicMember:)-1qiyu``
+
 ### General
 
 - ``Predicate-swift.struct/isFile``
@@ -99,3 +104,15 @@
 
 - ``Predicate-swift.struct/subtype(of:)-91z0u``
 - ``Predicate-swift.struct/subtype(of:)-9vizg``
+
+### Type Conformances
+
+Types that can be used for constructing a predicate.
+
+- ``FZMetadata/QueryCollection``
+- ``FZMetadata/QueryComparable``
+- ``FZMetadata/QueryDate``
+- ``FZMetadata/QueryEquatable``
+- ``FZMetadata/QueryFileType``
+- ``FZMetadata/QueryString``
+- ``FZMetadata/QueryUTType``

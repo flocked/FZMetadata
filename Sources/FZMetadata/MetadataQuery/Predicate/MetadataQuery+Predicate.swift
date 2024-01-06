@@ -204,10 +204,12 @@ extension MetadataQuery {
             mdKeys.compactMap({MetadataItem.Attribute(rawValue: $0)})
         }
         
+        /// Returns the metadata attribute for the specified `MetadataItem` keypath.
         public subscript(dynamicMember member: KeyPath<MetadataItem, Bool?>) -> MetadataQuery.Predicate<Bool> where T == MetadataItem  {
             return .comparison(member.mdItemKey, .equalTo, true)
         }
         
+        /// Returns the metadata attribute for the specified `MetadataItem` keypath.
         public subscript<V>(dynamicMember member: KeyPath<MetadataItem, V>) -> MetadataQuery.Predicate<V> where T == MetadataItem  {
             return .init(member.mdItemKey)
         }
