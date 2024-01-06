@@ -165,7 +165,7 @@ open class MetadataQuery: NSObject {
      
      The query searches for files at the search scropes. The default value is an empty array which indicates that the query searches globally.
      
-     The query can alternativly also search at specific file-system directories via ``searchLocations``. In this case it will also return an empty array.
+     The query can alternativly also search at specific file-system directories via ``searchLocations``.
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
