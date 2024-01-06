@@ -31,7 +31,9 @@ public extension MetadataItem {
                 case .orange: return "orange"
                 }
             }
-           public var value: NSUIColor {
+            
+            #if os(macOS)
+           public var value: NSColor {
                 switch self {
                 case .none: return .clear
                 case .grey: return .systemGray
@@ -43,6 +45,21 @@ public extension MetadataItem {
                 case .orange: return .systemOrange
                 }
             }
+            #else
+            public var value: UIColor {
+                 switch self {
+                 case .none: return .clear
+                 case .grey: return .systemGray
+                 case .green: return .systemGreen
+                 case .purple: return .systemPurple
+                 case .blue: return .systemBlue
+                 case .yellow: return .systemYellow
+                 case .red: return .systemRed
+                 case .orange: return .systemOrange
+                 }
+             }
+            #endif
+            
         }
         public let name: String
         public let color: Color

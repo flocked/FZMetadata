@@ -7,13 +7,13 @@
 
 import Foundation
 
-internal extension NSMetadataItem {
+extension NSMetadataItem {
     func value<T>(for attribute: String) -> T? {
         return value(forAttribute: attribute) as? T
     }
 }
 
-internal extension NSMetadataQuery {
+extension NSMetadataQuery {
     func values(of attributes: [String], forResultsAt index: Int) -> [String: Any] {
         var values = [String: Any]()
         attributes.forEach({ values[$0] = value(ofAttribute: $0, forResultAt: index) })
