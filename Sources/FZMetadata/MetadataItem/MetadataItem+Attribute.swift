@@ -208,7 +208,7 @@ extension MetadataItem {
         case queryRelevance = "kMDQueryResultContentRelevance"
 
         
-        internal static func values(for mdKeys: [String]) -> [Self] {
+        static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap({Self(rawValue: $0)})
             if (attriutes.contains(all: [.pixelWidth, .pixelHeight])) {
                 attriutes.replace(.pixelWidth, with: .pixelSize)
@@ -221,7 +221,7 @@ extension MetadataItem {
             return attriutes
         }
         
-        internal var mdKeys: [String] {
+        var mdKeys: [String] {
             if (self.rawValue.contains("_")) {
                 let value = self.rawValue.replacingOccurrences(of: "_", with: "")
                 if (self.rawValue.contains("Size")) {

@@ -10,7 +10,7 @@ import Foundation
 #if os(macOS)
 extension MetadataQuery {
     /// Search scopes for where the metadata query searches files.
-    public enum SearchScope: String {
+    public enum SearchScope: String, Hashable {
         /// Search the user’s home directory.
         @available(OSX 10.11, *)
         case home

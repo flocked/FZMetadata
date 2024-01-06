@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal extension MetadataItem {
+extension MetadataItem {
     static var attributeKeys: [PartialKeyPath<MetadataItem>:String] {
         var attributeKeys = _attributeKeys
         if #available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *) {

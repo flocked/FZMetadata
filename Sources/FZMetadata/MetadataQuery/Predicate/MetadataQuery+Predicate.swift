@@ -9,7 +9,7 @@ import Foundation
 import UniformTypeIdentifiers
 import FZSwiftUtils
 
-internal extension NSPredicate {
+extension NSPredicate {
     typealias Item = MetadataQuery.Predicate<MetadataItem>
     typealias BoolExpression = MetadataQuery.Predicate<Swift.Bool>
     
@@ -168,39 +168,39 @@ extension MetadataQuery {
      */
     @dynamicMemberLookup
     public struct Predicate<T> {
-        internal typealias ComparisonOperator = NSComparisonPredicate.Operator
+        typealias ComparisonOperator = NSComparisonPredicate.Operator
         
         /// This initaliser should be used from callers who require queries on primitive collections.
-        internal init(_ mdKey: String) {
+        init(_ mdKey: String) {
             self.mdKey = mdKey
             self.predicate = nil
         }
         
-        internal init(_ predicate: NSPredicate) {
+        init(_ predicate: NSPredicate) {
             self.mdKey = "Root"
             self.predicate = predicate
         }
         
-        internal init() {
+        init() {
             self.mdKey = "Root"
             self.predicate = nil
         }
         
-        internal static var root: MetadataQuery.Predicate<MetadataItem> {
+        static var root: MetadataQuery.Predicate<MetadataItem> {
             .init("Root")
         }
         
-        internal let mdKey: String
+        let mdKey: String
         
-        internal let predicate: NSPredicate?
+        let predicate: NSPredicate?
         
         /// All mdKeys used for the predicate.
-        internal var mdKeys: [String] {
+        var mdKeys: [String] {
             return self.predicate?.predicateFormat.matches(regex: #"\bkMDItem[a-zA-Z]*\b"#).compactMap({$0.string}).uniqued() ?? []
         }
         
         /// All attributes used for the predicate.
-        internal var attributes: [MetadataItem.Attribute] {
+        var attributes: [MetadataItem.Attribute] {
             mdKeys.compactMap({MetadataItem.Attribute(rawValue: $0)})
         }
         
@@ -213,36 +213,36 @@ extension MetadataQuery {
         }
         
         
-        internal static func comparison(_ mdKey: String, _ type: ComparisonOperator = .equalTo,  _ value: Any, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
+        static func comparison(_ mdKey: String, _ type: ComparisonOperator = .equalTo,  _ value: Any, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
             .init(PredicateBuilder.comparison(mdKey, type, value, options))
         }
         
-        internal static func between(_ mdKey: String, _ value: Any) -> MetadataQuery.Predicate<Bool> {
+        static func between(_ mdKey: String, _ value: Any) -> MetadataQuery.Predicate<Bool> {
             .init(PredicateBuilder.between(mdKey, value: value))
         }
         
-        internal static func between(_ mdKey: String, values: [Any]) -> MetadataQuery.Predicate<Bool> {
+        static func between(_ mdKey: String, values: [Any]) -> MetadataQuery.Predicate<Bool> {
             .init(PredicateBuilder.between(mdKey, values: values))
         }
         
-        internal static func and(_ predicates: [MetadataQuery.Predicate<Bool>]) -> MetadataQuery.Predicate<Bool> {
+        static func and(_ predicates: [MetadataQuery.Predicate<Bool>]) -> MetadataQuery.Predicate<Bool> {
             Swift.debugPrint("AND", predicates.compactMap({$0.predicate}))
             return .init(NSCompoundPredicate(and: predicates.compactMap({$0.predicate})))
         }
         
-        internal static func or(_ predicates: [MetadataQuery.Predicate<Bool>]) -> MetadataQuery.Predicate<Bool> {
+        static func or(_ predicates: [MetadataQuery.Predicate<Bool>]) -> MetadataQuery.Predicate<Bool> {
             .init(NSCompoundPredicate(or: predicates.compactMap({$0.predicate})))
         }
         
-        internal static func not(_ predicate: MetadataQuery.Predicate<Bool>) -> MetadataQuery.Predicate<Bool> {
+        static func not(_ predicate: MetadataQuery.Predicate<Bool>) -> MetadataQuery.Predicate<Bool> {
             .init(NSCompoundPredicate(not: predicate.predicate!))
         }
         
-        internal static func and(_ mdKey: String, _ type: ComparisonOperator = .equalTo,  _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
+        static func and(_ mdKey: String, _ type: ComparisonOperator = .equalTo,  _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
             .init(PredicateBuilder.comparisonAnd(mdKey, .equalTo, values, options))
         }
         
-        internal static func or(_ mdKey: String, _ type: ComparisonOperator = .equalTo,  _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
+        static func or(_ mdKey: String, _ type: ComparisonOperator = .equalTo,  _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
             .init(PredicateBuilder.comparisonOr(mdKey, .equalTo, values, options))
         }
     }
@@ -250,42 +250,42 @@ extension MetadataQuery {
 }
 
 // MARK: MetadataItem
-public extension MetadataQuery.Predicate where T == MetadataItem {
+extension MetadataQuery.Predicate where T == MetadataItem {
     /// The item is either a file, directory, volume or alias file.
-    var any: MetadataQuery.Predicate<String> {
+    public var any: MetadataQuery.Predicate<String> {
         .init("*")
     }
     
     /// Checks if an item is a file.
-    var isFile: MetadataQuery.Predicate<Bool> {
+    public var isFile: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.data")
     }
     
     /// Checks if an item is a directory.
-    var isDirectory: MetadataQuery.Predicate<Bool> {
+    public var isDirectory: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.folder")
     }
     
-    internal var isItem: MetadataQuery.Predicate<Bool> {
+    var isItem: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.item")
     }
     
     /// Checks if an item is a volume.
-    var isVolume: MetadataQuery.Predicate<Bool> {
+    public var isVolume: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.volume")
     }
     
     /// Checks if an item is a alias file.
-    var isAlias: MetadataQuery.Predicate<Bool> {
+    public var isAlias: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
     }
     
     /*
-    func fileTypes(_ types: FileType...) -> MetadataQuery.Predicate<Bool> {
+     public func fileTypes(_ types: FileType...) -> MetadataQuery.Predicate<Bool> {
         return self.fileTypes(types)
     }
     
-    func fileTypes(_ types: [FileType]) -> MetadataQuery.Predicate<Bool> {
+     public func fileTypes(_ types: [FileType]) -> MetadataQuery.Predicate<Bool> {
         let keyPath: PartialKeyPath<MetadataItem> = \.fileType
         if types.count == 1, let identifier = types.first?.identifier {
             return .comparison(keyPath.mdItemKey, .equalTo, identifier)
@@ -593,7 +593,7 @@ extension MetadataQuery.Predicate where T: QueryDate {
      }
      */
      
-     internal func query(for queryDate: QueryDateRange, mdKey: String) -> NSPredicate {
+     func query(for queryDate: QueryDateRange, mdKey: String) -> NSPredicate {
          return PredicateBuilder.between(mdKey, values: queryDate.values)
      }
 }
@@ -921,13 +921,13 @@ public enum QueryStringOption {
     case cw(String)
     case dw(String)
     case cdw(String)
-    internal var value: String {
+    var value: String {
         switch self {
         case .c(let value), .d(let value), .w(let value), .cd(let value), .cw(let value), .dw(let value), .cdw(let value):
             return value
         }
     }
-    internal var options: MetadataQuery.PredicateStringOptions {
+    var options: MetadataQuery.PredicateStringOptions {
         switch self {
         case .c(_): return .c
         case .d(_): return .d
@@ -990,7 +990,7 @@ extension MetadataQuery.Predicate where T: QueryCollection {
 
 // MARK: PredicateBuilder
 
-internal extension MetadataQuery.Predicate {
+extension MetadataQuery.Predicate {
     struct PredicateBuilder {
         static func comparisonAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
             let predicates = values.enumerated().enumerated().compactMap({ comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? [])})
@@ -1101,7 +1101,7 @@ extension Optional: Comparable where Wrapped: Comparable {
     }
 }
 
-internal protocol QueryRawRepresentable: QueryEquatable {
+protocol QueryRawRepresentable: QueryEquatable {
     associatedtype RawValue
     var rawValue: RawValue { get }
 }
@@ -1160,7 +1160,7 @@ public protocol QueryDate: QueryComparable, QueryEquatable { }
 extension Date: QueryDate { }
 extension Optional: QueryDate where Wrapped: QueryDate { }
 
-internal protocol QueryBool: QueryEquatable { }
+protocol QueryBool: QueryEquatable { }
 extension Bool: QueryBool { }
 extension Optional: QueryBool where Wrapped: QueryBool { }
 
@@ -1200,7 +1200,7 @@ extension Double: QueryComparable, QueryEquatable { }
 extension CGFloat: QueryComparable, QueryEquatable { }
 extension DataSize: QueryComparable, QueryEquatable { }
 
-internal protocol AnyRange {
+protocol AnyRange {
     associatedtype Bound
     var lowerBound: Bound { get }
     var upperBound: Bound { get }
@@ -1212,7 +1212,7 @@ extension ClosedRange: AnyRange { }
 
 // MARK: MetadataQuery.PredicateStringOptions
 
-internal enum QueryDateRange {
+enum QueryDateRange {
     case now
     case today
     case yesterday
@@ -1225,7 +1225,7 @@ internal enum QueryDateRange {
     case same(Calendar.Component, Date)
 }
 
-internal extension QueryDateRange {
+extension QueryDateRange {
     static func values(for unit: Calendar.Component) -> (String, Int)? {
        switch unit {
        case .year: return ("$this_year", 1)
@@ -1276,7 +1276,7 @@ internal extension QueryDateRange {
 }
 
 extension FileType {
-    internal var metadataPredicate: NSPredicate {
+    var metadataPredicate: NSPredicate {
         let key: NSExpression
         let type: NSComparisonPredicate.Operator
         switch self {

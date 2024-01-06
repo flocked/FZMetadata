@@ -75,7 +75,7 @@ public extension NSWorkspace {
     }
 }
 
-internal extension MetadataItem.FinderTag {
+extension MetadataItem.FinderTag {
     init?(_ name: String, index: Int) {
         guard let color = Color(rawValue: index) else { return nil }
         self.name = name

@@ -19,7 +19,7 @@ extension MetadataQuery {
      */
     public class SortDescriptor: NSSortDescriptor {
         /// The order of sorting.
-        enum Order {
+        enum Order: Int, Hashable {
             /// Ascending sort order.
             case ascending
             

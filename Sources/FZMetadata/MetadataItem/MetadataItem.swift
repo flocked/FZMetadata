@@ -32,8 +32,8 @@ public extension URL {
  ```
  */
 public class MetadataItem {
-    internal let item: NSMetadataItem
-    internal var values: [String:Any] = [:]
+    let item: NSMetadataItem
+    var values: [String:Any] = [:]
     
     /**
      Initializes a metadata item with a given NSMetadataItem.
@@ -68,7 +68,7 @@ public class MetadataItem {
         }
     }
     
-    internal init?(url: URL, values: [String:Any]? = nil) {
+    init?(url: URL, values: [String:Any]? = nil) {
         if let item = NSMetadataItem(url: url) {
             self.item = item
             var values = values ?? [:]
@@ -90,7 +90,7 @@ public class MetadataItem {
         return attributes.compactMap({Attribute(rawValue: $0)})
     }
     
-    internal func value<T>(for attribute: String) -> T? {
+    func value<T>(for attribute: String) -> T? {
         if let value = values[attribute] as? T {
             return value
         } else if let value: T = item.value(for: attribute) {
@@ -99,14 +99,14 @@ public class MetadataItem {
         return nil
     }
     
-    internal func value<T: RawRepresentable, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
+    func value<T: RawRepresentable, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
         if let rawValue: T.RawValue = value(for: keyPath.mdItemKey) {
            return T(rawValue: rawValue)
         }
         return getExplicity(keyPath)
     }
     
-    internal func value<T, K: KeyPath<MetadataItem, T?>>(for keyPath: K) -> T? {
+    func value<T, K: KeyPath<MetadataItem, T?>>(for keyPath: K) -> T? {
         if let value: T = value(for: keyPath.mdItemKey) {
            return value
         }
@@ -148,7 +148,7 @@ public class MetadataItem {
         get { url?.pathExtension } }
     
     /// The size of of the file in bytes.
-    internal var fileSizeBytes: Int? {
+    var fileSizeBytes: Int? {
         get { value(for: \.fileSizeBytes) } }
     
     /// The size of of the file as `DataSize`.
@@ -320,7 +320,7 @@ public class MetadataItem {
         }
     }
     
-    internal var finderPrimaryTagColorIndex: Int? {
+    var finderPrimaryTagColorIndex: Int? {
         get { value(for: \.finderPrimaryTagColorIndex) } }
     
     /// First finder tag color of the item.
@@ -654,7 +654,7 @@ public class MetadataItem {
         } }
     
     /// The duration, in seconds, of the content of file. Usually for videos and audio.
-    internal var durationSeconds: Double? {
+    var durationSeconds: Double? {
         get { value(for: \.durationSeconds) } }
     
     /// The media types (video, sound) present in the content.

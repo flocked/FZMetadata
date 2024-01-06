@@ -7,9 +7,9 @@
 
 import Foundation
 
-public extension MetadataQuery {
+extension MetadataQuery {
     /// Options for string comparison in metadata query predicates.
-    struct PredicateStringOptions: OptionSet {
+    public struct PredicateStringOptions: OptionSet {
         /// Case-sensitive predicate.
         public static let caseSensitive = Self(rawValue: 1)
         /// Diacritic-sensitive predicate.
@@ -22,18 +22,18 @@ public extension MetadataQuery {
         /// Case and diacritical-sensitive predicate.
         public static let cd: Self = [.c, .d]
         
-        internal static let wordBased = Self(rawValue: 3)
-        internal static let w = Self(rawValue: 3)
-        internal static let cdw: Self = [.c, .d, .w]
-        internal static let cw: Self = [.c, .w]
-        internal static let dw: Self = [.d, .w]
+        static let wordBased = Self(rawValue: 3)
+        static let w = Self(rawValue: 3)
+        static let cdw: Self = [.c, .d, .w]
+        static let cw: Self = [.c, .w]
+        static let dw: Self = [.d, .w]
         
         public let rawValue: Int8
         public init(rawValue: Int8) {
             self.rawValue = rawValue
         }
         
-        internal var string: String {
+        var string: String {
             return "$[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
         }
         
@@ -58,7 +58,7 @@ public extension MetadataQuery {
             }
         }
         
-        internal static func extract(_ value: inout String) -> Self {
+        static func extract(_ value: inout String) -> Self {
             let options = Self(extracting: value)
             value = value.replacingOccurrences(of: options.string, with: "")
             return options
@@ -85,13 +85,13 @@ public struct StringOptions: OptionSet {
     /// Case and diacritical sensitive.
     public static let cd: Self = [.c, .d]
     
-    internal static let wordBased = StringOptions(rawValue: 3)
-    internal static let w = Self(rawValue: 3)
-    internal static let cdw: Self = [.c, .d, .w]
-    internal static let cw: Self = [.c, .w]
-    internal static let dw: Self = [.d, .w]
+    static let wordBased = StringOptions(rawValue: 3)
+    static let w = Self(rawValue: 3)
+    static let cdw: Self = [.c, .d, .w]
+    static let cw: Self = [.c, .w]
+    static let dw: Self = [.d, .w]
     
-    internal var string: String {
+    var string: String {
         return "$[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
     }
     
@@ -116,7 +116,7 @@ public struct StringOptions: OptionSet {
         }
     }
         
-    internal static func extract(_ value: inout String) -> StringOptions {
+    static func extract(_ value: inout String) -> StringOptions {
         let options = StringOptions(extracting: value)
         value = value.replacingOccurrences(of: options.string, with: "")
         return options
