@@ -60,10 +60,19 @@ open class MetadataItem {
     /**
      Initializes a metadata item with a given URL.
      
+     Example usage:
+     
+     ```swift
+     if let metadata = MetadataItem(url: fileURL) {
+        metadata.creationDate // The creation date of the file
+        metadata.contentModificationDate = Date()
+     }
+     ```
+     
      - Parameters:
         - url: The URL for the metadata 
 
-     - Returns: A metadata item for the file identified by url.
+     - Returns: A metadata item for the file at the url.
      */
     public init?(url: URL) {
         if let item = NSMetadataItem(url: url) {
@@ -98,32 +107,9 @@ open class MetadataItem {
         return attributes.compactMap({Attribute(rawValue: $0)})
     }
     
-    func value<T>(for attribute: String) -> T? {
-        if let value = values[attribute] as? T {
-            return value
-        } else if let value: T = item.value(for: attribute) {
-            return value
-        }
-        return nil
-    }
-    
-    func value<T: RawRepresentable, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
-        if let rawValue: T.RawValue = value(for: keyPath.mdItemKey) {
-           return T(rawValue: rawValue)
-        }
-        return getExplicity(keyPath)
-    }
-    
-    func value<T, K: KeyPath<MetadataItem, T?>>(for keyPath: K) -> T? {
-        if let value: T = value(for: keyPath.mdItemKey) {
-           return value
-        }
-        return getExplicity(keyPath)
-    }
-    
     // MARK: - File
     
-    /// The url of the 
+    /// The url of the file.
     open var url: URL? {
         if let path = values["kMDItemPath"] as? String {
             return URL(fileURLWithPath: path)
@@ -135,7 +121,7 @@ open class MetadataItem {
     open var path: String? {
         get { value(for: \.path) } }
     
-    /// The file name of the item including extension.
+    /// The name of the file including the extension.
     open var fileName: String? {
         get {
             if let path = values["kMDItemPath"] as? String {
@@ -143,11 +129,11 @@ open class MetadataItem {
             }
             return value(for: \.fileName) ?? url?.lastPathComponent } }
     
-    /// The display name of the item, which may be different then the file system name.
+    /// The display name of the file, which may be different then the file system name.
     open var displayName: String? {
         get { value(for: \.displayName) } }
     
-    /// Alternative names of the 
+    /// Alternative names of the file.
     open var alternateNames: [String]? {
         get { value(for: \.alternateNames) } }
     
@@ -155,11 +141,11 @@ open class MetadataItem {
     open var fileExtension: String? {
         get { url?.pathExtension } }
     
-    /// The size of of the file in bytes.
+    /// The size of the file in bytes.
     var fileSizeBytes: Int? {
         get { value(for: \.fileSizeBytes) } }
     
-    /// The size of of the file as `DataSize`.
+    /// The size of the file as `DataSize`.
     open var fileSize: DataSize? {
         if let bytes = fileSizeBytes {
             return DataSize(bytes)
@@ -167,11 +153,11 @@ open class MetadataItem {
         return nil
     }
     
-    /// Indicates whether the file is invisible.
+    /// A Boolean value that indicates whether the file is invisible.
     open var fileIsInvisible: Bool? {
         get { value(for: \.fileIsInvisible) } }
     
-    /// Indicates whether the file is invisible.
+    /// A Boolean value that indicates whether the file's extension is hidden.
     open var fileExtensionIsHidden: Bool? {
         get { value(for: \.fileExtensionIsHidden) } }
     
@@ -198,17 +184,17 @@ open class MetadataItem {
         get { if let type = contentType { return UTType(type) }
                 return nil } }
     
-    /// The date and time that the file was created.
+    /// The date that the file was created.
     open var creationDate: Date? {
         get { value(for: \.creationDate) }
         set { setExplicity(\.creationDate, to: newValue) } }
         
-    /// The date and time that the file was last used.
+    /// The date that the file was last used.
     open var lastUsedDate: Date? {
         get { value(for: \.lastUsedDate) }
         set { setExplicity(\.lastUsedDate, to: newValue) } }
         
-    /// An array of dates and times the file was last used.
+    /// An array of dates the file was last used.
     open var lastUsageDates: [Date]? {
         get { value(for: \.lastUsageDates) }
         set { setExplicity(\.lastUsageDates, to: newValue) } }
@@ -218,22 +204,22 @@ open class MetadataItem {
         get { value(for: \.metadataModificationDate) }
         set { setExplicity(\.metadataModificationDate, to: newValue) } }
     
-    /// The date and time that the content of the file was created.
+    /// The date that the content of the file was created.
     open var contentCreationDate: Date? {
         get { value(for: \.contentCreationDate) }
         set { setExplicity(\.contentCreationDate, to: newValue) } }
     
-    /// The date the file contents last changed.
+    /// The date that the file's contents were  last changed.
     open var contentChangeDate: Date? {
         get { value(for: \.contentChangeDate) }
         set { setExplicity(\.contentChangeDate, to: newValue) } }
     
-    /// The date and time that the contents of the file were last modified.
+    /// The date that the file's contents were last modified.
     open var contentModificationDate: Date? {
         get { value(for: \.contentModificationDate) }
         set { setExplicity(\.contentModificationDate, to: newValue) } }
     
-    /// The date when the file got added of the file.
+    /// The date that the file got added.
     open var dateAdded: Date? {
         get { value(for: \.dateAdded) }
         set { setExplicity(\.dateAdded, to: newValue) } }
@@ -249,7 +235,7 @@ open class MetadataItem {
         get { value(for: \.purchaseDate) }
     }
     
-    /// Date this item is due (e.g. for a calendar event file).
+    /// The date this item is due (e.g. for a calendar event file).
     open var dueDate: Date? {
         get { value(for: \.dueDate) }
         set { setExplicity(\.dueDate, to: newValue) } }
@@ -262,11 +248,11 @@ open class MetadataItem {
     open var description: String? {
         get { value(for: \.description) } }
     
-    /// A description of the kind of item this file represents.
+    /// Description of the kind of item the file represents.
     open var kind: [String]? {
         get { value(for: \.kind) } }
     
-    /// Information about the 
+    /// Information of this item.
     open var information: String? {
         get { value(for: \.information) } }
     
@@ -274,7 +260,7 @@ open class MetadataItem {
     open var identifier: String? {
         get { value(for: \.identifier) } }
     
-    /// Keywords associated with this file. For example, “Birthday”, “Important”, etc.
+    /// Keywords associated with the file. For example: `Birthday` or `Important`.
     open var keywords: [String]? {
         get { value(for: \.keywords) } }
     
@@ -290,7 +276,7 @@ open class MetadataItem {
     open var authors: [String]? {
         get { value(for: \.authors) } }
     
-    /// The version number of this file.
+    /// The version of the file.
     open var version: String? {
         get { value(for: \.version) } }
     
@@ -298,7 +284,7 @@ open class MetadataItem {
     open var comment: String? {
         get { value(for: \.comment) } }
     
-    /// User rating of this  For example, the stars rating of an iTunes track.
+    /// User rating of the file. For example, the stars rating of an iTunes track.
     open var starRating: Double? {
         get { value(for: \.starRating) } }
     
@@ -308,11 +294,11 @@ open class MetadataItem {
         set { setExplicity(\.whereFroms, to: newValue) }
     }
     
-    /// Finder comments for this file. This differs from the ``comment``.
+    /// Finder comments of the file. This differs from the ``comment``.
     open var finderComment: String? {
         get { value(for: \.finderComment) } }
     
-    /// Finder tags for this file.
+    /// Finder tags of the file.
     open var finderTags: [String]? {
         get { value(for: \.finderTags)?.compactMap({$0.replacingOccurrences(of: "\n6", with:"")}) }
         set { 
@@ -353,7 +339,7 @@ open class MetadataItem {
     }
     #endif
     
-    /// Indicates whether the file is invisible.
+    /// A Boolean value that indicates whether the file has a custom icon.
     open var hasCustomIcon: Bool? {
         get { value(for: \.hasCustomIcon) } }
     
@@ -365,19 +351,19 @@ open class MetadataItem {
             return nil
         } }
     
-    /// If this item is a bundle, then this is the CFBundleIdentifier.
+    /// The bundle identifier of this item. If this item is a bundle, then this is the `CFBundleIdentifier`.
     open var bundleIdentifier: String? {
         get { value(for: \.bundleIdentifier) } }
     
-    /// Architectures the item requires to execute;architectures
+    /// Architectures this item requires to execute.
     open var executableArchitectures: [String]? {
         get { value(for: \.executableArchitectures) } }
     
-    /// Platform the item requires to execute;platform
+    /// Platform this item requires to execute.
     open var executablePlatform: String? {
         get { value(for: \.executablePlatform) } }
     
-    /// Indicates whether the file is owned and managed by an application.
+    /// A Boolean value that indicates whether the file is owned and managed by an application.
     open var isApplicationManaged: Bool? {
         get { value(for: \.isApplicationManaged) } }
     
@@ -389,11 +375,11 @@ open class MetadataItem {
     open var applicationCategories: [String]? {
         get { value(for: \.applicationCategories) } }
         
-    /// The AppStore category of the item if it's an application from the AppStore.
+    /// The AppStore category of this item if it's an application from the AppStore.
     open var appstoreCategory: String? {
         get { value(for: \.appstoreCategory) } }
     
-    /// The AppStore category type of the item if it's an application from the AppStore.
+    /// The AppStore category type of this item if it's an application from the AppStore.
     open var appstoreCategoryType: String? {
         get { value(for: \.appstoreCategoryType) } }
     
@@ -418,11 +404,11 @@ open class MetadataItem {
     open var headline: String? {
         get { value(for: \.headline) } }
     
-    /// Application or operation system used to create the document content (e.g.  "Word",  "Pages", 16.2, and so on).
+    /// Application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
     open var creator: String? {
         get { value(for: \.creator) } }
     
-    /// Other information concerning the item, such as handling instructions.
+    /// Other information concerning this item, such as handling instructions.
     open var instructions: String? {
         get { value(for: \.instructions) } }
     
@@ -438,7 +424,7 @@ open class MetadataItem {
     open var coverage: [String]? {
         get { value(for: \.coverage) } }
             
-    /// The list of projects that this file is part of. For example, if you were working on a movie all of the files could be marked as belonging to the project “My Movie”.
+    /// The list of projects that the file is part of. For example, if you were working on a movie all of the files could be marked as belonging to the project `My Movie`.
     open var projects: [String]? {
         get { value(for: \.projects) } }
     
@@ -482,7 +468,7 @@ open class MetadataItem {
     open var organizations: [String]? {
         get { value(for: \.organizations) } }
     
-    /// The entity responsible for making the item available. For example, a person, an organization, or a service. Typically, the name of a publisher should be used to indicate the entity.
+    /// The entity responsible for making this item available. For example, a person, an organization, or a service. Typically, the name of a publisher should be used to indicate the entity.
     open var publishers: [String]? {
         get { value(for: \.publishers) } }
     
@@ -505,7 +491,7 @@ open class MetadataItem {
     
     // MARK: - Places
 
-    /// The full, publishable name of the country or region where the intellectual property of the item was created, according to guidelines of the provider.
+    /// The full, publishable name of the country or region where the intellectual property of this item was created, according to guidelines of the provider.
     open var country: String? {
         get { value(for: \.country) }
         set { setExplicity(\.country, to: newValue) } }
@@ -515,7 +501,7 @@ open class MetadataItem {
         get { value(for: \.city) }
         set { setExplicity(\.city, to: newValue) } }
             
-    /// Identifies the province or state of origin according to guidelines established by the provider. For example, "CA", "Ontario", or "Sussex".
+    /// Identifies the province or state of origin according to guidelines established by the provider. For example: `CA`, `Ontario` or `Sussex`.
     open var stateOrProvince: String? {
         get { value(for: \.stateOrProvince) }
         set { setExplicity(\.stateOrProvince, to: newValue) } }
@@ -528,78 +514,78 @@ open class MetadataItem {
     open var namedLocation: String? {
         get { value(for: \.namedLocation) } }
     
-    /// The altitude of the item in meters above sea level, expressed using the WGS84 datum. Negative values lie below sea level.
+    /// The altitude of this item in meters above sea level, expressed using the WGS84 datum. Negative values lie below sea level.
     open var altitude: Double? {
         get { value(for: \.altitude) } }
     
-    /// The latitude of the item in degrees north of the equator, expressed using the WGS84 datum. Negative values lie south of the equator.
+    /// The latitude of this item in degrees north of the equator, expressed using the WGS84 datum. Negative values lie south of the equator.
     open var latitude: Double? {
         get { value(for: \.latitude) } }
     
-    /// The longitude of the item in degrees east of the prime meridian, expressed using the WGS84 datum. Negative values lie west of the prime meridian.
+    /// The longitude of this item in degrees east of the prime meridian, expressed using the WGS84 datum. Negative values lie west of the prime meridian.
     open var longitude: Double? {
         get { value(for: \.longitude) } }
     
-    /// The speed of the item, in kilometers per hour.
+    /// The speed of this item, in kilometers per hour.
     open var speed: Double? {
         get { value(for: \.speed) } }
     
-    /// The timestamp on the  This generally is used to indicate the time at which the event captured by the item took place.
+    /// The timestamp on the  This generally is used to indicate the time at which the event captured by this item took place.
     open var timestamp: Date? {
         get { value(for: \.timestamp) } }
 
-    /// The direction of travel of the item, in degrees from true north.
+    /// The direction of travel of this item, in degrees from true north.
     open var gpsTrack: Double? {
         get { value(for: \.gpsTrack) } }
     
-    /// The gps status of the item.
+    /// The gps status of this item.
     open var gpsStatus: String? {
         get { value(for: \.gpsStatus) } }
     
-    /// The gps measure mode of the item.
+    /// The gps measure mode of this item.
     open var gpsMeasureMode: String? {
         get { value(for: \.gpsMeasureMode) } }
     
-    /// The gps dop of the item.
+    /// The gps dop of this item.
     open var gpsDop: Double? {
         get { value(for: \.gpsDop) } }
     
-    /// The gps map datum of the item.
+    /// The gps map datum of this item.
     open var gpsMapDatum: String? {
         get { value(for: \.gpsMapDatum) } }
     
-    /// The gps destination latitude of the item.
+    /// The gps destination latitude of this item.
     open var gpsDestLatitude: Double? {
         get { value(for: \.gpsDestLatitude) } }
     
-    /// The gps destination longitude of the item.
+    /// The gps destination longitude of this item.
     open var gpsDestLongitude: Double? {
         get { value(for: \.gpsDestLongitude) } }
     
-    /// The gps destination bearing of the item.
+    /// The gps destination bearing of this item.
     open var gpsDestBearing: Double? {
         get { value(for: \.gpsDestBearing) } }
     
-    /// The gps destination distance of the item.
+    /// The gps destination distance of this item.
     open var gpsDestDistance: Double? {
         get { value(for: \.gpsDestDistance) } }
     
-    /// The gps processing method of the item.
+    /// The gps processing method of this item.
     open var gpsProcessingMethod: String? {
         get { value(for: \.gpsProcessingMethod) } }
     
-    /// The gps date stamp of the item.
+    /// The gps date stamp of this item.
     open var gpsDateStamp: Date? {
         get { value(for: \.gpsDateStamp) } }
     
-    /// The gps differental of the item.
+    /// The gps differental of this item.
     open var gpsDifferental: Double? {
         get { value(for: \.gpsDifferental) } }
     
     
     // MARK: - Audio
     
-    /// Sample rate of the audio data contained in the file. The sample rate is a float value representing hz (audio_frames/second). For example: 44100.0, 22254.54.
+    /// Sample rate of the audio data contained in the file. The sample rate representing `audio_frames/second`. For example: `44100.0`, `22254.54`.
     open var audioSampleRate: Double? {
         get { value(for: \.audioSampleRate) } }
     
@@ -607,7 +593,7 @@ open class MetadataItem {
     open var audioChannelCount: Double? {
         get { value(for: \.audioChannelCount) } }
     
-    /// The name of the application that encoded the data contained in the audio file.
+    /// The name of the application that encoded the data of a audio file.
     open var audioEncodingApplication: String? {
         get { value(for: \.audioEncodingApplication) } }
     
@@ -615,11 +601,11 @@ open class MetadataItem {
     open var tempo: Double? {
         get { value(for: \.tempo) } }
     
-    /// The key of the music contained in the audio file. For example: C, Dm, F#m, Bb.
+    /// The key of the music contained in the audio file. For example: `C`, `Dm`, `F#, `Bb`.
     open var keySignature: String? {
         get { value(for: \.keySignature) } }
     
-    /// The time signature of the musical composition contained in the audio/MIDI file. For example: "4/4", "7/8".
+    /// The time signature of the musical composition contained in the audio/MIDI file. For example: `4/4`, `7/8`.
     open var timeSignature: String? {
         get { value(for: \.timeSignature) } }
 
@@ -639,15 +625,15 @@ open class MetadataItem {
     open var recordingDate: Date? {
         get { value(for: \.recordingDate) } }
     
-    /// Indicates the year the item was recorded. For example, 1964, 2003, etc.
+    /// Indicates the year this item was recorded. For example: `1964`, `2003`.
     open var recordingYear: Double? {
         get { value(for: \.recordingYear) } }
     
-    /// The musical genre of the song or composition contained in the audio file. For example: Jazz, Pop, Rock, Classical.
+    /// The musical genre of the song or composition contained in the audio file. For example: `Jazz`, `Pop`, `Rock`, `Classical`.
     open var musicalGenre: String? {
         get { value(for: \.musicalGenre) } }
     
-    /// Indicates whether the MIDI sequence contained in the file is setup for use with a General MIDI device.
+    /// A Boolean value that indicates whether the MIDI sequence contained in the file is setup for use with a General MIDI device.
     open var isGeneralMidiSequence: Bool? {
         get { value(for: \.isGeneralMidiSequence) } }
     
@@ -709,7 +695,7 @@ open class MetadataItem {
     open var audioBitRate: Double? {
         get { value(for: \.audioBitRate) } }
     
-    /// Idicates whether the content is prepared for streaming.
+    /// A Boolean value that indicates whether the content is prepared for streaming.
     open var streamable: Bool? {
         get { value(for: \.streamable) } }
     
@@ -748,11 +734,11 @@ open class MetadataItem {
     
     // MARK: - Image
 
-    /// The pixel height of the contents. For example, the image height or the video frame height.
+    /// The pixel height of the contents. For example, the height of a image or video.
     open var pixelHeight: Double? {
         get { value(for: \.pixelHeight) } }
     
-    /// The pixel width of the contents. For example, the image width or the video frame width.
+    /// The pixel width of the contents. For example, the width of a image or video.
     open var pixelWidth: Double? {
         get { value(for: \.pixelWidth) } }
     
@@ -763,11 +749,11 @@ open class MetadataItem {
                 return CGSize(width: width, height: height) }
             return nil } }
     
-    /// The total number of pixels in the contents. Same as pixelHeight x pixelWidth.
+    /// The total number of pixels in the contents. Same as `pixelHeight x pixelWidth`.
     open var pixelCount: Double? {
         get { value(for: \.pixelCount) } }
     
-    /// The color space model used by the document contents. For example, “RGB”, “CMYK”, “YUV”, or “YCbCr”.
+    /// The color space model used by the document contents. For example: `RGB`, `CMYK`, `YUV`, or `YCbCr`.
     open var colorSpace: String? {
         get { value(for: \.colorSpace) } }
     
@@ -775,7 +761,7 @@ open class MetadataItem {
     open var bitsPerSample: Double? {
         get { value(for: \.bitsPerSample) } }
             
-    /// Indicates if a camera flash was used.
+    /// A Boolean value that indicates whether a camera flash was used.
     open var flashOnOff: Bool? {
         get { value(for: \.flashOnOff) } }
     
@@ -783,11 +769,11 @@ open class MetadataItem {
     open var focalLength: Double? {
         get { value(for: \.focalLength) } }
     
-    /// The manufacturer of the device used for this   For example, Apple, Canon, etc.
+    /// The manufacturer of the device used for the file. For example: `Apple`, `Canon`.
     open var deviceManufacturer: String? {
         get { value(for: \.deviceManufacturer) } }
     
-    /// The model of the device used for this  For example, iPhone 13, etc.
+    /// The model of the device used for the file. For example: `iPhone 13`.
     open var deviceModel: String? {
         get { value(for: \.deviceModel) } }
     
@@ -874,15 +860,15 @@ open class MetadataItem {
     open var lensModel: String? {
         get { value(for: \.lensModel) } }
 
-    /// The direction of the item's image, in degrees from true north.
+    /// The direction of this item's image, in degrees from true north.
     open var imageDirection: Double? {
         get { value(for: \.imageDirection) } }
     
-    /// Indicates if this image file has an alpha channel.
+    /// A Boolean value that indicates whether this image file has an alpha channel.
     open var hasAlphaChannel: Bool? {
         get { value(for: \.hasAlphaChannel) } }
     
-    /// Indicates if red-eye reduction was used to take the picture.
+    /// A Boolean value that indicates whether a red-eye reduction was used to take the picture.
     open var redEyeOnOff: Bool? {
         get { value(for: \.redEyeOnOff) } }
     
@@ -906,7 +892,7 @@ open class MetadataItem {
     open var exposureTimeString: String? {
         get { value(for: \.exposureTimeString) } }
     
-    /// A bool determining if the file is a screen capture.
+    /// A Boolean value that indicates whether the file is a screen capture.
     open var isScreenCapture: Bool? {
         get { value(for: \.isScreenCapture) }  }
         
@@ -940,11 +926,11 @@ open class MetadataItem {
     
     // MARK: - Messages / Mail
     
-    /// This attribute indicates the author of the emails message addresses.
+    /// Email addresses for the authors of this item.
     open var authorEmailAddresses: [String]? {
         get { value(for: \.authorEmailAddresses) } }
     
-    /// Addresses for authors of this item.
+    /// Addresses for the authors of this item.
     open var authorAddresses: [String]? {
         get { value(for: \.authorAddresses) } }
     
@@ -952,56 +938,79 @@ open class MetadataItem {
     open var recipients: [String]? {
         get { value(for: \.recipients) } }
     
-    /// This attribute indicates the recipients email addresses. (This is always the email address, and not the human readable version).
+    /// Email addresses for the recipients of this item.
     open var recipientEmailAddresses: [String]? {
         get { value(for: \.recipientEmailAddresses) } }
     
-    /// This attribute indicates the recipient addresses of the document.
+    /// Addresses for the recipients of this item.
     open var recipientAddresses: [String]? {
         get { value(for: \.recipientAddresses) } }
     
-    /// Instant message addresses related to this 
+    /// Instant message addresses related to this item.
     open var instantMessageAddresses: [String]? {
         get { value(for: \.instantMessageAddresses) } }
     
-    /// Received dates for this file.
+    /// Received dates for this item.
     open var receivedDates: [Date]? {
         get { value(for: \.receivedDates) } }
     
-    /// Received recipients for this file.
-    open var receivedRecipients : [String]? {
+    /// Received recipients for this item.
+    open var receivedRecipients: [String]? {
         get { value(for: \.receivedRecipients) } }
     
-    /// Received recipient handles for this file.
-    open var receivedRecipientHandles : [String]? {
+    /// Received recipient handles for this item.
+    open var receivedRecipientHandles: [String]? {
         get { value(for: \.receivedRecipientHandles) } }
     
-    /// Received sender for this file.
-    open var receivedSenders : [String]? {
+    /// Received sendesr for this item.
+    open var receivedSenders: [String]? {
         get { value(for: \.receivedSenders) } }
     
-    /// Received sender handles for this file.
-    open var receivedSenderHandles : [String]? {
+    /// Received sender handles for this item.
+    open var receivedSenderHandles: [String]? {
         get { value(for: \.receivedSenderHandles) } }
     
-    /// Received types for this file.
-    open var receivedTypes : [String]? {
+    /// Received types for this item.
+    open var receivedTypes: [String]? {
         get { value(for: \.receivedTypes) } }
     
-    /// Whether the file is likely to be considered a junk file.
+    /// A Boolean value that indicates whether the file is likely to be considered a junk file.
     open var isLikelyJunk: Bool? {
         get { value(for: \.isLikelyJunk) } }
     
     /**
-     The value indicates the relevance of the item's content if it's part of a metadata query result.
+     The relevance of the item's content, if it's part of a metadata query result.
      
-     The value is a floating point value between `0.0` and `1.0`.
+     The value is a value between `0.0` and `1.0`.
      */
     open var queryContentRelevance: Double? {
         get { value(for: \.queryContentRelevance) } }
 }
 
 extension MetadataItem {
+    func value<T>(for attribute: String) -> T? {
+        if let value = values[attribute] as? T {
+            return value
+        } else if let value: T = item.value(for: attribute) {
+            return value
+        }
+        return nil
+    }
+    
+    func value<T: RawRepresentable, K: KeyPath<MetadataItem, T?>>(_ keyPath: K) -> T? {
+        if let rawValue: T.RawValue = value(for: keyPath.mdItemKey) {
+           return T(rawValue: rawValue)
+        }
+        return getExplicity(keyPath)
+    }
+    
+    func value<T, K: KeyPath<MetadataItem, T?>>(for keyPath: K) -> T? {
+        if let value: T = value(for: keyPath.mdItemKey) {
+           return value
+        }
+        return getExplicity(keyPath)
+    }
+    
     func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
         if keyPath == \.pixelSize, let value = value as? CGSize {
             setExplicity(\.pixelWidth, to: Double(value.width))
