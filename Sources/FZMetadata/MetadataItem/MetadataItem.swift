@@ -24,7 +24,7 @@ public extension URL {
  The metadata associated with a file.
 
  Some of the metadata can also be changed.
- ```
+ ```swift
  if let metadata = MetadataItem(url: fileURL) {
     metadata.creationDate // The creation date of the file
     metadata.contentModificationDate = Date()
