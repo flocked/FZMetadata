@@ -352,13 +352,13 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     @objc func queryGatheringDidStart(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringDidStart")
+        // Swift.debugPrint("MetadataQuery gatheringDidStart")
         resetResults()
         stateHandler?(.isGatheringFiles)
     }
     
     @objc func queryGatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished ")
+        // Swift.debugPrint("MetadataQuery gatheringFinished")
         runWithPausedMonitoring {
             let results = results
             let diff = ResultsDifference.added(_results)
@@ -373,11 +373,11 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     @objc func queryGatheringProgress(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringProgress")
+        // Swift.debugPrint("MetadataQuery gatheringProgress")
     }
     
     @objc func queryUpdated(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery updated")
+        // Swift.debugPrint("MetadataQuery updated")
         runWithPausedMonitoring {
             let added: [MetadataItem] =  (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
             let removed: [MetadataItem] =  (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
