@@ -294,7 +294,7 @@ open class MetadataItem {
     open var version: String? {
         get { value(for: \.version) } }
     
-    /// A comment related to the file. This differs from the Finder comment, finderComment.
+    /// A comment related to the file. This differs from``finderComment``.
     open var comment: String? {
         get { value(for: \.comment) } }
     
@@ -308,7 +308,7 @@ open class MetadataItem {
         set { setExplicity(\.whereFroms, to: newValue) }
     }
     
-    /// Finder comments for this file. This differs from the file comment, comment.
+    /// Finder comments for this file. This differs from the ``comment``.
     open var finderComment: String? {
         get { value(for: \.finderComment) } }
     
@@ -402,7 +402,7 @@ open class MetadataItem {
     
     // MARK: - Document
     
-    /// Contains a text representation of the content of the document. Data in multiple fields should be combined using a whitespace character as a separator.
+    /// Contains a text representation of the content of the document.
     open var textContent: String? {
         get { value(for: \.textContent) } }
     
