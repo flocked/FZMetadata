@@ -15,7 +15,11 @@ import UniformTypeIdentifiers
 
 #if os(macOS)
 extension URL {
-    /// Metadata for the file at url.
+    /**
+     The metadata for the file at url.
+     
+     - Returns: The metadata, or `nil` if the file isn't available or can't be accessed.
+     */
     public var metadata: MetadataItem? {
         return MetadataItem(url: self)  }
 }
