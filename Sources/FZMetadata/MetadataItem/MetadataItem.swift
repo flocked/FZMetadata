@@ -89,9 +89,9 @@ open class MetadataItem {
 #endif
     
     /**
-     An array containing the attributes for the metadata item’s values.
+     The available attributes for this metadata item.
 
-     - Returns: This property contains an array of attributes, representing the values available from this metadata  For a list of possible keys, see Attributes.
+     For a list of possible attributes, see ``Attribute``.
      */
     open var availableAttributes: [Attribute] {
         let attributes = (values.keys + item.attributes).uniqued().sorted()
