@@ -1,4 +1,4 @@
-# Metadata Query Type Conformances
+# Query Conformances
 
 Types that can be used to query metadata.
 

@@ -217,7 +217,7 @@ extension MetadataItem {
 }
 
 extension PartialKeyPath where Root == MetadataItem {
-    public var mdItemKey: String {
+    var mdItemKey: String {
         MetadataItem.attributeKeys[self] ?? "kMDItemFSName"
     }
 }
