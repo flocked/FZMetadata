@@ -7,7 +7,12 @@
 
 import Foundation
 import FZSwiftUtils
+
+#if os(macOS)
 import AppKit
+#else
+import UIKit
+#endif
 
 #if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
@@ -30,7 +35,7 @@ extension URL {
  
  You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` or ``init(url:)``. 
  
- Some of the metadata can also be changed.
+ Some metadata values can be changed.
  
  ```swift
  if let metadata = MetadataItem(url: fileURL) {
@@ -44,12 +49,12 @@ open class MetadataItem {
     var values: [String:Any] = [:]
     
     /**
-     Initializes a metadata item with a given NSMetadataItem.
+     Initializes a metadata item with a given `NSMetadataItem`.
      
      - Parameters:
-        - item: The NSMetadataItem.
+        - item: The `NSMetadataItem`.
 
-     - Returns: A metadata 
+     - Returns: A metadata item.
      */
     public init(item: NSMetadataItem) {
         self.item = item
