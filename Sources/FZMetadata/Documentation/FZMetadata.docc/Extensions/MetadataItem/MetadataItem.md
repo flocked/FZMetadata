@@ -2,6 +2,10 @@
 
 ## Topics
 
+### Accessing Metadata of a file
+
+- ``Foundation/URL/metadata``
+
 ### Creating a Metadata Item
 
 - ``MetadataItem/init(url:)``
