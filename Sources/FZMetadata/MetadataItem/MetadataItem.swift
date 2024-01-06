@@ -204,30 +204,30 @@ open class MetadataItem {
         get { value(for: \.lastUsageDates) }
         set { setExplicity(\.lastUsageDates, to: newValue) } }
     
-    /// The date when the metadata last changed.
-    open var metadataModificationDate: Date? {
-        get { value(for: \.metadataModificationDate) }
-        set { setExplicity(\.metadataModificationDate, to: newValue) } }
+    /// The date that  the attributes of the file was last changed.
+    open var attributeModificationDate: Date? {
+        get { value(for: \.attributeModificationDate) }
+        set { setExplicity(\.attributeModificationDate, to: newValue) } }
     
     /// The date that the content of the file was created.
     open var contentCreationDate: Date? {
         get { value(for: \.contentCreationDate) }
         set { setExplicity(\.contentCreationDate, to: newValue) } }
     
-    /// The date that the file's contents were  last changed.
+    /// The date that the content of the file was last changed.
     open var contentChangeDate: Date? {
         get { value(for: \.contentChangeDate) }
         set { setExplicity(\.contentChangeDate, to: newValue) } }
     
-    /// The date that the file's contents were last modified.
+    /// The date that the content of the file was last modified.
     open var contentModificationDate: Date? {
         get { value(for: \.contentModificationDate) }
         set { setExplicity(\.contentModificationDate, to: newValue) } }
     
-    /// The date that the file got added.
-    open var dateAdded: Date? {
-        get { value(for: \.dateAdded) }
-        set { setExplicity(\.dateAdded, to: newValue) } }
+    /// The date the resource was created, or renamed into or within its parent directory.
+    open var addedDate: Date? {
+        get { value(for: \.addedDate) }
+        set { setExplicity(\.addedDate, to: newValue) } }
     
     /// The download date of the file.
     open var downloadedDate: Date? {
