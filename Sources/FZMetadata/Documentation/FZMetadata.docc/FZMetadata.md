@@ -7,22 +7,27 @@ File Metadata and File Query similar to Spotlight.
 `FZMetadata` lets you obtain and change the metadata of files and query file metadata similar to Spotlight.
 
 ## MetadataItem
-An abstraction of NSMetadataItem for easy access of a file's attributes.
+
+`MetadataItem` lets you access the metadata of a file.
 
 ```swift
-let videoURL = URL(filePathWithString: "videofile.mp4")
-let movieDuration = videoURL.metadata.durationSeconds
-let lastUsedDate = videoURL.metadata.lastUsedDate
-let videoResolution = videoURL.metadata.pixelSize
+let videoURL = URL(filePathWithString: pathToFile)
+if let metadata = videoURL.metadata {
+    let movieDuration = metadata.durationSeconds
+    let lastUsedDate = metadata.lastUsedDate
+    let videoResolution = metadata.pixelSize
+}
 ```
 
 ## MetadataQuery
+
 A file query that provides:
 - Blazing fast search of files simliar to Spotlight by predicate and attributes like file name, file size, last used date, video duration, etc.
 - Blazing fast query of attributes for large batches of files.
 - Monitoring of files and directories for updates to the search results.
 
 ### Searching for files by location & predicate
+
 The results handler gets called whenever new files meet the specified predicate at the search locations.
 
 ```swift
@@ -40,6 +45,7 @@ query.start()
 ```
 
 ### Query of file attributes
+
 MetadataQuery provides blazing fast query of attributes for large batches of files. Fetching attributes for thousands of files often takes less than a second.
 
 ```swift
@@ -54,6 +60,7 @@ query.start()
 ```
 
 ### Monitoring of files & directories
+
 MetadataQuery can monitor for changes to search results & queried attributes. It calls the completionHandler whenever changes happen.
 
 To enable monitoring use `enableMonitoring()`.
@@ -84,5 +91,3 @@ query.start()
 
 - ``MetadataQuery``
 - <doc:MetadataQuery+Predicate+Conformance>
-
-### File Query Operators
