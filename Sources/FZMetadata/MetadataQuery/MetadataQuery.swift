@@ -16,7 +16,7 @@ import Foundation
  query.searchLocations = [.downloadsDirectory, .documentsDirectory]
  query.predicate = {
      $0.fileTypes(.image, .video) &&
-     $0.dateAdded.isThisWeek &&
+     $0.addedDate.isThisWeek &&
      $0.fileSize.megabytes >= 10
  } // Image & videos files, added this week, large than 10mb
  query.resultsHandler = { files, _ in

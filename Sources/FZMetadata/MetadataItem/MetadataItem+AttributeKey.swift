@@ -11,7 +11,8 @@ extension MetadataItem {
     static var attributeKeys: [PartialKeyPath<MetadataItem>:String] {
         var attributeKeys = _attributeKeys
         if #available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *) {
-            attributeKeys[\.contentUTType] = "kMDItemContentType"
+            attributeKeys[\.contentType] = "kMDItemContentType"
+            attributeKeys[\.contentTypeTree] = "kMDItemContentTypeTree"
         }
         return attributeKeys
     }
@@ -29,8 +30,8 @@ extension MetadataItem {
             \.fileIsInvisible : "kMDItemFSInvisible",
             \.fileExtensionIsHidden : "kMDItemFSIsExtensionHidden",
             \.fileType : "kMDItemContentTypeTree",
-            \.contentType : "kMDItemContentType",
-            \.contentTypeTree : "kMDItemContentTypeTree",
+            \.contentTypeIdentifier : "kMDItemContentType",
+            \.contentTypeTreeIdentifiers : "kMDItemContentTypeTree",
             \.creationDate : "kMDItemFSCreationDate",
             \.lastUsedDate : "kMDItemLastUsedDate",
             \.lastUsageDates : "kMDItemUsedDates",

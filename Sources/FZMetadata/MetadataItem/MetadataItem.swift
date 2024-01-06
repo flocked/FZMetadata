@@ -33,15 +33,19 @@ extension URL {
 /**
  The metadata associated with a file.
  
- You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` or ``init(url:)``. 
+ You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` property or create it using ``init(url:)``.
+  
+ ```swift
+ if let metadata = fileURL.metadata {
+    // The creation date of the file
+    metadata.creationDate
+ }
+ ```
  
  Some metadata values can be changed.
- 
+
  ```swift
- if let metadata = MetadataItem(url: fileURL) {
-    metadata.creationDate // The creation date of the file
-    metadata.contentModificationDate = Date()
- }
+ metadata.contentModificationDate = Date.now
  ```
  */
 open class MetadataItem {
@@ -162,32 +166,44 @@ open class MetadataItem {
     open var fileIsInvisible: Bool? {
         get { value(for: \.fileIsInvisible) } }
     
-    /// A Boolean value that indicates whether the file's extension is hidden.
+    /// A Boolean value that indicates whether the file extension is hidden.
     open var fileExtensionIsHidden: Bool? {
         get { value(for: \.fileExtensionIsHidden) } }
     
-    /// The type of the file.
+    /// The file type.
     open var fileType: FileType? {
-        get {  if let contentTypeTree: [String] = value(for: \.contentTypeTree) {
+        get {  if let contentTypeTree: [String] = value(for: \.contentTypeTreeIdentifiers) {
             return FileType(contentTypeTree: contentTypeTree)
         }
             return nil
         }
     }
           
-    /// The content type of the file as UTI identifier.
-    open var contentType: String? {
-        get { value(for: \.contentType) } }
+    /// The content type `UTI` identifier of the file.
+    open var contentTypeIdentifier: String? {
+        get { value(for: \.contentTypeIdentifier) } }
     
-    /// An array of UTI identifiers representing the content type tree of the file.
-    open var contentTypeTree: [String]? {
-        get { value(for: \.contentTypeTree) } }
+    /// The content type tree `UTI` identifiers of the file.
+    open var contentTypeTreeIdentifiers: [String]? {
+        get { value(for: \.contentTypeTreeIdentifiers) } }
     
-    /// The content type of the file as UTType.
+    
+    /// The content type tree of the file.
     @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-    open var contentUTType: UTType? {
-        get { if let type = contentType { return UTType(type) }
-                return nil } }
+    open var contentTypeTree: [UTType]? {
+        get { contentTypeTreeIdentifiers?.compactMap({UTType($0)}) } }
+    
+    
+    /// The content type of the file.
+    @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
+    open var contentType: UTType? {
+        get {
+            if let type = contentTypeIdentifier {
+                return UTType(type)
+            }
+            return nil
+        }
+    }
     
     /// The date that the file was created.
     open var creationDate: Date? {

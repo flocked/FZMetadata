@@ -9,101 +9,101 @@
 
 ### General
 
-- ``Predicate-swift.struct/isFile``
-- ``Predicate-swift.struct/isDirectory``
-- ``Predicate-swift.struct/isAlias``
-- ``Predicate-swift.struct/isVolume``
-- ``Predicate-swift.struct/any``
+- ``isFile``
+- ``isDirectory``
+- ``isAlias``
+- ``isVolume``
+- ``any``
 
 ### Equatable
 
-- ``Predicate-swift.struct/isNil``
-- ``Predicate-swift.struct/isNotNil``
-- ``Predicate-swift.struct/in(_:)``
-- ``Predicate-swift.struct/&&(_:_:)``
-- ``Predicate-swift.struct/||(_:_:)``
-- ``Predicate-swift.struct/!(_:)``
-- ``Predicate-swift.struct/==(_:_:)-3tdn8``
-- ``Predicate-swift.struct/==(_:_:)-5kf3l``
-- ``Predicate-swift.struct/==(_:_:)-7sug5``
-- ``Predicate-swift.struct/==(_:_:)-7yucj``
-- ``Predicate-swift.struct/==(_:_:)-8bvu6``
-- ``Predicate-swift.struct/==(_:_:)-96169``
-- ``Predicate-swift.struct/==(_:_:)-31p4h``
-- ``Predicate-swift.struct/==(_:_:)-2ubyi``
-- ``Predicate-swift.struct/!=(_:_:)-1xq7f``
-- ``Predicate-swift.struct/!=(_:_:)-6sqnt``
-- ``Predicate-swift.struct/!=(_:_:)-1wcwb``
-- ``Predicate-swift.struct/!=(_:_:)-5rqbe``
+- ``isNil``
+- ``isNotNil``
+- ``in(_:)``
+- ``&&(_:_:)``
+- ``||(_:_:)``
+- ``!(_:)``
+- ``==(_:_:)-3tdn8``
+- ``==(_:_:)-5kf3l``
+- ``==(_:_:)-7sug5``
+- ``==(_:_:)-7yucj``
+- ``==(_:_:)-8bvu6``
+- ``==(_:_:)-96169``
+- ``==(_:_:)-31p4h``
+- ``==(_:_:)-2ubyi``
+- ``!=(_:_:)-1xq7f``
+- ``!=(_:_:)-6sqnt``
+- ``!=(_:_:)-1wcwb``
+- ``!=(_:_:)-5rqbe``
 
 ### Comparable
 
-- ``Predicate-swift.struct/==(_:_:)-1hl1w``
-- ``Predicate-swift.struct/==(_:_:)-1q5o9``
-- ``Predicate-swift.struct/>(_:_:)``
-- ``Predicate-swift.struct/>=(_:_:)``
-- ``Predicate-swift.struct/<(_:_:)``
-- ``Predicate-swift.struct/<=(_:_:)``
-- ``Predicate-swift.struct/between(_:)-3u294``
-- ``Predicate-swift.struct/between(_:)-51xg1``
-- ``Predicate-swift.struct/between(any:)-38gco``
-- ``Predicate-swift.struct/between(any:)-8ztwv``
+- ``==(_:_:)-1hl1w``
+- ``==(_:_:)-1q5o9``
+- ``>(_:_:)``
+- ``>=(_:_:)``
+- ``<(_:_:)``
+- ``<=(_:_:)``
+- ``between(_:)-3u294``
+- ``between(_:)-51xg1``
+- ``between(any:)-38gco``
+- ``between(any:)-8ztwv``
 
 
 ### String
 
-- ``Predicate-swift.struct/begins(with:_:)``
-- ``Predicate-swift.struct/begins(withAny:_:)``
-- ``Predicate-swift.struct/ends(with:_:)``
-- ``Predicate-swift.struct/ends(withAny:_:)``
-- ``Predicate-swift.struct/contains(_:_:)``
-- ``Predicate-swift.struct/contains(any:_:)``
-- ``Predicate-swift.struct/equals(_:_:)``
-- ``Predicate-swift.struct/equals(any:_:)``
-- ``Predicate-swift.struct/equalsNot(_:_:)-21m62``
-- ``Predicate-swift.struct/equalsNot(_:_:)-72dcm``
-- ``Predicate-swift.struct/*==(_:_:)-2ws0t``
-- ``Predicate-swift.struct/*==(_:_:)-7xntd``
-- ``Predicate-swift.struct/==*(_:_:)-8zg0a``
-- ``Predicate-swift.struct/==*(_:_:)-rzgf``
-- ``Predicate-swift.struct/*=*(_:_:)-274ns``
-- ``Predicate-swift.struct/*=*(_:_:)-7ijg7``
+- ``begins(with:_:)``
+- ``begins(withAny:_:)``
+- ``ends(with:_:)``
+- ``ends(withAny:_:)``
+- ``contains(_:_:)``
+- ``contains(any:_:)``
+- ``equals(_:_:)``
+- ``equals(any:_:)``
+- ``equalsNot(_:_:)-21m62``
+- ``equalsNot(_:_:)-72dcm``
+- ``*==(_:_:)-2ws0t``
+- ``*==(_:_:)-7xntd``
+- ``==*(_:_:)-8zg0a``
+- ``==*(_:_:)-rzgf``
+- ``*=*(_:_:)-274ns``
+- ``*=*(_:_:)-7ijg7``
 
 ### Date
 
-- ``Predicate-swift.struct/isNow``
-- ``Predicate-swift.struct/isToday``
-- ``Predicate-swift.struct/isThisHour``
-- ``Predicate-swift.struct/isYesterday``
-- ``Predicate-swift.struct/isSameDay(as:)``
-- ``Predicate-swift.struct/isThisWeek``
-- ``Predicate-swift.struct/isLastWeek``
-- ``Predicate-swift.struct/isSameWeek(as:)``
-- ``Predicate-swift.struct/isThisMonth``
-- ``Predicate-swift.struct/isLastMonth``
-- ``Predicate-swift.struct/isSameMonth(as:)``
-- ``Predicate-swift.struct/isThisYear``
-- ``Predicate-swift.struct/isLastYear``
-- ``Predicate-swift.struct/isSameYear(as:)``
-- ``Predicate-swift.struct/isBefore(_:)``
-- ``Predicate-swift.struct/isAfter(_:)``
-- ``Predicate-swift.struct/within(_:_:)``
-- ``Predicate-swift.struct/this(_:)``
-- ``Predicate-swift.struct/between(_:)-7axbv``
+- ``isNow``
+- ``isToday``
+- ``isThisHour``
+- ``isYesterday``
+- ``isSameDay(as:)``
+- ``isThisWeek``
+- ``isLastWeek``
+- ``isSameWeek(as:)``
+- ``isThisMonth``
+- ``isLastMonth``
+- ``isSameMonth(as:)``
+- ``isThisYear``
+- ``isLastYear``
+- ``isSameYear(as:)``
+- ``isBefore(_:)``
+- ``isAfter(_:)``
+- ``within(_:_:)``
+- ``this(_:)``
+- ``between(_:)-7axbv``
 
 ### Collection
 
-- ``Predicate-swift.struct/contains(_:)``
-- ``Predicate-swift.struct/containsNot(_:)``
-- ``Predicate-swift.struct/contains(any:)``
-- ``Predicate-swift.struct/containsNot(any:)``
-- ``Predicate-swift.struct/==(_:_:)-9m89j``
-- ``Predicate-swift.struct/!=(_:_:)-8cjp0``
+- ``contains(_:)``
+- ``containsNot(_:)``
+- ``contains(any:)``
+- ``containsNot(any:)``
+- ``==(_:_:)-9m89j``
+- ``!=(_:_:)-8cjp0``
 
 ### UTType
 
-- ``Predicate-swift.struct/subtype(of:)-91z0u``
-- ``Predicate-swift.struct/subtype(of:)-9vizg``
+- ``subtype(of:)-91z0u``
+- ``subtype(of:)-9vizg``
 
 ### Type Conformances
 
