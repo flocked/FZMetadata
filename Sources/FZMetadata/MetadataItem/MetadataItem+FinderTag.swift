@@ -68,9 +68,9 @@ public extension MetadataItem {
 
 #if os(macOS)
 import AppKit
-public extension NSWorkspace {
-    typealias FinderTag = MetadataItem.FinderTag
-    var finderTags: [FinderTag] {
+extension NSWorkspace {
+    public typealias FinderTag = MetadataItem.FinderTag
+    public var finderTags: [FinderTag] {
         return fileLabels.enumerated().compactMap({FinderTag($0.element, index: $0.offset)})
     }
 }

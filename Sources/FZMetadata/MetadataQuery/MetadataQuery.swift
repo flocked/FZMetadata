@@ -50,7 +50,7 @@ import Foundation
  
  Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger or `NSMetadataItem`.
  */
-public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
+open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     /// The state of the query.
     public enum State: Int {
         /// The query is in it's initial phase of gathering matching items.
@@ -66,13 +66,13 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     let query = NSMetadataQuery()
     
     /// The handler that gets called when the results changes.
-    public var resultsHandler: ResultsHandler? = nil
+    open var resultsHandler: ResultsHandler? = nil
     
     /// A handler that gets called when the results changes with the items of the results and the difference compared to the previous results.
     public typealias ResultsHandler = ((_ items: [MetadataItem], _ difference: ResultsDifference)->())
     
     /// The handler that gets called when the state changes.
-    public var stateHandler: ((_ state: State)->())? = nil
+    open var stateHandler: ((_ state: State)->())? = nil
 
     var isRunning: Bool { return query.isStarted }
     var isGathering: Bool { return query.isGathering }
@@ -80,7 +80,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
    // var isMonitoring: Bool { return query.isStopped == false && query.isGathering == false  }
     
     /// The state of the query.
-    public var state: State {
+    open var state: State {
         guard isStopped == false else { return .isStopped }
         return (isGathering == true) ? .isGatheringFiles : .isMonitoring
     }
@@ -91,7 +91,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
-    public var urls: [URL] {
+    open var urls: [URL] {
         get { (query.searchItems as? [URL]) ?? [] }
         set { query.searchItems = newValue.isEmpty ? nil : (newValue as [NSURL]) } }
     
@@ -100,7 +100,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
           
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
-    public var attributes: [MetadataItem.Attribute] {
+    open var attributes: [MetadataItem.Attribute] {
         get { return MetadataItem.Attribute.values(for: query.valueListAttributes) }
         set { let newValue:  [MetadataItem.Attribute] = [.path] + newValue
             query.valueListAttributes = newValue.flatMap({$0.mdKeys}).uniqued() }
@@ -113,7 +113,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
           
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
-    public var groupingAttributes: [MetadataItem.Attribute] {
+    open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap({MetadataItem.Attribute(rawValue: $0)}) ?? [] }
         set {
             let newValue = newValue.flatMap({$0.mdKeys}).uniqued()
@@ -139,7 +139,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
 
      **For more details about how to construct a predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
-    public var predicate: ((Predicate<MetadataItem>)->(Predicate<Bool>))? {
+    open var predicate: ((Predicate<MetadataItem>)->(Predicate<Bool>))? {
         didSet {
             query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
         }
@@ -154,7 +154,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      The query can alternativly search globally or at specific scopes via ``searchScopes``.
      */
-    public var searchLocations: [URL] {
+    open var searchLocations: [URL] {
         get { query.searchScopes.compactMap({$0 as? URL}) }
         set { query.searchScopes = newValue }
     }
@@ -168,7 +168,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
-    public var searchScopes: [SearchScope] {
+    open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap({$0 as? String}).compactMap({SearchScope(rawValue: $0)}) }
         set {  query.searchScopes = newValue.compactMap({$0.rawValue}) }
     }
@@ -192,13 +192,13 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
-    public var sortedBy: [SortDescriptor]  {
+    open var sortedBy: [SortDescriptor]  {
         set { query.sortDescriptors = newValue }
         get { query.sortDescriptors.compactMap({$0 as? SortDescriptor}) }
     }
     
     /// The interval (in seconds) at which notification of updated results occurs. The default value is 1.0 seconds.
-    public var updateNotificationInterval: TimeInterval {
+    open var updateNotificationInterval: TimeInterval {
         get { query.notificationBatchingInterval }
         set { query.notificationBatchingInterval = newValue } }
     
@@ -207,12 +207,12 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      Use this property to decouple the processing of results from the thread used to execute the query. This makes it easier to synchronize query result processing with other related operations—such as updating the data model or user interface—which you might want to perform on the main queue.
      */
-    public var operationQueue: OperationQueue? {
+    open var operationQueue: OperationQueue? {
         get { query.operationQueue }
         set { query.operationQueue = newValue } }
     
     /// Starts the query, if it isn't running and resets the current result.
-    public func start()  {
+    open func start()  {
         func startQuery() {
             if query.start() == true {
                 resetResults()
@@ -229,7 +229,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     }
     
     /// Stops the  current query from gathering any further results.
-    public func stop() {
+    open func stop() {
         if (isStopped == false) {
             stateHandler?(.isStopped)
         }
@@ -260,7 +260,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      The array contains ``MetadataItem`` objects. Accessing the result before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
      */
-    public var results: [MetadataItem] {
+    open var results: [MetadataItem] {
         updateResults()
         return _results
     }
@@ -313,7 +313,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      These groups are based on the ``groupingAttributes``.
      */
-    public var groupedResults: [ResultGroup] {
+    open var groupedResults: [ResultGroup] {
         return query.groupedResults.compactMap({ResultGroup($0)})
     }
     
@@ -322,13 +322,13 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
-    public func enableMonitoring() {
+    open func enableMonitoring() {
         query.enableUpdates()
         isMonitoring = true
     }
     
     /// Disables the monitoring of changes to the result.
-    public func disableMonitoring() {
+    open func disableMonitoring() {
         query.disableUpdates()
         isMonitoring = false
     }
@@ -416,7 +416,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
         NotificationCenter.default.removeObserver(self)
     }
     
-    public func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
+    open func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
         return MetadataItem(item: result)
     }
         

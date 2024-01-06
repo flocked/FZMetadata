@@ -17,7 +17,7 @@ extension MetadataQuery {
       query.sortedBy = [>>.creationDate, <<.fileSize] // Sorts by ascending creationDate & descending fileSize
     ```
      */
-    public class SortDescriptor: NSSortDescriptor {
+    open class SortDescriptor: NSSortDescriptor {
         /// The order of sorting.
         enum Order: Int, Hashable {
             /// Ascending sort order.
