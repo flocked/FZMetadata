@@ -5,87 +5,66 @@
 //  Created by Florian Zand on 30.03.23.
 //
 
-
 import Foundation
 
 public extension MetadataItem {
-    struct FinderTag: Hashable {
-        public enum Color: Int, CaseIterable, QueryRawRepresentable {
-            case none
-            case grey
-            case green
-            case purple
-            case blue
-            case yellow
-            case red
-            case orange
-           public var name: String {
-                switch self {
-                case .none: return "none"
-                case .grey: return "gray"
-                case .green: return "green"
-                case .purple: return "purple"
-                case .blue: return "blue"
-                case .yellow: return "yellow"
-                case .red:  return "red"
-                case .orange: return "orange"
-                }
+    /// A finder tag.
+    enum FinderTag: String, CaseIterable, QueryRawRepresentable {
+        /// A finder tag with no color.
+        case none = "None"
+        /// Gray finder tag.
+        case gray = "Gray"
+        /// Green finder tag.
+        case green = "Green"
+        /// Purple finder tag.
+        case purple = "Purple"
+        /// Blue finder tag.
+        case blue = "Blue"
+        /// Yellow finder tag.
+        case yellow = "Yellow"
+        /// Red finder tag.
+        case red = "Red"
+        /// Orange finder tag.
+        case orange = "Orange"
+        #if os(macOS)
+        /// The color of the finder tag.
+        public var color: NSColor {
+            switch self {
+            case .none: return .clear
+            case .gray: return .systemGray
+            case .green: return .systemGreen
+            case .purple: return .systemPurple
+            case .blue: return .systemBlue
+            case .yellow: return .systemYellow
+            case .red: return .systemRed
+            case .orange: return .systemOrange
             }
-            
-            #if os(macOS)
-           public var value: NSColor {
-                switch self {
-                case .none: return .clear
-                case .grey: return .systemGray
-                case .green: return .systemGreen
-                case .purple: return .systemPurple
-                case .blue: return .systemBlue
-                case .yellow: return .systemYellow
-                case .red: return .systemRed
-                case .orange: return .systemOrange
-                }
-            }
-            #else
-            public var value: UIColor {
-                 switch self {
-                 case .none: return .clear
-                 case .grey: return .systemGray
-                 case .green: return .systemGreen
-                 case .purple: return .systemPurple
-                 case .blue: return .systemBlue
-                 case .yellow: return .systemYellow
-                 case .red: return .systemRed
-                 case .orange: return .systemOrange
-                 }
-             }
-            #endif
-            
         }
-        public let name: String
-        public let color: Color
+        #else
+        /// The color of the finder tag.
+        public var color: UIColor {
+            switch self {
+            case .none: return .clear
+            case .gray: return .systemGray
+            case .green: return .systemGreen
+            case .purple: return .systemPurple
+            case .blue: return .systemBlue
+            case .yellow: return .systemYellow
+            case .red: return .systemRed
+            case .orange: return .systemOrange
+            }
+        }
+        #endif
     }
 }
 
 #if os(macOS)
 import AppKit
-extension NSWorkspace {
-    public typealias FinderTag = MetadataItem.FinderTag
-    public var finderTags: [FinderTag] {
-        return fileLabels.enumerated().compactMap({FinderTag($0.element, index: $0.offset)})
-    }
-}
 
-extension MetadataItem.FinderTag {
-    init?(_ name: String, index: Int) {
-        guard let color = Color(rawValue: index) else { return nil }
-        self.name = name
-        self.color = color
-    }
-    
-    init?(_ index: Int) {
-        let finderTags = NSWorkspace.shared.finderTags
-        guard index < finderTags.count else { return nil }
-        self = finderTags[index]
+extension NSWorkspace {
+    /// The available finder tags.
+    public var finderTags: [MetadataItem.FinderTag] {
+        return fileLabels.compactMap({MetadataItem.FinderTag(rawValue: $0)})
     }
 }
 #endif

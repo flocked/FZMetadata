@@ -7,6 +7,7 @@
 
 import Foundation
 import FZSwiftUtils
+import AppKit
 
 #if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
@@ -22,8 +23,9 @@ extension URL {
 
 /**
  The metadata associated with a file.
-
- Some of the metadata can also be changed.
+ 
+ You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` or ``init(url:)``. Some of the metadata can also be changed.
+ 
  ```swift
  if let metadata = MetadataItem(url: fileURL) {
     metadata.creationDate // The creation date of the file
@@ -323,15 +325,27 @@ open class MetadataItem {
     var finderPrimaryTagColorIndex: Int? {
         get { value(for: \.finderPrimaryTagColorIndex) } }
     
+    #if os(macOS)
     /// First finder tag color of the item.
-    open var finderPrimaryTagColor: FinderTag.Color? {
+    open var finderPrimaryTagColor: NSColor? {
         get {
             if let rawValue: Int = finderPrimaryTagColorIndex {
-            return FinderTag.Color(rawValue: rawValue)
+                return FinderTag.allCases[safe: rawValue]?.color
         }
             return nil
         }
     }
+    #else
+    /// First finder tag color of the item.
+    open var finderPrimaryTagColor: UIColor? {
+        get {
+            if let rawValue: Int = finderPrimaryTagColorIndex {
+                return FinderTag.allCases[safe: rawValue]?.color
+        }
+            return nil
+        }
+    }
+    #endif
     
     /// Indicates whether the file is invisible.
     open var hasCustomIcon: Bool? {
@@ -969,7 +983,7 @@ open class MetadataItem {
         get { value(for: \.queryContentRelevance) } }
 }
 
-public extension MetadataItem {
+extension MetadataItem {
     func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
         if keyPath == \.pixelSize, let value = value as? CGSize {
             setExplicity(\.pixelWidth, to: Double(value.width))
@@ -997,7 +1011,7 @@ public extension MetadataItem {
         }
     }
     
-     func availableExtendedAttributes() throws -> [String] {
+    func availableExtendedAttributes() throws -> [String] {
         guard let _url = url ?? url  else { return [] }
        return try _url.extendedAttributes.listExtendedAttributes()
     }

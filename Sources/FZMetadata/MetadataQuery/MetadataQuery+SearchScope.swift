@@ -36,6 +36,7 @@ extension MetadataQuery {
         /// Search for documents outside the app’s container. This search can locate iCloud documents that the user previously opened using a document picker view controller. This lets your app access the documents again without requiring direct user interaction. The result’s metadata items return a security-scoped URL for their url property.
         case accessibleUbiquitousExternalDocuments
         
+        /// The corresponding value of the raw type.
         public var rawValue: String {
             switch self {
             case .home:  return NSMetadataQueryUserHomeScope
@@ -63,6 +64,7 @@ public extension MetadataQuery {
         /// Search for documents outside the app’s container. This search can locate iCloud documents that the user previously opened using a document picker view controller. This lets your app access the documents again without requiring direct user interaction. The result’s metadata items return a security-scoped URL for their url property.
         case accessibleUbiquitousExternalDocuments
         
+        /// The corresponding value of the raw type.
         public var rawValue: String {
             switch self {
             case .ubiquitousDocuments: return NSMetadataQueryUbiquitousDocumentsScope

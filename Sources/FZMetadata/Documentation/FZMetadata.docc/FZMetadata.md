@@ -1,8 +1,10 @@
-# MetadataItem & MetadataQuery
+# ``FZMetadata``
 
 File Metadata and File Query similar to Spotlight.
 
-**For a full documentation take a look at the included documentation accessible via Xcode's documentation browser.**
+## Overview
+
+`FZMetadata` lets you obtain and change the metadata of files and query file metadata similar to Spotlight.
 
 ## MetadataItem
 An abstraction of NSMetadataItem for easy access of a file's attributes.
@@ -70,3 +72,17 @@ query.resultsHandler = { files, _ in
 }
 query.start()
 ```
+
+
+## Topics
+
+### File Metadata
+
+- ``MetadataItem``
+
+### File Query
+
+- ``MetadataQuery``
+- <doc:MetadataQuery+Predicate+Conformance>
+
+### File Query Operators

@@ -50,7 +50,7 @@ import Foundation
  
  Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger or `NSMetadataItem`.
  */
-open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
+open class MetadataQuery: NSObject {
     /// The state of the query.
     public enum State: Int {
         /// The query is in it's initial phase of gathering matching items.
@@ -74,6 +74,7 @@ open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     /// The handler that gets called when the state changes.
     open var stateHandler: ((_ state: State)->())? = nil
 
+    let delegate = DelegateProxy()
     var isRunning: Bool { return query.isStarted }
     var isGathering: Bool { return query.isGathering }
     var isStopped: Bool { return query.isStopped }
@@ -127,7 +128,7 @@ open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      Predicates can be defined by comparing ``MetadataItem`` properties to values using operators and functions. For example:
      
      ```swift
-     // fileName begins with "vid",fileSize is larger or equal 1gb and creationDate is before otherDate.
+     // fileName begins with "vid", fileSize is larger or equal 1gb and creationDate is before otherDate.
      query.predicate = {
         $0.fileName.begins(with: "vid") &&
         $0.fileSize.gigabytes >= 1 &&
@@ -149,10 +150,10 @@ open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      An array of file-system directory URLs.
      
      The query searches for files at these search locations. An empty array indicates that there is no limitation on where the query searches.
+          
+     The query can alternativly search globally or at specific scopes via ``searchScopes``.
      
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
-     
-     The query can alternativly search globally or at specific scopes via ``searchScopes``.
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap({$0 as? URL}) }
@@ -162,7 +163,7 @@ open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     /**
      An array containing the seatch scopes.
      
-     The query searches for files at the search scropes. An empty array indicates that the query searches globally.
+     The query searches for files at the search scropes. The default value is an empty array which indicates that the query searches globally.
      
      The query can alternativly also search at specific file-system directories via ``searchLocations``. In this case it will also return an empty array.
 
@@ -415,16 +416,12 @@ open class MetadataQuery: NSObject, NSMetadataQueryDelegate {
     func removeObserver() {
         NotificationCenter.default.removeObserver(self)
     }
-    
-    open func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
-        return MetadataItem(item: result)
-    }
         
     public override init() {
         super.init()
         reset()
         addObserver()
-        query.delegate = self
+        query.delegate = delegate
     }
 }
 
