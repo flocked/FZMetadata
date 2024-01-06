@@ -4,7 +4,7 @@ File Metadata and File Query similar to Spotlight.
 
 ## Overview
 
-`FZMetadata` lets you obtain and change the metadata of files and query file metadata similar to Spotlight.
+`FZMetadata` lets you access and change the metadata of files and query file metadata similar to Spotlight.
 
 ## MetadataItem
 
