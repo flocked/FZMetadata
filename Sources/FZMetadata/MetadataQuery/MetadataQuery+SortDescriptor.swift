@@ -50,7 +50,7 @@ extension MetadataQuery {
 // MARK: Operator
 
 /**
- An  ascending sort descriptor for the specified metadata attribute.
+ Returns an  ascending metadata query sort descriptor for the specified metadata attribute.
  
  - Parameter attribute: The comparable metadata attribute.
  */
@@ -59,7 +59,7 @@ public prefix func >> (attribute: MetadataItem.Attribute) -> MetadataQuery.SortD
 }
 
 /**
- A  descending sort descriptor for the specified metadata attribute.
+ Returns a  descending metadata query sort descriptor for the specified metadata attribute.
  
  - Parameter attribute: The comparable metadata attribute.
  */

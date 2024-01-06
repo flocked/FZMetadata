@@ -8,6 +8,7 @@
 import Foundation
 
 extension MetadataItem {
+    /// The attribute of metadata item.
     public enum Attribute: String, Hashable {
         // MARK: - Common
         case url = "kMDItemURL"
@@ -204,9 +205,7 @@ extension MetadataItem {
         case receivedTypes = "kMDItemUserSharedReceivedTransport"
         case isLikelyJunk = "kMDItemIsLikelyJunk"
         
-        /// The relevance of the item in a metadata query.
         case queryRelevance = "kMDQueryResultContentRelevance"
-
         
         static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap({Self(rawValue: $0)})
@@ -231,10 +230,6 @@ extension MetadataItem {
                 }
             }
             return [self.rawValue]
-        }
-        
-        public static func < (lhs: Self, rhs: Self) -> Bool {
-            lhs.rawValue < rhs.rawValue
         }
     }
 }

@@ -14,7 +14,7 @@ import UIKit
 
 extension MetadataItem {
     /// A finder tag.
-    enum FinderTag: String, CaseIterable, QueryRawRepresentable {
+    enum FinderTagColor: String, CaseIterable, QueryRawRepresentable {
         /// A finder tag with no color.
         case none = "None"
         /// Gray finder tag.
@@ -67,8 +67,8 @@ extension MetadataItem {
 #if os(macOS)
 extension NSWorkspace {
     /// The available finder tags.
-    var finderTags: [MetadataItem.FinderTag] {
-        return fileLabels.compactMap({MetadataItem.FinderTag(rawValue: $0)})
+    var finderTagColors: [MetadataItem.FinderTagColor] {
+        return fileLabels.compactMap({MetadataItem.FinderTagColor(rawValue: $0)})
     }
 }
 #endif

@@ -11,9 +11,10 @@
 - ``MetadataItem/init(url:)``
 - ``MetadataItem/init(item:)``
 
-### Getting Metadata Attributes
+### Accessing Metadata Attributes
 
 - ``MetadataItem/availableAttributes``
+- ``MetadataItem/Attribute``
 
 ### Common Metadata Attributes
 
@@ -59,7 +60,7 @@
 - ``MetadataItem/whereFroms``
 - ``MetadataItem/finderComment``
 - ``MetadataItem/finderTags``
-- ``MetadataItem/finderPrimaryTagColor``
+- ``MetadataItem/primaryFinderTagColor``
 - ``MetadataItem/hasCustomIcon``
 - ``MetadataItem/usageCount``
 - ``MetadataItem/bundleIdentifier``

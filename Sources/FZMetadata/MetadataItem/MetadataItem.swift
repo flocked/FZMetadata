@@ -256,7 +256,7 @@ open class MetadataItem {
     open var description: String? {
         get { value(for: \.description) } }
     
-    // A description of the kind of item this file represents.
+    /// A description of the kind of item this file represents.
     open var kind: [String]? {
         get { value(for: \.kind) } }
     
@@ -326,21 +326,21 @@ open class MetadataItem {
         get { value(for: \.finderPrimaryTagColorIndex) } }
     
     #if os(macOS)
-    /// First finder tag color of the item.
-    open var finderPrimaryTagColor: NSColor? {
+    /// First finder tag color of the file.
+    open var primaryFinderTagColor: NSColor? {
         get {
-            if let rawValue: Int = finderPrimaryTagColorIndex {
-                return FinderTag.allCases[safe: rawValue]?.color
+            if let index = finderPrimaryTagColorIndex {
+                return FinderTagColor.allCases[safe: index]?.color
         }
             return nil
         }
     }
     #else
-    /// First finder tag color of the item.
-    open var finderPrimaryTagColor: UIColor? {
+    /// First finder tag color of the file.
+    open var primaryFinderTagColor: UIColor? {
         get {
-            if let rawValue: Int = finderPrimaryTagColorIndex {
-                return FinderTag.allCases[safe: rawValue]?.color
+            if let index = finderPrimaryTagColorIndex {
+                return FinderTag.allCases[safe: index]?.color
         }
             return nil
         }
@@ -504,7 +504,7 @@ open class MetadataItem {
         get { value(for: \.country) }
         set { setExplicity(\.country, to: newValue) } }
         
-    /// City of the 
+    /// The city.
     open var city: String? {
         get { value(for: \.city) }
         set { setExplicity(\.city, to: newValue) } }
@@ -513,7 +513,8 @@ open class MetadataItem {
     open var stateOrProvince: String? {
         get { value(for: \.stateOrProvince) }
         set { setExplicity(\.stateOrProvince, to: newValue) } }
-     
+    
+    /// The area information of the file.
     open var areaInformation: String? {
         get { value(for: \.areaInformation) } }
     
@@ -545,36 +546,47 @@ open class MetadataItem {
     open var gpsTrack: Double? {
         get { value(for: \.gpsTrack) } }
     
+    /// The gps status of the item.
     open var gpsStatus: String? {
         get { value(for: \.gpsStatus) } }
     
+    /// The gps measure mode of the item.
     open var gpsMeasureMode: String? {
         get { value(for: \.gpsMeasureMode) } }
     
+    /// The gps dop of the item.
     open var gpsDop: Double? {
         get { value(for: \.gpsDop) } }
     
+    /// The gps map datum of the item.
     open var gpsMapDatum: String? {
         get { value(for: \.gpsMapDatum) } }
     
+    /// The gps destination latitude of the item.
     open var gpsDestLatitude: Double? {
         get { value(for: \.gpsDestLatitude) } }
     
+    /// The gps destination longitude of the item.
     open var gpsDestLongitude: Double? {
         get { value(for: \.gpsDestLongitude) } }
     
+    /// The gps destination bearing of the item.
     open var gpsDestBearing: Double? {
         get { value(for: \.gpsDestBearing) } }
     
+    /// The gps destination distance of the item.
     open var gpsDestDistance: Double? {
         get { value(for: \.gpsDestDistance) } }
     
+    /// The gps processing method of the item.
     open var gpsProcessingMethod: String? {
         get { value(for: \.gpsProcessingMethod) } }
     
+    /// The gps date stamp of the item.
     open var gpsDateStamp: Date? {
         get { value(for: \.gpsDateStamp) } }
     
+    /// The gps differental of the item.
     open var gpsDifferental: Double? {
         get { value(for: \.gpsDifferental) } }
     
@@ -926,11 +938,11 @@ open class MetadataItem {
     open var authorEmailAddresses: [String]? {
         get { value(for: \.authorEmailAddresses) } }
     
-    // Addresses for authors of this 
+    /// Addresses for authors of this item.
     open var authorAddresses: [String]? {
         get { value(for: \.authorAddresses) } }
     
-    /// Recipients of this 
+    /// Recipients of this item.
     open var recipients: [String]? {
         get { value(for: \.recipients) } }
     
@@ -970,14 +982,14 @@ open class MetadataItem {
     open var receivedTypes : [String]? {
         get { value(for: \.receivedTypes) } }
     
-    // Whether the file is likely to be considered a junk file.
+    /// Whether the file is likely to be considered a junk file.
     open var isLikelyJunk: Bool? {
         get { value(for: \.isLikelyJunk) } }
     
     /**
      The value indicates the relevance of the item's content if it's part of a metadata query result.
      
-     The value is a floating point value between 0.0 and 1.0
+     The value is a floating point value between `0.0` and `1.0`.
      */
     open var queryContentRelevance: Double? {
         get { value(for: \.queryContentRelevance) } }

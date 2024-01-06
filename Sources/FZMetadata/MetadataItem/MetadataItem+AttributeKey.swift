@@ -58,7 +58,7 @@ extension MetadataItem {
             \.finderComment : "kMDItemFinderComment",
             \.finderTags : "kMDItemUserTags",
             \.finderPrimaryTagColorIndex : "kMDItemFSLabel",
-            \.finderPrimaryTagColor : "kMDItemFSLabel",
+            \.primaryFinderTagColor : "kMDItemFSLabel",
             \.hasCustomIcon : "kMDItemFSHasCustomIcon",
             \.usageCount : "kMDItemUseCount",
             \.bundleIdentifier : "kMDItemCFBundleIdentifier",
