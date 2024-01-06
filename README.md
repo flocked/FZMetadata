@@ -29,6 +29,8 @@ A file query that provides:
 
 The results handler gets called whenever new files meet the specified predicate at the search locations.
 
+The predicate is constructed by comparing `MetadataItem` properties to values using operators and functions.
+
 ```swift
 let query = MetadataQuery()
 query.searchLocations = [.downloadsDirectory, .documentsDirectory]

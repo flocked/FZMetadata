@@ -125,7 +125,7 @@ open class MetadataQuery: NSObject {
     /**
      The predicate used to filter query results.
                
-     Predicates can be defined by comparing ``MetadataItem`` properties to values using operators and functions. For example:
+     The predicate is constructed by comparing ``MetadataItem`` properties to values using operators and functions. For example:
      
      ```swift
      // fileName begins with "vid", fileSize is larger or equal 1gb and creationDate is before otherDate.
@@ -138,7 +138,7 @@ open class MetadataQuery: NSObject {
      
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
 
-     **For more details about how to construct a predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
+     **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
     open var predicate: ((Predicate<MetadataItem>)->(Predicate<Bool>))? {
         didSet {

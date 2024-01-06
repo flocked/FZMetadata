@@ -44,6 +44,8 @@ query.resultsHandler = { files, _ in
 query.start()
 ```
 
+The predicate is constructed by comparing the items
+
 ### Query of file attributes
 
 MetadataQuery provides blazing fast query of attributes for large batches of files. Fetching attributes for thousands of files often takes less than a second.
