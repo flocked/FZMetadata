@@ -116,3 +116,7 @@ Types that can be used for constructing a predicate.
 - ``FZMetadata/QueryFileType``
 - ``FZMetadata/QueryString``
 - ``FZMetadata/QueryUTType``
+- ``UniformTypeIdentifiers/UTType``
+- ``Swift/Optional``
+- ``FZSwiftUtils/DataSize``
+- ``FZSwiftUtils/TimeDuration``

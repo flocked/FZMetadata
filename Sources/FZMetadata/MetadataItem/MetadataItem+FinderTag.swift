@@ -6,6 +6,11 @@
 //
 
 import Foundation
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 extension MetadataItem {
     /// A finder tag.
@@ -58,9 +63,8 @@ extension MetadataItem {
     }
 }
 
+/*
 #if os(macOS)
-import AppKit
-
 extension NSWorkspace {
     /// The available finder tags.
     var finderTags: [MetadataItem.FinderTag] {
@@ -68,3 +72,4 @@ extension NSWorkspace {
     }
 }
 #endif
+*/
