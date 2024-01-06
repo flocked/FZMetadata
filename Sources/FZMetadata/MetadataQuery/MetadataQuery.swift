@@ -314,7 +314,7 @@ public class MetadataQuery: NSObject, NSMetadataQueryDelegate {
      These groups are based on the ``groupingAttributes``.
      */
     public var groupedResults: [ResultGroup] {
-        return query.groupedResults.compactMap({ResultGroup(nsResultGroup: $0)})
+        return query.groupedResults.compactMap({ResultGroup($0)})
     }
     
     /**

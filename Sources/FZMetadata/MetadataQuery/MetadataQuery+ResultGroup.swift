@@ -19,7 +19,7 @@ extension MetadataQuery {
         /// An array containing the group’s subgroups.
         public var subgroups: [ResultGroup]?
         
-        init?(nsResultGroup: NSMetadataQueryResultGroup) {
+        init?(_ nsResultGroup: NSMetadataQueryResultGroup) {
             if let attribute = MetadataItem.Attribute(rawValue: nsResultGroup.attribute ) {
                 self.attribute = attribute
                 var items = [MetadataItem]()
@@ -29,7 +29,7 @@ extension MetadataQuery {
                     }
                 }
                 self.items = items
-                subgroups =  nsResultGroup.subgroups?.compactMap({Self(nsResultGroup: $0)})
+                subgroups =  nsResultGroup.subgroups?.compactMap({Self($0)})
             } else {
                 return nil
             }
