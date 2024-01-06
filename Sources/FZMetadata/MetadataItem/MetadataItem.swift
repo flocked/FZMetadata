@@ -15,7 +15,7 @@ import UniformTypeIdentifiers
 
 #if os(macOS)
 extension URL {
-    /// Metadata for the url. Some of the metadata can also be changed.
+    /// Metadata for the file at url.
     public var metadata: MetadataItem? {
         return MetadataItem(url: self)  }
 }
@@ -24,7 +24,9 @@ extension URL {
 /**
  The metadata associated with a file.
  
- You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` or ``init(url:)``. Some of the metadata can also be changed.
+ You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` or ``init(url:)``. 
+ 
+ Some of the metadata can also be changed.
  
  ```swift
  if let metadata = MetadataItem(url: fileURL) {
