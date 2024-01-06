@@ -2,7 +2,8 @@
 
 File Metadata and File Query similar to Spotlight.
 
-**For a full documentation take a look at the included documentation accessible via Xcode's documentation browser.**
+**For a full documentation take a look at the** [Online Documentation](https://swiftpackageindex.com/flocked/FZMetadata/documentation/).
+
 
 ## MetadataItem
 An abstraction of NSMetadataItem for easy access of a file's attributes.
