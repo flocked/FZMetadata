@@ -10,9 +10,9 @@ File Metadata and File Query similar to Spotlight.
 `MetadataItem` lets you access the metadata of a file.
 
 ```swift
-let videoURL = URL(filePathWithString: pathToFile)
-if let metadata = videoURL.metadata {
-    let movieDuration = metadata.durationSeconds
+let videoFile = URL(filePathWithString: pathToFile)
+if let metadata = videoFile.metadata {
+    let videoDuration = metadata.duration
     let lastUsedDate = metadata.lastUsedDate
     let videoResolution = metadata.pixelSize
 }
