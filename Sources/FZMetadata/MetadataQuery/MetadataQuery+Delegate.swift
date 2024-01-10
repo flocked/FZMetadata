@@ -9,8 +9,8 @@ import Foundation
 
 extension MetadataQuery {
     class DelegateProxy: NSObject, NSMetadataQueryDelegate {
-        func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
-            return MetadataItem(item: result)
+        func metadataQuery(_: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
+            MetadataItem(item: result)
         }
     }
 }

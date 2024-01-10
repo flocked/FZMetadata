@@ -9,15 +9,16 @@ let package = Package(
     products: [
         .library(
             name: "FZMetadata",
-            targets: ["FZMetadata"]),
+            targets: ["FZMetadata"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/flocked/FZSwiftUtils.git", branch: "main"),
     ],
     targets: [
-        
         .target(
             name: "FZMetadata",
-            dependencies: ["FZSwiftUtils"]),
+            dependencies: ["FZSwiftUtils"]
+        ),
     ]
 )

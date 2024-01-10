@@ -7,24 +7,25 @@
 
 import Foundation
 
-extension MetadataItem {
+public extension MetadataItem {
     /// The attribute of metadata item.
-    public enum Attribute: String, Hashable {
+    enum Attribute: String, Hashable {
         // MARK: - Common
+
         case url = "kMDItemURL"
         case path = "kMDItemPath"
         case fileName = "kMDItemFSName"
         case displayName = "kMDItemDisplayName"
         case alternateNames = "kMDItemAlternateNames"
         case fileExtension = "_kMDItemFSName"
-     //   case fileSizeBytes = "kMDItemFSSize"
+        //   case fileSizeBytes = "kMDItemFSSize"
         case fileSize = "kMDItemFSSize"
         case fileIsInvisible = "kMDItemFSInvisible"
         case fileExtensionIsHidden = "kMDItemFSIsExtensionHidden"
         case fileType = "_kMDItemContentTypeTree"
         case contentType = "kMDItemContentType"
         case contentTypeTree = "kMDItemContentTypeTree"
-       // case contentUTType = "_kMDItemContentType"
+        // case contentUTType = "_kMDItemContentType"
         case creationDate = "kMDItemFSCreationDate"
         case lastUsedDate = "kMDItemLastUsedDate"
         case lastUsageDates = "kMDItemUsedDates"
@@ -62,8 +63,9 @@ extension MetadataItem {
         case isApplicationManaged = "kMDItemIsApplicationManaged"
         case appstoreCategory = "kMDItemAppStoreCategory"
         case appstoreCategoryType = "kMDItemAppStoreCategoryType"
-        
+
         // MARK: - Document
+
         case textContent = "kMDItemTextContent"
         case subject = "kMDItemSubject"
         case theme = "kMDItemTheme"
@@ -89,8 +91,9 @@ extension MetadataItem {
         case phoneNumbers = "kMDItemPhoneNumbers"
         case contributors = "kMDItemContributors"
         case securityMethod = "kMDItemSecurityMethod"
-        
+
         // MARK: - Places
+
         case country = "kMDItemCountry"
         case city = "kMDItemCity"
         case stateOrProvince = "kMDItemStateOrProvince"
@@ -113,8 +116,9 @@ extension MetadataItem {
         case gpsProcessingMethod = "kMDItemGPSProcessingMethod"
         case gpsDateStamp = "kMDItemGPSDateStamp"
         case gpsDifferental = "kMDItemGPSDifferental"
-        
+
         // MARK: - Audio
+
         case audioSampleRate = "kMDItemAudioSampleRate"
         case audioChannelCount = "kMDItemAudioChannelCount"
         case tempo = "kMDItemTempo"
@@ -134,9 +138,10 @@ extension MetadataItem {
         case appleLoopDescriptors = "kMDItemAppleLoopDescriptors"
         case musicalInstrumentCategory = "kMDItemMusicalInstrumentCategory"
         case musicalInstrumentName = "kMDItemMusicalInstrumentName"
-        
+
         // MARK: - Media
-    //    case durationSeconds = "kMDItemDurationSeconds"
+
+        //    case durationSeconds = "kMDItemDurationSeconds"
         case duration = "kMDItemDurationSeconds"
         case mediaTypes = "kMDItemMediaTypes"
         case codecs = "kMDItemCodecs"
@@ -152,8 +157,9 @@ extension MetadataItem {
         case genre = "kMDItemGenre"
         case performers = "kMDItemPerformers"
         case participants = "kMDItemParticipants"
-        
+
         // MARK: - Image
+
         case pixelHeight = "kMDItemPixelHeight"
         case pixelWidth = "kMDItemPixelWidth"
         case pixelSize = "_kMDItemPixelSize"
@@ -189,8 +195,9 @@ extension MetadataItem {
         case isScreenCapture = "kMDItemIsScreenCapture"
         case screenCaptureRect = "kMDItemScreenCaptureGlobalRect"
         case screenCaptureType = "kMDItemScreenCaptureType"
-        
+
         // MARK: - Messages / Mail
+
         case authorEmailAddresses = "kMDItemAuthorEmailAddresses"
         case authorAddresses = "kMDItemAuthorAddresses"
         case recipients = "kMDItemRecipients"
@@ -204,32 +211,32 @@ extension MetadataItem {
         case receivedSenderHandles = "kMDItemUserSharedReceivedSenderHandle"
         case receivedTypes = "kMDItemUserSharedReceivedTransport"
         case isLikelyJunk = "kMDItemIsLikelyJunk"
-        
+
         case queryRelevance = "kMDQueryResultContentRelevance"
-        
+
         static func values(for mdKeys: [String]) -> [Self] {
-            var attriutes = mdKeys.compactMap({Self(rawValue: $0)})
-            if (attriutes.contains(all: [.pixelWidth, .pixelHeight])) {
+            var attriutes = mdKeys.compactMap { Self(rawValue: $0) }
+            if attriutes.contains(all: [.pixelWidth, .pixelHeight]) {
                 attriutes.replace(.pixelWidth, with: .pixelSize)
                 attriutes.remove(.pixelHeight)
             }
-            if (attriutes.contains(all: [.dpiResolutionWidth, .dpiResolutionHeight])) {
+            if attriutes.contains(all: [.dpiResolutionWidth, .dpiResolutionHeight]) {
                 attriutes.replace(.dpiResolutionWidth, with: .dpiResolution)
                 attriutes.remove(.dpiResolutionHeight)
             }
             return attriutes
         }
-        
+
         var mdKeys: [String] {
-            if (self.rawValue.contains("_")) {
-                let value = self.rawValue.replacingOccurrences(of: "_", with: "")
-                if (self.rawValue.contains("Size")) {
+            if rawValue.contains("_") {
+                let value = rawValue.replacingOccurrences(of: "_", with: "")
+                if rawValue.contains("Size") {
                     return [value.replacingOccurrences(of: "Size", with: "Width"), value.replacingOccurrences(of: "Size", with: "Height")]
                 } else {
                     return [value]
                 }
             }
-            return [self.rawValue]
+            return [rawValue]
         }
     }
 }
