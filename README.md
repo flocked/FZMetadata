@@ -2,8 +2,9 @@
 
 File Metadata and File Query similar to Spotlight.
 
-**For a full documentation take a look at the** [Online Documentation](https://swiftpackageindex.com/flocked/FZMetadata/documentation/).
+**Take a look at the included sample app.**
 
+**For a full documentation take a look at the** [Online Documentation](https://swiftpackageindex.com/flocked/FZMetadata/documentation/).
 
 ## MetadataItem
 
