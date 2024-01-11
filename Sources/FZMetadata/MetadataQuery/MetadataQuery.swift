@@ -13,12 +13,18 @@ import Foundation
  With `MetadataQuery`, you can perform complex queries on the file system using various search parameters, such as search loction and metadata attributes like file name, type, creation date, modification date, and more.
 
  ```swift
+ let query = MetadataQuery()
+
+ // Searches for files at the downloads and documents directory
  query.searchLocations = [.downloadsDirectory, .documentsDirectory]
+ 
+ // Image & videos files, added this week, large than 10mb
  query.predicate = {
      $0.fileTypes(.image, .video) &&
      $0.addedDate.isThisWeek &&
      $0.fileSize.megabytes >= 10
- } // Image & videos files, added this week, large than 10mb
+ }
+ 
  query.resultsHandler = { files, _ in
  // found files
  }
@@ -27,8 +33,12 @@ import Foundation
 
  It can also fetch metadata attributes for large batches of file URLs.
  ```swift
- query.urls = videoFileURLs  // URLs for querying of attributes
- query.attributes = [.pixelSize, .duration, .fileSize, .creationDate] // Attributes to query
+ // URLs for querying of attributes
+ query.urls = videoFileURLs
+ 
+ // Attributes to query
+ query.attributes = [.pixelSize, .duration, .fileSize, .creationDate]
+ 
  query.resultsHandler = { files in
      for file in files {
      // file.pixelSize, file.duration, file.fileSize, file.creationDate
@@ -41,14 +51,19 @@ import Foundation
 
  ```swift
  query.predicate = { $0.isScreenCapture } // Screenshots files
+ 
+ // Enables monitoring. Whenever a new screenshot gets captures the results handler gets called
  query.enableMonitoring()
+ 
  query.resultsHandler = { files, _ in
- // the results handler gets called whenever new screenshots are taken.
+    for file in files {
+    // screenshot files
+    }
  }
  query.start()
  ```
 
- Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger or `NSMetadataItem`.
+ Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger` or `NSMetadataItem`.
  */
 open class MetadataQuery: NSObject {
     /// The state of the query.

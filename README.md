@@ -11,10 +11,11 @@ File Metadata and File Query similar to Spotlight.
 
 ```swift
 let videoFile = URL(filePathWithString: pathToFile)
+
 if let metadata = videoFile.metadata {
-    let videoDuration = metadata.duration
-    let lastUsedDate = metadata.lastUsedDate
-    let videoResolution = metadata.pixelSize
+    metadata.duration // video duration
+    metadata.lastUsedDate // last usage date
+    metadata.pixelSize // video pixel size
 }
 ```
 
@@ -33,12 +34,17 @@ The predicate is constructed by comparing `MetadataItem` properties to values us
 
 ```swift
 let query = MetadataQuery()
+
+// Searches for files at the downloads and documents directory
 query.searchLocations = [.downloadsDirectory, .documentsDirectory]
+
+// Image & videos files, added this week, large than 10mb
 query.predicate = { 
     $0.fileTypes(.image, .video) && 
     $0.addedDate.isThisWeek && 
     $0.fileSize.megabytes >= 10 
-}  // Image & videos files, added this week, large than 10mb
+}
+
 query.resultsHandler = { files, _ in
 // found files
 }
@@ -50,8 +56,12 @@ query.start()
 MetadataQuery provides blazing fast query of attributes for large batches of files. Fetching attributes for thousands of files often takes less than a second.
 
 ```swift
-query.urls = videoFileURLs  // URLs for querying of attributes
-query.attributes = [.pixelSize, .duration, .fileSize, .creationDate] // Attributes to query
+// URLs for querying of attributes
+query.urls = videoFileURLs
+
+// Attributes to query
+query.attributes = [.pixelSize, .duration, .fileSize, .creationDate]
+
 query.resultsHandler = { files, _ in  
     for file in files {
     // file.pixelSize, file.duration, file.fileSize, file.creationDate
@@ -67,13 +77,16 @@ MetadataQuery can monitor for changes to search results & queried attributes. It
 To enable monitoring use `enableMonitoring()`.
 
 ```swift
-query.predicate = { $0.isScreenCapture }  // Files that are screenshots.
-query.searchScopes = [.local] // Searches everywhere on the local file system.
+// Files that are screenshots
+query.predicate = { $0.isScreenCapture }
 
-// Enables monitoring. Whenever a new screenshot gets captures the completion handler gets called.
+// Searches everywhere on the local file system
+query.searchScopes = [.local]
+
+// Enables monitoring. Whenever a new screenshot gets captures the results handler gets called
 query.enableMonitoring()
 
-query.resultsHandler = { files, _ in  
+query.resultsHandler = { files, _ in
     for file in files {
     // screenshot files
     }

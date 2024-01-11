@@ -38,8 +38,8 @@ import FZSwiftUtils
 
  ```swift
  if let metadata = fileURL.metadata {
-    // The creation date of the file
-    metadata.creationDate
+    metadata.creationDate // file creation date
+    metadata.fileSize // file size
  }
  ```
 
@@ -82,7 +82,7 @@ open class MetadataItem {
          - Parameters:
             - url: The URL for the metadata
 
-         - Returns: A metadata item for the file at the url.
+         - Returns: A metadata item for the file at the url, or `nil` if the file isn't available or can't be accessed.
          */
         public init?(url: URL) {
             if let item = NSMetadataItem(url: url) {
