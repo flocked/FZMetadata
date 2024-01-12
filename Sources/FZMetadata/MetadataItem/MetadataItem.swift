@@ -127,7 +127,7 @@ open class MetadataItem {
         return value(for: \.url)
     }
 
-    /// The full path to the file.
+    /// The full path of the file.
     open var path: String? { value(for: \.path) }
 
     /// The name of the file including the extension.
@@ -141,16 +141,15 @@ open class MetadataItem {
     /// The display name of the file, which may be different then the file system name.
     open var displayName: String? { value(for: \.displayName) }
 
-    /// Alternative names of the file.
+    /// The alternative names of the file.
     open var alternateNames: [String]? { value(for: \.alternateNames) }
 
     /// The extension of the file.
     open var fileExtension: String? { url?.pathExtension }
 
-    /// The size of the file in bytes.
     var fileSizeBytes: Int? { value(for: \.fileSizeBytes) }
 
-    /// The size of the file as `DataSize`.
+    /// The size of the file.
     open var fileSize: DataSize? {
         if let bytes = fileSizeBytes {
             return DataSize(bytes)
@@ -164,17 +163,17 @@ open class MetadataItem {
     /// A Boolean value that indicates whether the file extension is hidden.
     open var fileExtensionIsHidden: Bool? { value(for: \.fileExtensionIsHidden) }
 
-    /// The file type.
+    /// The file type. For example: `video`, `document` or `directory`
     open var fileType: FileType? { if let contentTypeTree: [String] = value(for: \.contentTypeTreeIdentifiers) {
         return FileType(contentTypeTree: contentTypeTree)
     }
     return nil
     }
 
-    /// The content type `UTI` identifier of the file.
+    /// The content type identifier (`UTI`) of the file.
     open var contentTypeIdentifier: String? { value(for: \.contentTypeIdentifier) }
 
-    /// The content type tree `UTI` identifiers of the file.
+    /// The content type tree identifiers (`UTI`) of the file.
     open var contentTypeTreeIdentifiers: [String]? { value(for: \.contentTypeTreeIdentifiers) }
 
     /// The content type tree of the file.
@@ -196,19 +195,19 @@ open class MetadataItem {
         set { setExplicity(\.creationDate, to: newValue) }
     }
 
-    /// The date that the file was last used.
+    /// The last date that the file was used.
     open var lastUsedDate: Date? {
         get { value(for: \.lastUsedDate) }
         set { setExplicity(\.lastUsedDate, to: newValue) }
     }
 
-    /// An array of dates the file was last used.
+    /// The dates the file was last used.
     open var lastUsageDates: [Date]? {
         get { value(for: \.lastUsageDates) }
         set { setExplicity(\.lastUsageDates, to: newValue) }
     }
 
-    /// The date that  the attributes of the file was last changed.
+    /// The last date that the attributes of the file were changed.
     open var attributeModificationDate: Date? {
         get { value(for: \.attributeModificationDate) }
         set { setExplicity(\.attributeModificationDate, to: newValue) }
@@ -220,55 +219,55 @@ open class MetadataItem {
         set { setExplicity(\.contentCreationDate, to: newValue) }
     }
 
-    /// The date that the content of the file was last changed.
+    /// The last date that the content of the file was changed.
     open var contentChangeDate: Date? {
         get { value(for: \.contentChangeDate) }
         set { setExplicity(\.contentChangeDate, to: newValue) }
     }
 
-    /// The date that the content of the file was last modified.
+    /// The last date that the content of the file was modified.
     open var contentModificationDate: Date? {
         get { value(for: \.contentModificationDate) }
         set { setExplicity(\.contentModificationDate, to: newValue) }
     }
 
-    /// The date the resource was created, or renamed into or within its parent directory.
+    /// The date the file was created, or renamed into or within its parent directory.
     open var addedDate: Date? {
         get { value(for: \.addedDate) }
         set { setExplicity(\.addedDate, to: newValue) }
     }
 
-    /// The download date of the file.
+    /// The date that the file was downloaded.
     open var downloadedDate: Date? {
         get { value(for: \.downloadedDate) }
         set { setExplicity(\.downloadedDate, to: newValue) }
     }
 
-    /// The purchase date of the file.
+    /// The date that the file was purchased.
     open var purchaseDate: Date? { value(for: \.purchaseDate) }
 
-    /// The date this item is due (e.g. for a calendar event file).
+    /// The date that this item is due (e.g. for a calendar event file).
     open var dueDate: Date? {
         get { value(for: \.dueDate) }
         set { setExplicity(\.dueDate, to: newValue) }
     }
 
-    /// Number of files in a directory.
+    /// The number of files in a directory.
     open var directoryFilesCount: Int? { value(for: \.directoryFilesCount) }
 
-    ///  A description of the content of the resource. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
+    ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
     open var description: String? { value(for: \.description) }
 
-    /// Description of the kind of item the file represents.
+    /// A description of the kind of item the file represents.
     open var kind: [String]? { value(for: \.kind) }
 
     /// Information of this item.
     open var information: String? { value(for: \.information) }
 
-    /// A formal identifier used to reference the resource within a given context.
+    /// The formal identifier used to reference the item within a given context.
     open var identifier: String? { value(for: \.identifier) }
 
-    /// Keywords associated with the file. For example: `Birthday` or `Important`.
+    /// The keywords associated with the file. For example: `Birthday` or `Important`.
     open var keywords: [String]? { value(for: \.keywords) }
 
     /// The title of the file. For example, this could be the title of a document, the name of a song, or the subject of an email message.
@@ -277,28 +276,28 @@ open class MetadataItem {
     /// The title for a collection of media. This is analagous to a record album, or photo album.
     open var album: String? { value(for: \.album) }
 
-    /// Authors, Artists, etc. of the contents of the file.
+    /// The authors, artists, etc. of the contents of the file.
     open var authors: [String]? { value(for: \.authors) }
 
     /// The version of the file.
     open var version: String? { value(for: \.version) }
 
-    /// A comment related to the file. This differs from``finderComment``.
+    /// A comment related to the file. This differs from ``finderComment``.
     open var comment: String? { value(for: \.comment) }
 
-    /// User rating of the file. For example, the stars rating of an iTunes track.
+    /// The user rating of the file. For example, the stars rating of an iTunes track.
     open var starRating: Double? { value(for: \.starRating) }
 
-    /// Describes where the file was obtained from. For example download urls.
+    /// A describes where the file was obtained from. For example download urls.
     open var whereFroms: [String]? {
         get { value(for: \.whereFroms) }
         set { setExplicity(\.whereFroms, to: newValue) }
     }
 
-    /// Finder comments of the file. This differs from the ``comment``.
+    /// The finder comment of the file. This differs from the ``comment``.
     open var finderComment: String? { value(for: \.finderComment) }
 
-    /// Finder tags of the file.
+    /// The finder tags of the file.
     open var finderTags: [String]? {
         get { value(for: \.finderTags)?.compactMap { $0.replacingOccurrences(of: "\n6", with: "") } }
         set {
@@ -314,20 +313,20 @@ open class MetadataItem {
         }
     }
 
-    var finderPrimaryTagColorIndex: Int? { value(for: \.finderPrimaryTagColorIndex) }
+    var finderTagPrimaryColorIndex: Int? { value(for: \.finderTagPrimaryColorIndex) }
 
     #if os(macOS)
-        /// First finder tag color of the file.
-        open var primaryFinderTagColor: NSColor? {
-            if let index = finderPrimaryTagColorIndex {
+        /// The primary (first) finder tag color.
+        open var finderTagPrimaryColor: NSColor? {
+            if let index = finderTagPrimaryColorIndex {
                 return FinderTagColor.allCases[safe: index]?.color
             }
             return nil
         }
     #else
-        /// First finder tag color of the file.
-        open var primaryFinderTagColor: UIColor? {
-            if let index = finderPrimaryTagColorIndex {
+        /// The primary (first) finder tag color.
+        open var finderTagPrimaryColor: UIColor? {
+            if let index = finderTagPrimaryColorIndex {
                 return FinderTag.allCases[safe: index]?.color
             }
             return nil
@@ -337,7 +336,7 @@ open class MetadataItem {
     /// A Boolean value that indicates whether the file has a custom icon.
     open var hasCustomIcon: Bool? { value(for: \.hasCustomIcon) }
 
-    /// The usage count of the file.
+    /// The number of usages of the file.
     open var usageCount: Int? { if let useCount = value(for: \.usageCount) {
         return useCount - 2
     }
@@ -347,19 +346,19 @@ open class MetadataItem {
     /// The bundle identifier of this item. If this item is a bundle, then this is the `CFBundleIdentifier`.
     open var bundleIdentifier: String? { value(for: \.bundleIdentifier) }
 
-    /// Architectures this item requires to execute.
+    /// The architectures this item requires to execute.
     open var executableArchitectures: [String]? { value(for: \.executableArchitectures) }
 
-    /// Platform this item requires to execute.
+    /// The platform this item requires to execute.
     open var executablePlatform: String? { value(for: \.executablePlatform) }
 
     /// A Boolean value that indicates whether the file is owned and managed by an application.
     open var isApplicationManaged: Bool? { value(for: \.isApplicationManaged) }
 
-    /// Application used to convert the original content into it's current form. For example, a PDF file might have an encoding application set to "Distiller".
+    /// The application used to convert the original content into it's current form. For example, a PDF file might have an encoding application set to "Distiller".
     open var encodingApplications: [String]? { value(for: \.encodingApplications) }
 
-    /// Categories application is a member of.
+    /// The categories the application is a member of.
     open var applicationCategories: [String]? { value(for: \.applicationCategories) }
 
     /// The AppStore category of this item if it's an application from the AppStore.
@@ -372,61 +371,61 @@ open class MetadataItem {
 
     // MARK: - Document
 
-    /// Contains a text representation of the content of the document.
+    /// A text representation of the content of the document.
     open var textContent: String? { value(for: \.textContent) }
 
-    /// Subject of the this
+    /// The subject of the this item
     open var subject: String? { value(for: \.subject) }
 
-    /// Theme of the this
+    /// The theme of the this item.
     open var theme: String? { value(for: \.theme) }
 
-    /// Publishable summary of the contents of the
+    /// A publishable summary of the contents of the item.
     open var headline: String? { value(for: \.headline) }
 
-    /// Application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
+    /// the application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
     open var creator: String? { value(for: \.creator) }
 
     /// Other information concerning this item, such as handling instructions.
     open var instructions: String? { value(for: \.instructions) }
 
-    /// Editors of the contents of the file.
+    /// The editors of the contents of the file.
     open var editors: [String]? { value(for: \.editors) }
 
     /// The audience for which the file is intended. The audience may be determined by the creator or the publisher or by a third party.
     open var audiences: [String]? { value(for: \.audiences) }
 
-    /// Extent or scope of the content of the document.
+    /// The extent or scope of the content of the document.
     open var coverage: [String]? { value(for: \.coverage) }
 
     /// The list of projects that the file is part of. For example, if you were working on a movie all of the files could be marked as belonging to the project `My Movie`.
     open var projects: [String]? { value(for: \.projects) }
 
-    /// Number of pages in the document.
+    /// The number of pages in the document.
     open var numberOfPages: Double? { value(for: \.numberOfPages) }
 
-    /// Width of the document page, in points (72 points per inch). For PDF files this indicates the width of the first page only.
+    /// The width of the document page, in points (72 points per inch). For PDF files this indicates the width of the first page only.
     open var pageWidth: Double? { value(for: \.pageWidth) }
 
-    /// Height of the document page, in points (72 points per inch). For PDF files this indicates the height of the first page only.
+    /// The height of the document page, in points (72 points per inch). For PDF files this indicates the height of the first page only.
     open var pageHeight: Double? { value(for: \.pageHeight) }
 
     /// The copyright owner of the file contents.
     open var copyright: String? { value(for: \.copyright) }
 
-    /// An array of font names used in this
+    /// The names of the fonts used in his document.
     open var fonts: [String]? { value(for: \.fonts) }
 
-    /// The family name of the font used in this
+    /// The family name of the font used in this document.
     open var fontFamilyName: String? { value(for: \.fontFamilyName) }
 
     /// A list of contacts that are associated with this document, not including the authors.
     open var contactKeywords: [String]? { value(for: \.contactKeywords) }
 
-    /// Indicates the languages of the intellectual content of the resource.
+    /// The languages of the intellectual content of the resource.
     open var languages: [String]? { value(for: \.languages) }
 
-    /// Provides a link to information about rights held in and over the resource.
+    /// A link to information about rights held in and over the resource.
     open var rights: String? { value(for: \.rights) }
 
     /// The company or organization that created the document.
@@ -435,13 +434,13 @@ open class MetadataItem {
     /// The entity responsible for making this item available. For example, a person, an organization, or a service. Typically, the name of a publisher should be used to indicate the entity.
     open var publishers: [String]? { value(for: \.publishers) }
 
-    /// Email Addresses related to this
+    /// The email Addresses related to this document.
     open var emailAddresses: [String]? { value(for: \.emailAddresses) }
 
-    /// Phone numbers related to this
+    /// The phone numbers related to this document.
     open var phoneNumbers: [String]? { value(for: \.phoneNumbers) }
 
-    /// People or organizations contributing to the content of the document.
+    /// The people or organizations contributing to the content of the document.
     open var contributors: [String]? { value(for: \.contributors) }
 
     /// The security or encryption method used for the document.
@@ -455,13 +454,13 @@ open class MetadataItem {
         set { setExplicity(\.country, to: newValue) }
     }
 
-    /// The city.
+    /// The city.of this document.
     open var city: String? {
         get { value(for: \.city) }
         set { setExplicity(\.city, to: newValue) }
     }
 
-    /// Identifies the province or state of origin according to guidelines established by the provider. For example: `CA`, `Ontario` or `Sussex`.
+    /// The province or state of origin according to guidelines established by the provider. For example: `CA`, `Ontario` or `Sussex`.
     open var stateOrProvince: String? {
         get { value(for: \.stateOrProvince) }
         set { setExplicity(\.stateOrProvince, to: newValue) }
@@ -485,7 +484,7 @@ open class MetadataItem {
     /// The speed of this item, in kilometers per hour.
     open var speed: Double? { value(for: \.speed) }
 
-    /// The timestamp on the  This generally is used to indicate the time at which the event captured by this item took place.
+    /// The timestamp on the item  This generally is used to indicate the time at which the event captured by this item took place.
     open var timestamp: Date? { value(for: \.timestamp) }
 
     /// The direction of travel of this item, in degrees from true north.
@@ -526,16 +525,16 @@ open class MetadataItem {
 
     // MARK: - Audio
 
-    /// Sample rate of the audio data contained in the file. The sample rate representing `audio_frames/second`. For example: `44100.0`, `22254.54`.
+    /// The sample rate of the audio data contained in the file. The sample rate representing `audio_frames/second`. For example: `44100.0`, `22254.54`.
     open var audioSampleRate: Double? { value(for: \.audioSampleRate) }
 
-    /// Number of channels in the audio data contained in the file.
+    /// The number of channels in the audio data contained in the file.
     open var audioChannelCount: Double? { value(for: \.audioChannelCount) }
 
     /// The name of the application that encoded the data of a audio file.
     open var audioEncodingApplication: String? { value(for: \.audioEncodingApplication) }
 
-    /// A float value that specifies the beats per minute of the music contained in the audio file.
+    /// The tempo that specifies the beats per minute of the music contained in the audio file.
     open var tempo: Double? { value(for: \.tempo) }
 
     /// The key of the music contained in the audio file. For example: `C`, `Dm`, `F#, `Bb`.
@@ -565,22 +564,22 @@ open class MetadataItem {
     /// A Boolean value that indicates whether the MIDI sequence contained in the file is setup for use with a General MIDI device.
     open var isGeneralMidiSequence: Bool? { value(for: \.isGeneralMidiSequence) }
 
-    /// Specifies the loop's original key. The key is the root note or tonic for the loop, and does not include the scale type.
+    /// The original key of an Apple loop. The key is the root note or tonic for the loop, and does not include the scale type.
     open var appleLoopsRootKey: String? { value(for: \.appleLoopsRootKey) }
 
-    /// Specifies key filtering information about a loop. Loops are matched against projects that often in a major or minor key.
+    /// The key filtering information of an Apple loop. Loops are matched against projects that often in a major or minor key.
     open var appleLoopsKeyFilterType: String? { value(for: \.appleLoopsKeyFilterType) }
 
-    /// Specifies how a file should be played.
+    /// The looping mode of an Apple loop.
     open var appleLoopsLoopMode: String? { value(for: \.appleLoopsLoopMode) }
 
-    /// Specifies multiple pieces of descriptive information about a loop.
+    /// The escriptive information of an Apple loop.
     open var appleLoopDescriptors: [String]? { value(for: \.appleLoopDescriptors) }
 
-    /// Specifies the category of an instrument.
+    /// The category of the instrument.
     open var musicalInstrumentCategory: String? { value(for: \.musicalInstrumentCategory) }
 
-    /// Specifies the name of instrument relative to the instrument category.
+    /// The name of the instrument relative to the instrument category.
     open var musicalInstrumentName: String? { value(for: \.musicalInstrumentName) }
 
     // MARK: - Media
@@ -592,7 +591,7 @@ open class MetadataItem {
     return nil
     }
 
-    /// The duration, in seconds, of the content of file. Usually for videos and audio.
+    /// The duration, in seconds, of the media. Usually for videos and audio.
     var durationSeconds: Double? { value(for: \.durationSeconds) }
 
     /// The media types (video, sound) present in the content.
@@ -604,37 +603,37 @@ open class MetadataItem {
     /// The total bit rate, audio and video combined, of the media.
     open var totalBitRate: Double? { value(for: \.totalBitRate) }
 
-    /// The video bit rate.
+    /// The video bit rate of the media.
     open var videoBitRate: Double? { value(for: \.videoBitRate) }
 
-    /// The audio bit rate.
+    /// The audio bit rate of the media.
     open var audioBitRate: Double? { value(for: \.audioBitRate) }
 
-    /// A Boolean value that indicates whether the content is prepared for streaming.
+    /// A Boolean value that indicates whether the media is prepared for streaming.
     open var streamable: Bool? { value(for: \.streamable) }
 
-    /// The delivery type. Values are “Fast start” or “RTSP”.
+    /// The delivery type of the media. Either `Fast start` or `RTSP`.
     open var mediaDeliveryType: String? { value(for: \.mediaDeliveryType) }
 
-    /// Original format of the video.
+    /// Original format of the media.
     open var originalFormat: String? { value(for: \.originalFormat) }
 
-    /// Original source of the video.
+    /// Original source of the media.
     open var originalSource: String? { value(for: \.originalSource) }
 
-    /// Genre of the content.
+    /// The genre of the content.
     open var genre: String? { value(for: \.genre) }
 
-    /// Directory of the content.
+    /// The director of the content.
     open var director: String? { value(for: \.director) }
 
-    /// Producer of the content.
+    /// The producer of the content.
     open var producer: String? { value(for: \.producer) }
 
-    /// Performers of the content.
+    /// The performers of the content.
     open var performers: [String]? { value(for: \.performers) }
 
-    /// The list of people who are visible in an image or movie or written about in a document.
+    /// The people that are visible in an image or movie or are written about in a document.
     open var participants: [String]? { value(for: \.participants) }
 
     // MARK: - Image
@@ -656,7 +655,7 @@ open class MetadataItem {
     /// The total number of pixels in the contents. Same as `pixelHeight x pixelWidth`.
     open var pixelCount: Double? { value(for: \.pixelCount) }
 
-    /// The color space model used by the document contents. For example: `RGB`, `CMYK`, `YUV`, or `YCbCr`.
+    /// The color space model used by the contents. For example: `RGB`, `CMYK`, `YUV`, or `YCbCr`.
     open var colorSpace: String? { value(for: \.colorSpace) }
 
     /// The number of bits per sample. For example, the bit depth of an image (8-bit, 16-bit etc...) or the bit depth per audio sample of uncompressed audio data (8, 16, 24, 32, 64, etc..).
@@ -668,19 +667,19 @@ open class MetadataItem {
     /// The actual focal length of the lens, in millimeters.
     open var focalLength: Double? { value(for: \.focalLength) }
 
-    /// The manufacturer of the device used for the file. For example: `Apple`, `Canon`.
+    /// The manufacturer of the device used for the contents. For example: `Apple`, `Canon`.
     open var deviceManufacturer: String? { value(for: \.deviceManufacturer) }
 
-    /// The model of the device used for the file. For example: `iPhone 13`.
+    /// The model of the device used for the contents. For example: `iPhone 13`.
     open var deviceModel: String? { value(for: \.deviceModel) }
 
-    /// The ISO speed used to acquire the document contents.
+    /// The ISO speed used to acquire the contents.
     open var isoSpeed: Double? { value(for: \.isoSpeed) }
 
-    /// The orientation of the document contents.
+    /// The orientation of the contents.
     open var orientation: Orientation? { value(for: \.orientation) }
 
-    /// The orientation of a document.
+    /// The orientation of a contents.
     public enum Orientation: Int, QueryRawRepresentable {
         /// Horizontal orientation.
         case horizontal = 0
@@ -692,10 +691,10 @@ open class MetadataItem {
     /// The names of the layers in the file.
     open var layerNames: [String]? { value(for: \.layerNames) }
 
-    /// White balance setting of the camera when the picture was taken.
+    /// The white balance setting of the camera when the picture was taken.
     open var whiteBalance: WhiteBalance? { value(for: \.whiteBalance) }
 
-    /// White balance setting of a camera.
+    /// The white balance setting of a camera.
     public enum WhiteBalance: Int, QueryRawRepresentable {
         /// Automatic white balance.
         case auto = 0
@@ -710,10 +709,10 @@ open class MetadataItem {
     /// The name of the color profile used by the document contents.
     open var colorProfile: String? { value(for: \.colorProfile) }
 
-    /// Resolution width, in DPI, of this image.
+    /// The resolution width, in DPI, of the contents.
     open var dpiResolutionWidth: Double? { value(for: \.dpiResolutionWidth) }
 
-    /// Resolution height, in DPI, of this image.
+    /// The resolution height, in DPI, of the contents.
     open var dpiResolutionHeight: Double? { value(for: \.dpiResolutionHeight) }
 
     /// The resolution size, in DPI, of the contents.
@@ -724,10 +723,10 @@ open class MetadataItem {
         return nil
     }
 
-    /// The exposure mode used to acquire the document contents.
+    /// The exposure mode used to acquire the contents.
     open var exposureMode: Double? { value(for: \.exposureMode) }
 
-    /// The exposure time, in seconds, used to acquire the document contents.
+    /// The exposure time, in seconds, used to acquire the contents.
     open var exposureTimeSeconds: Double? { value(for: \.exposureTimeSeconds) }
 
     /// The version of the EXIF header used to generate the metadata.
@@ -742,10 +741,10 @@ open class MetadataItem {
     /// The name of the camera lens model.
     open var lensModel: String? { value(for: \.lensModel) }
 
-    /// The direction of this item's image, in degrees from true north.
+    /// The direction of the item's image, in degrees from true north.
     open var imageDirection: Double? { value(for: \.imageDirection) }
 
-    /// A Boolean value that indicates whether this image file has an alpha channel.
+    /// A Boolean value that indicates whether the image has an alpha channel.
     open var hasAlphaChannel: Bool? { value(for: \.hasAlphaChannel) }
 
     /// A Boolean value that indicates whether a red-eye reduction was used to take the picture.
@@ -763,7 +762,7 @@ open class MetadataItem {
     /// The class of the exposure program used by the camera to set exposure when the image is taken. Possible values include: Manual, Normal, and Aperture priority.
     open var exposureProgram: String? { value(for: \.exposureProgram) }
 
-    /// The time of the exposure.
+    /// The time of the exposure of the imge.
     open var exposureTimeString: String? { value(for: \.exposureTimeString) }
 
     /// A Boolean value that indicates whether the file is a screen capture.
@@ -772,15 +771,15 @@ open class MetadataItem {
     /// The screen capture type of the file.
     open var screenCaptureType: ScreenCaptureType? { value(for: \.screenCaptureType) }
 
-    /// The screen capture type.
+    /// The screen capture type of a file.
     public enum ScreenCaptureType: String, QueryRawRepresentable {
-        /// Screen capture of a display.
+        /// A screen capture of a display.
         case display
 
-        /// Screen capture of a window.
+        /// a screen capture of a window.
         case window
 
-        /// Screen capture of a selection.
+        /// A screen capture of a selection.
         case selection
     }
 
@@ -795,40 +794,40 @@ open class MetadataItem {
 
     // MARK: - Messages / Mail
 
-    /// Email addresses for the authors of this item.
+    /// The email addresses for the authors of this item.
     open var authorEmailAddresses: [String]? { value(for: \.authorEmailAddresses) }
 
-    /// Addresses for the authors of this item.
+    /// The addresses for the authors of this item.
     open var authorAddresses: [String]? { value(for: \.authorAddresses) }
 
-    /// Recipients of this item.
+    /// The recipients of this item.
     open var recipients: [String]? { value(for: \.recipients) }
 
-    /// Email addresses for the recipients of this item.
+    /// The rmail addresses for the recipients of this item.
     open var recipientEmailAddresses: [String]? { value(for: \.recipientEmailAddresses) }
 
-    /// Addresses for the recipients of this item.
+    /// The addresses for the recipients of this item.
     open var recipientAddresses: [String]? { value(for: \.recipientAddresses) }
 
-    /// Instant message addresses related to this item.
+    /// The instant message addresses related to this item.
     open var instantMessageAddresses: [String]? { value(for: \.instantMessageAddresses) }
 
-    /// Received dates for this item.
+    /// The received dates for this item.
     open var receivedDates: [Date]? { value(for: \.receivedDates) }
 
-    /// Received recipients for this item.
+    /// The received recipients for this item.
     open var receivedRecipients: [String]? { value(for: \.receivedRecipients) }
 
     /// Received recipient handles for this item.
     open var receivedRecipientHandles: [String]? { value(for: \.receivedRecipientHandles) }
 
-    /// Received sendesr for this item.
+    /// The received sendesr for this item.
     open var receivedSenders: [String]? { value(for: \.receivedSenders) }
 
-    /// Received sender handles for this item.
+    /// The received sender handles for this item.
     open var receivedSenderHandles: [String]? { value(for: \.receivedSenderHandles) }
 
-    /// Received types for this item.
+    /// The received types for this item.
     open var receivedTypes: [String]? { value(for: \.receivedTypes) }
 
     /// A Boolean value that indicates whether the file is likely to be considered a junk file.

@@ -58,8 +58,8 @@ extension MetadataItem {
             \.whereFroms: "kMDItemWhereFroms",
             \.finderComment: "kMDItemFinderComment",
             \.finderTags: "kMDItemUserTags",
-            \.finderPrimaryTagColorIndex: "kMDItemFSLabel",
-            \.primaryFinderTagColor: "kMDItemFSLabel",
+            \.finderTagPrimaryColorIndex: "kMDItemFSLabel",
+            \.finderTagPrimaryColor: "kMDItemFSLabel",
             \.hasCustomIcon: "kMDItemFSHasCustomIcon",
             \.usageCount: "kMDItemUseCount",
             \.bundleIdentifier: "kMDItemCFBundleIdentifier",
@@ -202,6 +202,7 @@ extension MetadataItem {
             \.isScreenCapture: "kMDItemIsScreenCapture",
             \.screenCaptureRect: "kMDItemScreenCaptureGlobalRect",
             \.screenCaptureType: "kMDItemScreenCaptureType",
+             \.whiteBalance: "kMDItemWhiteBalance",
 
             // MARK: - Messages / Mail
 

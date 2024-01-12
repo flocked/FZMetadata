@@ -1,20 +1,10 @@
-# ``MetadataItem``
+# ``MetadataItem/Attribute``
 
 ## Topics
 
-### Accessing Metadata of a file
+### Creating a Attribute
 
-- ``Foundation/URL/metadata``
-
-### Creating a Metadata Item
-
-- ``init(url:)``
-- ``init(item:)``
-
-### Accessing Attributes
-
-- ``availableAttributes``
-- ``Attribute``
+- ``init(rawValue:)``
 
 ### Common Attributes
 
@@ -29,9 +19,7 @@
 - ``fileIsInvisible``
 - ``fileExtensionIsHidden``
 - ``contentType``
-- ``contentTypeIdentifier``
 - ``contentTypeTree``
-- ``contentTypeTreeIdentifiers``
 
 ### Date Attributes
 
@@ -111,12 +99,11 @@
 
 ### Image Attributes
 
-- ``pixelHeight``
 - ``pixelWidth``
+- ``pixelHeight``
 - ``pixelSize``
 - ``pixelCount``
 - ``orientation``
-- ``Orientation``
 - ``imageDirection``
 - ``dpiResolutionWidth``
 - ``dpiResolutionHeight``
@@ -135,7 +122,6 @@
 - ``isoSpeed``
 - ``layerNames``
 - ``whiteBalance``
-- ``WhiteBalance``
 - ``aperture``
 - ``colorProfile``
 - ``exposureMode``
@@ -230,7 +216,6 @@
 
 - ``isScreenCapture``
 - ``screenCaptureType``
-- ``ScreenCaptureType``
 - ``screenCaptureRect``
 
 ### Metadata Query Attributes
