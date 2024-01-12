@@ -687,10 +687,10 @@
                     <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="196" y="240" width="700" height="440"/>
+                        <rect key="contentRect" x="196" y="240" width="640" height="440"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
-                        <value key="minSize" type="size" width="700" height="440"/>
-                        <value key="maxSize" type="size" width="700" height="440"/>
+                        <value key="minSize" type="size" width="640" height="440"/>
+                        <value key="maxSize" type="size" width="640" height="440"/>
                         <toolbar key="toolbar" implicitIdentifier="1E93BCFC-20E4-4172-994C-80AEC7140237" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="Dd9-FY-5TC">
                             <allowedToolbarItems/>
                             <defaultToolbarItems/>
