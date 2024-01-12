@@ -9,7 +9,11 @@ import Foundation
 
 public extension MetadataItem {
     /// The attribute of metadata item.
-    enum Attribute: String, Hashable {
+    enum Attribute: String, Hashable, CustomStringConvertible {
+        public var description: String {
+            rawValue.replacingOccurrences(of: "kMDItem", with: "").lowercasedFirst()
+        }
+        
         // MARK: - Common
 
         /// The url of the file.

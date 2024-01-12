@@ -113,7 +113,14 @@ open class MetadataItem {
      For a list of possible attributes, see ``Attribute``.
      */
     open var availableAttributes: [Attribute] {
-        let attributes = (values.keys + item.attributes).uniqued().sorted()
+        var attributes = (values.keys + item.attributes).uniqued()
+        if attributes.contains(all: ["kMDItemPixelWidth", "kMDItemPixelHeight"]) {
+            attributes.append(Attribute.pixelSize.rawValue)
+        }
+        if attributes.contains(all: ["kMDItemResolutionWidthDPI", "kMDItemResolutionHeightDPI"]) {
+            attributes.append(Attribute.dpiResolution.rawValue)
+        }
+        attributes = attributes.sorted()
         return attributes.compactMap { Attribute(rawValue: $0) }
     }
 
