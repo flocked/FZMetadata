@@ -96,12 +96,12 @@ class ViewController: NSViewController {
             let totalSize = files.compactMap({ $0.fileSize }).sum().string
             
             DispatchQueue.main.async {
-                if let file = files.first, let path = file.path, let date = file.creationDate {
-                    self.newestFileTextField.stringValue = self.dateFormatter.string(from: date) + "\n" + URL(fileURLWithPath: path).lastPathComponent
+                if let file = files.first {
+                    self.newestFileTextField.stringValue = self.infoString(for: file)
                     self.newestTitleTextField.isHidden = false
                 }
-                if let file = files.last, file != files.first, let path = file.path, let date = file.creationDate {
-                    self.oldestFileTextField.stringValue = self.dateFormatter.string(from: date) + "\n" + URL(fileURLWithPath: path).lastPathComponent
+                if let file = files.last, file != files.first {
+                    self.oldestFileTextField.stringValue = self.infoString(for: file)
                     self.oldestTitleTextField.isHidden = false
                 }
             
@@ -115,6 +115,24 @@ class ViewController: NSViewController {
                 self.queryProgressIndicator.stopAnimation(nil)
             }
         }
+    }
+    
+    func infoString(for file: MetadataItem) -> String {
+        guard let path = file.path else { return "" }
+        var infoString = ""
+        if let date = file.creationDate {
+            infoString = dateFormatter.string(from: date)
+        }
+        if let fileSize = file.fileSize?.string {
+            infoString += "\t\(fileSize)"
+        }
+        if let pixelSize = file.pixelSize {
+            infoString += "\t\(Int(pixelSize.width))x\(Int(pixelSize.height))"
+        }
+        if let duration = file.duration?.string() {
+            infoString += "\t\(duration)"
+        }
+        return infoString + "\n" + URL(fileURLWithPath: path).lastPathComponent
     }
     
     func resetTextFields() {
