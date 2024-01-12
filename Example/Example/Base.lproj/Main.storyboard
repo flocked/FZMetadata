@@ -687,9 +687,10 @@
                     <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="196" y="240" width="700" height="390"/>
+                        <rect key="contentRect" x="196" y="240" width="700" height="440"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
-                        <value key="minSize" type="size" width="700" height="390"/>
+                        <value key="minSize" type="size" width="700" height="440"/>
+                        <value key="maxSize" type="size" width="700" height="440"/>
                         <toolbar key="toolbar" implicitIdentifier="1E93BCFC-20E4-4172-994C-80AEC7140237" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="Dd9-FY-5TC">
                             <allowedToolbarItems/>
                             <defaultToolbarItems/>
@@ -715,7 +716,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" id="hSV-Xm-YVp">
-                                <rect key="frame" x="13" y="33" width="160" height="32"/>
+                                <rect key="frame" x="25" y="33" width="160" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="push" title="Monitor Screenshots" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1Ki-AR-jrE">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -726,7 +727,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" id="yaP-IM-TUV">
-                                <rect key="frame" x="13" y="99" width="126" height="32"/>
+                                <rect key="frame" x="25" y="91" width="126" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="push" title="Monitor Videos" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="VqJ-mI-Au7">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -737,7 +738,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" id="ET2-7r-E6u">
-                                <rect key="frame" x="13" y="131" width="128" height="32"/>
+                                <rect key="frame" x="25" y="123" width="128" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="push" title="Monitor Images" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Lep-D4-suS">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -757,18 +758,27 @@
                                 </textFieldCell>
                             </textField>
                             <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="Glf-el-Yml">
-                                <rect key="frame" x="179" y="34" width="253" height="32"/>
+                                <rect key="frame" x="191" y="34" width="253" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <textFieldCell key="cell" selectable="YES" title="Create new screenshots via  ⌘+⇧+3/4 and monitor the files count changes" id="F7f-2L-Nno">
+                                <textFieldCell key="cell" title="Create new screenshots via  ⌘+⇧+3/4 and monitor the files count changes" id="F7f-2L-Nno">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="dng-s4-0RZ">
-                                <rect key="frame" x="179" y="108" width="253" height="48"/>
+                                <rect key="frame" x="191" y="100" width="253" height="48"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <textFieldCell key="cell" selectable="YES" title="Add/Remove images/videos to your pictures/movies directory and monitor the files count changes" id="cCg-y6-y7f">
+                                <textFieldCell key="cell" title="Add/Remove images/videos to your pictures/movies directory and monitor the files count changes" id="cCg-y6-y7f">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="gpm-nA-fNB">
+                                <rect key="frame" x="191" y="168" width="253" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <textFieldCell key="cell" title="Monitors for any file changes in the downloads directory" id="rSo-no-r0t">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -786,7 +796,7 @@
                             <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="o6S-mN-JPi">
                                 <rect key="frame" x="18" y="320" width="664" height="28"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" selectable="YES" alignment="left" title="-" id="gI9-YT-qFX">
+                                <textFieldCell key="cell" alignment="left" title="-" id="gI9-YT-qFX">
                                     <font key="font" textStyle="subheadline" name=".SFNS-Regular"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -804,18 +814,44 @@
                             <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="4Wx-Y1-8uo">
                                 <rect key="frame" x="18" y="252" width="664" height="28"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" selectable="YES" alignment="left" title="-" id="Vg1-QP-K1M">
+                                <textFieldCell key="cell" alignment="left" title="-" id="Vg1-QP-K1M">
                                     <font key="font" textStyle="subheadline" name=".SFNS-Regular"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button verticalHuggingPriority="750" id="BXS-Ma-glE">
+                                <rect key="frame" x="25" y="167" width="151" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <buttonCell key="cell" type="push" title="Monitor Downloads" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="vx4-lh-9d8">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="monitorDownloads:" target="XfG-lQ-9wD" id="nfb-FI-Ohz"/>
+                                </connections>
+                            </button>
+                            <progressIndicator fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="Oh4-2O-tMw">
+                                <rect key="frame" x="648" y="385" width="32" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                            </progressIndicator>
+                            <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="rnV-A9-EM0">
+                                <rect key="frame" x="20" y="221" width="660" height="5"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            </box>
                         </subviews>
                     </view>
                     <connections>
                         <outlet property="filesCountTextField" destination="FVy-tN-EwL" id="gVg-y4-TBt"/>
                         <outlet property="newestFileTextField" destination="o6S-mN-JPi" id="J4P-wd-gJm"/>
+                        <outlet property="newestTitleTextField" destination="aG6-SR-rqK" id="K3p-fZ-EzH"/>
                         <outlet property="oldestFileTextField" destination="4Wx-Y1-8uo" id="1ZD-qy-FbV"/>
+                        <outlet property="oldestTitleTextField" destination="pvQ-oJ-1r6" id="lpQ-re-FR7"/>
+                        <outlet property="queryDownloadsButton" destination="BXS-Ma-glE" id="28s-pe-7Hh"/>
+                        <outlet property="queryImagesButton" destination="ET2-7r-E6u" id="O1d-M2-QTb"/>
+                        <outlet property="queryProgressIndicator" destination="Oh4-2O-tMw" id="Qnk-DM-g0H"/>
+                        <outlet property="queryScreenshotsButton" destination="hSV-Xm-YVp" id="FhH-Ku-pnD"/>
+                        <outlet property="queryVideosButton" destination="yaP-IM-TUV" id="5sl-Ud-Uu9"/>
                     </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>

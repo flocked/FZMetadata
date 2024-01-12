@@ -856,14 +856,16 @@ extension MetadataItem {
         if let rawValue: T.RawValue = value(for: keyPath.mdItemKey) {
             return T(rawValue: rawValue)
         }
-        return getExplicity(keyPath)
+        // return getExplicity(keyPath)
+        return nil
     }
 
     func value<T, K: KeyPath<MetadataItem, T?>>(for keyPath: K) -> T? {
         if let value: T = value(for: keyPath.mdItemKey) {
             return value
         }
-        return getExplicity(keyPath)
+        //  return getExplicity(keyPath)
+        return nil
     }
 
     func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
