@@ -7,7 +7,7 @@
 
 import Cocoa
 import FZMetadata
-import FZUIKit
+import FZSwiftUtils
 
 class ViewController: NSViewController {
 
@@ -31,24 +31,25 @@ class ViewController: NSViewController {
     @IBAction func monitorScreenshots(_ sender: Any? = nil) {
         guard let desktopDirectory = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first else { return }
         resetTextFields()
-        dotView.frame.centerRight = queryScreenshotsButton.frame.centerLeft
+        dotView.frame.centerRight = queryScreenshotsButton.frame.centerLeft.offset(x: -3)
 
         query.searchLocations = [desktopDirectory]
         query.predicate = { $0.isScreenCapture == true }
         query.attributes = [.creationDate, .pixelSize, .fileSize]
-        query.sortedBy = [.ascending(.creationDate)]
+        query.sortedBy = [.descending(.creationDate)]
+        
         startQuery(fileType: "screenshot")
     }
     
     @IBAction func monitorImages(_ sender: Any? = nil) {
         guard let picturesDirectory = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first else { return }
         resetTextFields()
-        dotView.frame.centerRight = queryImagesButton.frame.centerLeft
+        dotView.frame.centerRight = queryImagesButton.frame.centerLeft.offset(x: -3)
 
         query.searchLocations = [picturesDirectory]
         query.predicate = { $0.fileType == .image || $0.fileType == .gif }
         query.attributes = [.creationDate, .pixelSize, .fileSize]
-        query.sortedBy = [.ascending(.creationDate)]
+        query.sortedBy = [.descending(.creationDate)]
         
         startQuery(fileType: "image")
     }
@@ -56,12 +57,12 @@ class ViewController: NSViewController {
     @IBAction func monitorVideos(_ sender: Any? = nil) {
         guard let moviesDirectory = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask).first else { return }
         resetTextFields()
-        dotView.frame.centerRight = queryVideosButton.frame.centerLeft
+        dotView.frame.centerRight = queryVideosButton.frame.centerLeft.offset(x: -3)
 
         query.searchLocations = [moviesDirectory]
         query.predicate = { $0.fileType == .video }
         query.attributes = [.creationDate, .pixelSize, .fileSize, .duration]
-        query.sortedBy = [.ascending(.creationDate)]
+        query.sortedBy = [.descending(.creationDate)]
         
         startQuery(fileType: "video")
     }
@@ -69,12 +70,12 @@ class ViewController: NSViewController {
     @IBAction func monitorDownloads(_ sender: Any? = nil) {
         guard let downloadsDirectory = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else { return }
         resetTextFields()
-        dotView.frame.centerRight = queryDownloadsButton.frame.centerLeft
+        dotView.frame.centerRight = queryDownloadsButton.frame.centerLeft.offset(x: -3)
 
         query.searchLocations = [downloadsDirectory]
         query.predicate = { $0.isFile }
         query.attributes = [.creationDate, .fileSize]
-        query.sortedBy = [.ascending(.creationDate)]
+        query.sortedBy = [.descending(.creationDate)]
         
         startQuery(fileType: "file")
     }
@@ -89,6 +90,32 @@ class ViewController: NSViewController {
         }
         query.start()
     }
+        
+    func displayResults(_ files: [MetadataItem], fileType: String) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let totalSize = files.compactMap({ $0.fileSize }).sum().string
+            
+            DispatchQueue.main.async {
+                if let file = files.first, let path = file.path, let date = file.creationDate {
+                    self.newestFileTextField.stringValue = self.dateFormatter.string(from: date) + "\n" + URL(fileURLWithPath: path).lastPathComponent
+                    self.newestTitleTextField.isHidden = false
+                }
+                if let file = files.last, file != files.first, let path = file.path, let date = file.creationDate {
+                    self.oldestFileTextField.stringValue = self.dateFormatter.string(from: date) + "\n" + URL(fileURLWithPath: path).lastPathComponent
+                    self.oldestTitleTextField.isHidden = false
+                }
+            
+                if files.isEmpty {
+                    self.filesCountTextField.stringValue = "No \(fileType)s"
+                } else if files.count == 1 {
+                    self.filesCountTextField.stringValue = "1 \(fileType), " + totalSize
+                } else {
+                    self.filesCountTextField.stringValue = "\(files.count) \(fileType)s, " + totalSize
+                }
+                self.queryProgressIndicator.stopAnimation(nil)
+            }
+        }
+    }
     
     func resetTextFields() {
         filesCountTextField.stringValue = "Querying files…"
@@ -98,51 +125,17 @@ class ViewController: NSViewController {
         newestTitleTextField.isHidden = true
     }
     
-    func displayResults(_ files: [MetadataItem], fileType: String) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            let files = files.sorted(by: \.creationDate, .newestFirst)
-            let totalSize = files.compactMap({$0.fileSize}).sum().string
-            
-            if let file = files.first, let path = file.path, let date = file.creationDate {
-                DispatchQueue.main.async {
-                    self.newestFileTextField.stringValue = self.dateFormatter.string(from: date) + "\n" + URL(fileURLWithPath: path).lastPathComponent
-                    self.newestTitleTextField.isHidden = false
-                }
-            }
-            if let file = files.last, file != files.first, let path = file.path, let date = file.creationDate {
-                DispatchQueue.main.async {
-                    self.oldestFileTextField.stringValue = self.dateFormatter.string(from: date) + "\n" + URL(fileURLWithPath: path).lastPathComponent
-                    self.oldestTitleTextField.isHidden = false
-                }
-            }
-            
-            DispatchQueue.main.async {
-                if files.isEmpty {
-                    self.filesCountTextField.stringValue = "No \(fileType)s"
-                } else if files.count == 1 {
-                    self.filesCountTextField.stringValue = "1 \(fileType), " + totalSize
-                } else {
-                    self.filesCountTextField.stringValue = "\(files.count) \(fileType)s, " + totalSize
-                }
-            }
-            DispatchQueue.main.async {
-                self.queryProgressIndicator.stopAnimation(nil)
-            }
-        }
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        dotView.backgroundColor = .systemGreen
+        
+        dotView.wantsLayer = true
+        dotView.layer?.backgroundColor = NSColor.systemGreen.cgColor
         view.addSubview(dotView)
-        dotView.cornerRadius = dotView.bounds.height * 0.5
+        dotView.layer?.cornerRadius = dotView.bounds.height * 0.5
+        
         queryProgressIndicator.stopAnimation(nil)
+        
         monitorScreenshots()
-    }
-    
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        view.window?.visualEffect = .vibrantLight(blendingMode: .behindWindow, material: .hudWindow)
     }
 }
 
