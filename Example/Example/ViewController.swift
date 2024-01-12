@@ -130,8 +130,8 @@ class ViewController: NSViewController {
         
         dotView.wantsLayer = true
         dotView.layer?.backgroundColor = NSColor.systemGreen.cgColor
-        view.addSubview(dotView)
         dotView.layer?.cornerRadius = dotView.bounds.height * 0.5
+        view.addSubview(dotView)
         
         queryProgressIndicator.stopAnimation(nil)
         
