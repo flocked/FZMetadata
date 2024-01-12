@@ -156,4 +156,3 @@ class ViewController: NSViewController {
         monitorScreenshots()
     }
 }
-

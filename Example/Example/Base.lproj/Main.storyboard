@@ -727,7 +727,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" id="yaP-IM-TUV">
-                                <rect key="frame" x="28" y="91" width="126" height="32"/>
+                                <rect key="frame" x="28" y="84" width="126" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="push" title="Monitor Videos" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="VqJ-mI-Au7">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -738,7 +738,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" id="ET2-7r-E6u">
-                                <rect key="frame" x="28" y="123" width="128" height="32"/>
+                                <rect key="frame" x="28" y="116" width="128" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="push" title="Monitor Images" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Lep-D4-suS">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -767,7 +767,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="dng-s4-0RZ">
-                                <rect key="frame" x="194" y="100" width="253" height="48"/>
+                                <rect key="frame" x="194" y="93" width="253" height="48"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <textFieldCell key="cell" title="Add/Remove images/videos to your pictures/movies directory and monitor the files count changes" id="cCg-y6-y7f">
                                     <font key="font" metaFont="system"/>
@@ -836,7 +836,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                             </progressIndicator>
                             <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="rnV-A9-EM0">
-                                <rect key="frame" x="20" y="221" width="660" height="5"/>
+                                <rect key="frame" x="20" y="216" width="660" height="5"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </box>
                         </subviews>
