@@ -301,9 +301,7 @@ open class MetadataQuery: NSObject {
     }
 
     func resetResults() {
-        runWithOperationQueue {
-            self._results.removeAll()
-        }
+        self._results.removeAll()
     }
 
     func results(at indexes: [Int]) -> [MetadataItem] {
