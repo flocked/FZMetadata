@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FZSwiftUtils
 
 /**
  An object that can search files and fetch metadata attributes for large batches of files.
@@ -287,16 +288,16 @@ open class MetadataQuery: NSObject {
      */
     open var results: [MetadataItem] {
         updateResults()
-        return _results
+        return _results.synchronized
     }
 
     var resultsCount: Int {
         query.resultCount
     }
-
-    var _results: [MetadataItem] = []
+    
+    var _results: SynchronizedArray<MetadataItem> = []
     func updateResults() {
-        _results = results(at: Array(0 ..< query.resultCount))
+        _results.synchronized = results(at: Array(0 ..< query.resultCount))
     }
 
     func resetResults() {
@@ -388,7 +389,7 @@ open class MetadataQuery: NSObject {
         // Swift.debugPrint("MetadataQuery gatheringFinished")
         runWithPausedMonitoring {
             let results = results
-            let diff = ResultsDifference.added(_results)
+            let diff = ResultsDifference.added(_results.synchronized)
             postResults(results, difference: diff)
         }
 
@@ -418,7 +419,7 @@ open class MetadataQuery: NSObject {
                 (changed + added).forEach { _results.move($0, to: query.index(ofResult: $0) + 1) }
             }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            postResults(_results, difference: diff)
+            postResults(_results.synchronized, difference: diff)
         }
     }
 
