@@ -234,20 +234,14 @@ open class MetadataQuery: NSObject {
 
     /// Starts the query, if it isn't running and resets the current result.
     open func start() {
-        func startQuery() {
-            if query.start() == true {
-                resetResults()
+        runWithOperationQueue {
+            if self.query.start() == true {
+                self.resetResults()
             }
-        }
-
-        if let operationQueue = operationQueue {
-            operationQueue.addOperation {
-                startQuery()
-            }
-        } else {
-            startQuery()
         }
     }
+    
+    
 
     /// Stops the  current query from gathering any further results.
     open func stop() {
@@ -275,6 +269,16 @@ open class MetadataQuery: NSObject {
             isMonitoring = true
         }
     }
+    
+    func runWithOperationQueue(_ block: @escaping () -> Void) {
+        if let operationQueue = operationQueue {
+            operationQueue.addOperation {
+                block()
+            }
+        } else {
+            block()
+        }
+    }
 
     /**
      An array containing the query’s results.
@@ -296,7 +300,9 @@ open class MetadataQuery: NSObject {
     }
 
     func resetResults() {
-        _results.removeAll()
+        runWithOperationQueue {
+            self._results.removeAll()
+        }
     }
 
     func results(at indexes: [Int]) -> [MetadataItem] {
@@ -417,12 +423,8 @@ open class MetadataQuery: NSObject {
     }
 
     func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
-        if let operationQueue = operationQueue {
-            operationQueue.addOperation {
-                self.resultsHandler?(items, difference)
-            }
-        } else {
-            resultsHandler?(items, difference)
+        runWithOperationQueue {
+            self.resultsHandler?(items, difference)
         }
     }
 
