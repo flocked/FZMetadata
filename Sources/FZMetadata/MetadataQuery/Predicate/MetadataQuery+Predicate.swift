@@ -375,6 +375,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
     }
 }
 
+/*
 // MARK: FileType
 
 public extension MetadataQuery.Predicate where T: QueryFileType {
@@ -423,6 +424,7 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     }
     */
 }
+ */
 
 // MARK: Comparable
 
@@ -798,8 +800,6 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
 // MARK: String
 
-extension MetadataQuery.Predicate where T: QueryFileType {}
-
 /*
  extension MetadataQuery.Predicate where T: QueryString {
      public func begins<C: Collection<QueryString>>(with values: C) -> MetadataQuery.Predicate<Bool> {
@@ -1048,6 +1048,8 @@ extension MetadataQuery.Predicate {
         static func comparison(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
             var value = value
             switch (mdKey, value) {
+            case let (_, _value as (any QueryRawRepresentable)):
+                value = _value.rawValue
             case let (_, value as String):
                 return string(mdKey, type, value, options)
             case let (_, value as CGSize):
@@ -1056,8 +1058,6 @@ extension MetadataQuery.Predicate {
                 value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
             //    case (_, let value as QueryStringOption):
             //        return queryString(mdKey, type, value)
-            case let (_, _value as (any QueryRawRepresentable)):
-                value = _value.rawValue
             default: break
             }
 
@@ -1189,6 +1189,10 @@ extension TimeDuration: QueryRawRepresentable, QueryComparable {
     public var rawValue: Double { seconds }
 }
 
+extension FileType: QueryRawRepresentable, QueryEquatable {
+    public var rawValue: String { identifier ?? "other" }
+}
+
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension UTType: QueryRawRepresentable {
     public var rawValue: String { identifier }
@@ -1208,10 +1212,12 @@ protocol QueryBool: QueryEquatable {}
 extension Bool: QueryBool {}
 extension Optional: QueryBool where Wrapped: QueryBool {}
 
+/*
 /// Conforms `FileType` to be used in a metadata query predicate.
 public protocol QueryFileType {}
 extension FileType: QueryFileType {}
 extension Optional: QueryFileType where Wrapped: QueryFileType {}
+ */
 
 /// Conforms `UTType` to be used in a metadata query predicate.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
