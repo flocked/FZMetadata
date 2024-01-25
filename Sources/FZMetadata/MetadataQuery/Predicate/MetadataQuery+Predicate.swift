@@ -423,7 +423,6 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     }
     */
 }
- 
 
 // MARK: Comparable
 
@@ -799,7 +798,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
 // MARK: String
 
-extension MetadataQuery.Predicate where T: QueryFileType { }
+extension MetadataQuery.Predicate where T: QueryFileType {}
 
 /*
  extension MetadataQuery.Predicate where T: QueryString {
@@ -1153,9 +1152,7 @@ extension DataSize: QueryRawRepresentable {
     public var rawValue: Int { bytes }
 }
 
-extension FileType: QueryRawRepresentable {
-    public var rawValue: String { identifier ?? "other" }
-}
+
 
 /*
  extension MetadataQuery.Predicate where T == DataSize {
