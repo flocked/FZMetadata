@@ -1048,9 +1048,8 @@ extension MetadataQuery.Predicate {
         static func comparison(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
             var value = value
             switch (mdKey, value) {
-            case let (_, _value as (any QueryRawRepresentable)):
-                value = _value.rawValue
             case let (_, value as String):
+                Swift.print("str", value)
                 return string(mdKey, type, value, options)
             case let (_, value as CGSize):
                 return size(mdKey, type, value)
@@ -1058,6 +1057,9 @@ extension MetadataQuery.Predicate {
                 value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
             //    case (_, let value as QueryStringOption):
             //        return queryString(mdKey, type, value)
+            case let (_, _value as (any QueryRawRepresentable)):
+                Swift.print("raw", _value.rawValue)
+                value = _value.rawValue
             default: break
             }
 
