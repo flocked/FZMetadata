@@ -379,6 +379,31 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 // MARK: FileType
 
 public extension MetadataQuery.Predicate where T: QueryFileType {
+    /// Checks if the file type equals any of the specified file types.
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
+        .or(lhs.mdKey, .equalTo, rhs.compactMap(\.optional?.identifier))
+    }
+    
+    /// Checks if the file type equals any of the specified file types.
+    func `in`<C>(_ collection: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
+        .or(mdKey, .equalTo, Array(collection).compactMap(\.optional?.identifier))
+    }
+
+    /// Checks if the file type equals non of the specified file types.
+    static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
+        .and(lhs.mdKey, .notEqualTo, rhs.compactMap(\.optional?.identifier))
+    }
+    
+    /// Checks if the file type equals the specified file type.
+    static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
+        .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
+    }
+
+    /// Checks if the file type doesn't equal the specified file type.
+    static func != (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
+        .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
+    }
+    
     /*
     static func == (_ lhs: Self, _ rhs: FileType) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
@@ -387,27 +412,7 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     static func != (_ lhs: Self, _ rhs: FileType) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
     }
-     */
-    
-    /// Checks if an element equals any given values.
-    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
-        .or(lhs.mdKey, .equalTo, rhs.compactMap(\.optional?.identifier))
-    }
 
-    /// Checks if an element equals any given values.
-    static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
-        .and(lhs.mdKey, .notEqualTo, rhs.compactMap(\.optional?.identifier))
-    }
-    
-    static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
-        .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
-    }
-
-    static func != (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
-        .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
-    }
-
-    /*
     /// Checks if an element equals any given values.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == FileType {
         .or(lhs.mdKey, .equalTo, rhs.compactMap(\.identifier))
