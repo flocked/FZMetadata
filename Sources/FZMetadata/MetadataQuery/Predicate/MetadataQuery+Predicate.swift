@@ -995,22 +995,23 @@ public extension MetadataQuery.Predicate where T: QueryCollection {
 extension MetadataQuery.Predicate {
     enum PredicateBuilder {
         static func comparisonAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
+            var options = options
+            if options.count < values.count {
+                let last = options.last ?? []
+                options = options + Array(repeating: last, count: values.count - options.count)
+            }
             let predicates = values.enumerated().compactMap { comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? []) }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(and: predicates)
         }
 
         static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
-            values.enumerated().compactMap({ comparison(mdKey, type, $0.element) })
             var options = options
-            Swift.print("ooo", values.count, options.count)
-
-            if options.count < values.count, let last = options.last {
+            if options.count < values.count {
+                let last = options.last ?? []
                 options = options + Array(repeating: last, count: values.count - options.count)
             }
             
             let predicates = values.enumerated().compactMap {
-                Swift.print("opti", (($0.offset < options.count) ? options[$0.offset] : options.last ?? []).rawValue)
-                
                 return comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? [])
             }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
