@@ -362,7 +362,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 
     /// Checks if an element equals any given values.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T {
-        .or(lhs.mdKey, .in, Array(rhs))
+        .or(lhs.mdKey, .equalTo, Array(rhs))
     }
 
     /// Checks if an element doesn't equal given values.
@@ -372,7 +372,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 
     /// Checks if an element equals any given values.
     func `in`<C>(_ collection: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T {
-        .or(mdKey, .in, Array(collection))
+        .or(mdKey, .equalTo, Array(collection))
     }
 }
 
@@ -995,12 +995,22 @@ public extension MetadataQuery.Predicate where T: QueryCollection {
 extension MetadataQuery.Predicate {
     enum PredicateBuilder {
         static func comparisonAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
-            let predicates = values.enumerated().enumerated().compactMap { comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? []) }
+            let predicates = values.enumerated().compactMap { comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? []) }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(and: predicates)
         }
 
         static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
-            let predicates = values.enumerated().enumerated().compactMap { comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? []) }
+            values.enumerated().compactMap({ comparison(mdKey, type, $0.element) })
+            var options = options
+            if options.count < values.count, let last = options.last {
+                options = options + Array(repeating: last, count: values.count - options.count)
+            }
+            
+            let predicates = values.enumerated().compactMap {
+                Swift.print("opti", (($0.offset < options.count) ? options[$0.offset] : options.last ?? []).rawValue)
+                
+                return comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? [])
+            }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
         }
 
