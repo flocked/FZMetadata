@@ -362,7 +362,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 
     /// Checks if an element equals any given values.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T {
-        .or(lhs.mdKey, .equalTo, Array(rhs))
+        .or(lhs.mdKey, .in, Array(rhs))
     }
 
     /// Checks if an element doesn't equal given values.
@@ -372,7 +372,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 
     /// Checks if an element equals any given values.
     func `in`<C>(_ collection: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T {
-        .or(mdKey, .equalTo, Array(collection))
+        .or(mdKey, .in, Array(collection))
     }
 }
 
