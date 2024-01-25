@@ -379,6 +379,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 // MARK: FileType
 
 public extension MetadataQuery.Predicate where T: QueryFileType {
+    /*
     static func == (_ lhs: Self, _ rhs: FileType) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
     }
@@ -386,8 +387,8 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     static func != (_ lhs: Self, _ rhs: FileType) -> MetadataQuery.Predicate<Bool> {
         .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
     }
+     */
     
-    /*
     /// Checks if an element equals any given values.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
         .or(lhs.mdKey, .equalTo, rhs.compactMap(\.optional?.identifier))
@@ -397,7 +398,6 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
         .and(lhs.mdKey, .notEqualTo, rhs.compactMap(\.optional?.identifier))
     }
-    */
     
     static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
         .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
