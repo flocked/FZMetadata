@@ -451,6 +451,7 @@ open class MetadataQuery: NSObject {
     }
 }
 
+/*
 #if os(macOS)
 import AppKit
 extension MetadataQuery {
@@ -462,6 +463,7 @@ extension MetadataQuery {
     }
 }
 #endif
+*/
 
 /*
  public extension MetadataQuery {
