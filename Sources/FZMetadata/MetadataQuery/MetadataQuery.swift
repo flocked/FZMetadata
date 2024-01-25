@@ -162,7 +162,6 @@ open class MetadataQuery: NSObject {
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
             query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
-            Swift.print("mdkeys", predicate?(.root).mdKeys ?? "nil")
         }
     }
     
@@ -327,18 +326,11 @@ open class MetadataQuery: NSObject {
 
     var allAttributeKeys: [String] {
         var attributes = query.valueListAttributes
+        attributes += ["kMDQueryResultContentRelevance"]
+        attributes += predicate?(.root).mdKeys ?? ["kMDItemContentTypeTree"]
         attributes += sortedBy.compactMap(\.key)
-        attributes += groupingAttributes.compactMap(\.rawValue) + ["kMDQueryResultContentRelevance"]
-        attributes += predicate?(.root).mdKeys ?? []
+        attributes += groupingAttributes.compactMap(\.rawValue)
         return attributes.uniqued()
-    }
-
-    var predicateAttributes: [MetadataItem.Attribute] {
-        predicate?(.root).attributes ?? []
-    }
-
-    var sortingAttributes: [MetadataItem.Attribute] {
-        sortedBy.compactMap { MetadataItem.Attribute(rawValue: $0.key ?? "_") }
     }
 
     /**
@@ -468,77 +460,3 @@ extension MetadataQuery {
 }
 #endif
 */
-
-/*
- public extension MetadataQuery {
-     /// Returns a string for a case sensitive predicate.
-     func c(_ input: String) -> String {
-         return "$[c]\(input)"
-     }
-
-     /// Returns an array of strings for a case sensitive predicate.
-     func c<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
-
-     /// Returns a string for a diacritic sensitive predicate.
-     func d(_ input: String) -> String {
-         return "$[d]\(input)"
-     }
-
-     /// Returns an array of strings for a diacritic sensitive predicate.
-     func d<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
-
-     /// Returns a string for a word-based predicate.
-     func w(_ input: String) -> String {
-         return "$[w]\(input)"
-     }
-
-     /// Returns an array of strings for a word-based predicate.
-     func w<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
-
-     /// Returns a string for a case & diacritic sensitive predicate.
-     func cd(_ input: String) -> String {
-         return "$[cd]\(input)"
-     }
-
-     /// Returns an array of strings for a case & diacritic sensitive predicate.
-     func cd<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
-
-     /// Returns a string for a case sensitive & word-based predicate.
-     func cw(_ input: String) -> String {
-         return "$[cw]\(input)"
-     }
-
-     /// Returns an array of strings for a case sensitive & word-based predicate.
-     func cw<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
-
-     /// Returns a string for a diacritic sensitive & word-based predicate.
-     func dw(_ input: String) -> String {
-         return "$[dw]\(input)"
-     }
-
-     /// Returns an array of strings for a diacritic sensitive & word-based predicate.
-     func dw<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
-
-     /// Returns a string for a case & diacritic sensitive word-based predicate.
-     func cdw(_ input: String) -> String {
-         return "$[cdw]\(input)"
-     }
-
-     /// Returns an array of strings for a case & diacritic sensitive word-based predicate.
-     func cdw<S: Sequence<String>>(_ input: S) -> [String] {
-         return input.compactMap({c($0)})
-     }
- }
- */

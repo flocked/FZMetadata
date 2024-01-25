@@ -8,7 +8,7 @@
 import Foundation
 
 public extension MetadataQuery {
-    /// Options for string comparison in metadata query predicates.
+    /// Options for string comparison in a metadata query predicate.
     struct PredicateStringOptions: OptionSet {
         /// Case-sensitive predicate.
         public static let caseSensitive = Self(rawValue: 1)

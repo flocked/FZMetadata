@@ -164,7 +164,6 @@ public extension MetadataQuery {
      // finderTags doesn't contain "red", "yellow" or `green`.
      { $0.finderTags.containsNot(any: ["red", "yellow", "green"]) }
      ```
-
      */
     @dynamicMemberLookup
     struct Predicate<T> {
@@ -314,7 +313,7 @@ public extension MetadataQuery.Predicate where T == Bool {
 
 // MARK: Equatable
 
-extension MetadataQuery.Predicate where T: OptionalProtocol, T.Wrapped: QueryEquatable {}
+extension MetadataQuery.Predicate where T: OptionalProtocol, T.Wrapped: QueryEquatable { }
 
 /*
  extension MetadataQuery.Predicate where T: Equatable {
@@ -377,7 +376,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 }
 
 // MARK: FileType
-
+/*
 public extension MetadataQuery.Predicate where T: QueryFileType {
     /// Checks if the file type equals any of the specified file types.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
@@ -424,6 +423,7 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     }
     */
 }
+ */
 
 // MARK: Comparable
 
@@ -799,7 +799,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
 // MARK: String
 
-extension MetadataQuery.Predicate where T: QueryFileType {}
+extension MetadataQuery.Predicate where T: QueryFileType { }
 
 /*
  extension MetadataQuery.Predicate where T: QueryString {
@@ -1153,6 +1153,10 @@ extension DataSize: QueryRawRepresentable {
     public var rawValue: Int { bytes }
 }
 
+extension FileType: QueryRawRepresentable {
+    public var rawValue: String { identifier ?? "other" }
+}
+
 /*
  extension MetadataQuery.Predicate where T == DataSize {
      var megabytes: DataSizePart {
@@ -1209,7 +1213,7 @@ extension Optional: QueryBool where Wrapped: QueryBool {}
 
 /// Conforms `FileType` to be used in a metadata query predicate.
 public protocol QueryFileType {}
-extension FileType: QueryFileType {}
+extension FileType: QueryFileType, QueryEquatable {}
 extension Optional: QueryFileType where Wrapped: QueryFileType {}
 
 /// Conforms `UTType` to be used in a metadata query predicate.

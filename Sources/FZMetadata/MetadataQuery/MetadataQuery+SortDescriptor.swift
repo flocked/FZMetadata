@@ -18,17 +18,8 @@ extension MetadataQuery {
      ```
       */
     open class SortDescriptor: NSSortDescriptor {
-        /// The order of sorting.
-        enum Order: Int, Hashable {
-            /// Ascending sort order.
-            case ascending
-
-            /// Descending sort order.
-            case descending
-        }
-
         /**
-         An  ascending sort descriptor for the specified metadata attribute.
+         An ascending sort descriptor for the specified metadata attribute.
 
          - Parameter attribute: The comparable metadata attribute.
          */
@@ -37,7 +28,7 @@ extension MetadataQuery {
         }
 
         /**
-         A  descending sort descriptor for the specified metadata attribute.
+         A descending sort descriptor for the specified metadata attribute.
 
          - Parameter attribute: The comparable metadata attribute.
          */
@@ -50,7 +41,7 @@ extension MetadataQuery {
 // MARK: Operator
 
 /**
- Returns an  ascending metadata query sort descriptor for the specified metadata attribute.
+ Returns an ascending metadata query sort descriptor for the specified metadata attribute.
 
  - Parameter attribute: The comparable metadata attribute.
  */
@@ -59,7 +50,7 @@ public prefix func >> (attribute: MetadataItem.Attribute) -> MetadataQuery.SortD
 }
 
 /**
- Returns a  descending metadata query sort descriptor for the specified metadata attribute.
+ Returns a descending metadata query sort descriptor for the specified metadata attribute.
 
  - Parameter attribute: The comparable metadata attribute.
  */
