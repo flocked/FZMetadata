@@ -426,3 +426,15 @@ public extension MetadataItem {
         }
     }
 }
+
+#if os(macOS)
+import AppKit
+extension MetadataItem.Attribute {
+    var rowTemplate: NSPredicateEditorRowTemplate {
+        switch self {
+        default:
+            return NSPredicateEditorRowTemplate(constant: "Template", values: ["Value"])
+        }
+    }
+}
+#endif

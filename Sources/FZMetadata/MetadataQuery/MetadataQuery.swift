@@ -164,6 +164,11 @@ open class MetadataQuery: NSObject {
             query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
         }
     }
+    
+    /// The format string of the predicate.
+    open var predicateFormat: String {
+        query.predicate?.predicateFormat ?? ""
+    }
 
     /**
      An array of file-system directory URLs.
@@ -445,6 +450,18 @@ open class MetadataQuery: NSObject {
         query.delegate = delegate
     }
 }
+
+#if os(macOS)
+import AppKit
+extension MetadataQuery {
+    /// Displays a Spotlight search results window in Finder for the ``predicate-swift.property``.
+    public func showSearchResultsInFinder() {
+        if let format = query.predicate?.predicateFormat {
+            NSWorkspace.shared.showSearchResults(forQueryString: format)
+        }
+    }
+}
+#endif
 
 /*
  public extension MetadataQuery {
