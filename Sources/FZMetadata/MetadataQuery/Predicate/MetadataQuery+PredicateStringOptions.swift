@@ -11,19 +11,19 @@ public extension MetadataQuery {
     /// Options for string comparison in a metadata query predicate.
     struct PredicateStringOptions: OptionSet {
         /// Case-sensitive predicate.
-        public static let caseSensitive = Self(rawValue: 1)
+        public static let caseSensitive = Self(rawValue: 1 << 0)
         /// Diacritic-sensitive predicate.
-        public static let diacriticSensitive = Self(rawValue: 2)
+        public static let diacriticSensitive = Self(rawValue: 1 << 1)
 
         /// Case-sensitive predicate.
-        public static let c = Self(rawValue: 1)
+        public static let c = Self(rawValue: 1 << 0)
         /// Diacritic-sensitive predicate.
-        public static let d = Self(rawValue: 2)
+        public static let d = Self(rawValue: 1 << 1)
         /// Case and diacritical-sensitive predicate.
         public static let cd: Self = [.c, .d]
 
-        static let wordBased = Self(rawValue: 3)
-        static let w = Self(rawValue: 3)
+        static let wordBased = Self(rawValue: 1 << 2)
+        static let w = Self(rawValue: 1 << 2)
         static let cdw: Self = [.c, .d, .w]
         static let cw: Self = [.c, .w]
         static let dw: Self = [.d, .w]
