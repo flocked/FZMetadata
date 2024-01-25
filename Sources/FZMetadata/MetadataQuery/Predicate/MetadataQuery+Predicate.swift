@@ -238,12 +238,12 @@ public extension MetadataQuery {
             .init(NSCompoundPredicate(not: predicate.predicate!))
         }
 
-        static func and(_ mdKey: String, _: ComparisonOperator = .equalTo, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
-            .init(PredicateBuilder.comparisonAnd(mdKey, .equalTo, values, options))
+        static func and(_ mdKey: String, _ comparisonOperator: ComparisonOperator = .equalTo, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
+            .init(PredicateBuilder.comparisonAnd(mdKey, comparisonOperator, values, options))
         }
 
-        static func or(_ mdKey: String, _: ComparisonOperator = .equalTo, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
-            .init(PredicateBuilder.comparisonOr(mdKey, .equalTo, values, options))
+        static func or(_ mdKey: String, _ comparisonOperator: ComparisonOperator = .equalTo, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> MetadataQuery.Predicate<Bool> {
+            .init(PredicateBuilder.comparisonOr(mdKey, comparisonOperator, values, options))
         }
     }
 }
@@ -673,7 +673,9 @@ public extension MetadataQuery.Predicate where T: QueryString {
         - options: String options used to evaluate the search query.
      */
     func contains<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
-        .or(mdKey, .contains, Array(values), [options])
+        
+        
+        return .or(mdKey, .contains, Array(values), [options])
     }
 
     /**
