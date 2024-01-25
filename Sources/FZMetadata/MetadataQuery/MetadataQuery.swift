@@ -162,7 +162,7 @@ open class MetadataQuery: NSObject {
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
             query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
-            Swift.print("predicate mdKeys", predicate?(.root).mdKeys ?? "nil")
+            Swift.print("mdkeys", predicate?(.root).mdKeys ?? "nil")
         }
     }
     
@@ -327,8 +327,9 @@ open class MetadataQuery: NSObject {
 
     var allAttributeKeys: [String] {
         var attributes = query.valueListAttributes
-        attributes = attributes + sortedBy.compactMap(\.key)
-        attributes = attributes + groupingAttributes.compactMap(\.rawValue) + ["kMDQueryResultContentRelevance"]
+        attributes += sortedBy.compactMap(\.key)
+        attributes += groupingAttributes.compactMap(\.rawValue) + ["kMDQueryResultContentRelevance"]
+        attributes += predicate?(.root).mdKeys ?? []
         return attributes.uniqued()
     }
 
