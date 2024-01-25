@@ -407,6 +407,7 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
         .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
     }
 
+    /*
     /// Checks if an element equals any given values.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == FileType {
         .or(lhs.mdKey, .equalTo, rhs.compactMap(\.identifier))
@@ -416,6 +417,7 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T == FileType {
         .and(lhs.mdKey, .notEqualTo, rhs.compactMap(\.identifier))
     }
+    */
 }
 
 // MARK: Comparable
