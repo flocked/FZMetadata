@@ -162,6 +162,7 @@ open class MetadataQuery: NSObject {
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
             query.predicate = predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
+            Swift.print("predicate mdKeys", predicate?(.root).mdKeys ?? "nil")
         }
     }
     
