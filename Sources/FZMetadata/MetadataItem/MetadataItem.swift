@@ -310,7 +310,7 @@ open class MetadataItem {
         set {
             #if os(macOS)
                 if let url = url {
-                    url.resources.tags = newValue ?? []
+                    url.resources.finderTags = newValue ?? []
                 } else {
                     setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" })
                 }
