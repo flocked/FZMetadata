@@ -37,7 +37,7 @@ public extension MetadataQuery {
             "$[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
         }
 
-        public init(extracting value: String) {
+        init(extracting value: String) {
             switch value {
             case _ where value.hasPrefix("$[c]"):
                 self = .c

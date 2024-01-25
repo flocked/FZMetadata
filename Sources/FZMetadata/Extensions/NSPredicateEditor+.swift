@@ -8,6 +8,7 @@
 #if os(macOS)
 import AppKit
 
+// Currently unused
 extension NSPredicateEditor {
     /**
      Creates a predicate editor with the specified row templates and displays the specified displaying row templates.

@@ -536,7 +536,7 @@ open class MetadataItem {
     open var audioSampleRate: Double? { value(for: \.audioSampleRate) }
 
     /// The number of channels in the audio data contained in the file.
-    open var audioChannelCount: Double? { value(for: \.audioChannelCount) }
+    open var audioChannelCount: Int? { value(for: \.audioChannelCount) }
 
     /// The name of the application that encoded the data of a audio file.
     open var audioEncodingApplication: String? { value(for: \.audioEncodingApplication) }

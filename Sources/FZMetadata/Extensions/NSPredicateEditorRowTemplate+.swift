@@ -9,6 +9,7 @@
 import AppKit
 import FZSwiftUtils
 
+// Currently unused
 extension NSPredicateEditorRowTemplate {
     /// The predicate of the row template.
     @objc var predicate: NSPredicate {
@@ -226,31 +227,31 @@ extension NSPredicateEditorRowTemplate {
     }
     
     /**
-     Initializes and returns a row template with Float values.
+     Initializes and returns a row template with Double values.
      
      - Parameters:
         - title: The title of the row.
         - initialValue: The initial value of the row. The default value is `nil`.
         - operators: The predicate operators of the row. The default value is `[.equalTo, .lessThan, .greaterThan, .notEqualTo]`.
      
-     - Returns: A row template initialized for displaying compound predicates with Float values.
+     - Returns: A row template initialized for displaying compound predicates with Double values.
      */
-    convenience init(float title: String, initialValue: Float? = nil, operators: [NSComparisonPredicate.Operator] = [.equalTo, .lessThan, .greaterThan, .notEqualTo]) {
-        self.init(title, type: .floatAttributeType, operators: operators, initialValue: initialValue)
+    convenience init(double title: String, initialValue: Double? = nil, operators: [NSComparisonPredicate.Operator] = [.equalTo, .lessThan, .greaterThan, .notEqualTo]) {
+        self.init(title, type: .doubleAttributeType, operators: operators, initialValue: initialValue)
     }
     
     /**
-     Initializes and returns a row template with Float values.
+     Initializes and returns a row template with Double values.
      
      - Parameters:
         - titles: The titles of the row.
         - initialValue: The initial value of the row. The default value is `nil`.
         - operators: The predicate operators of the row. The default value is `[.equalTo, .lessThan, .greaterThan, .notEqualTo]`.
      
-     - Returns: A row template initialized for displaying compound predicates with Float values.
+     - Returns: A row template initialized for displaying compound predicates with Double values.
      */
-    convenience init(float titles: [String], initialValue: Float? = nil, operators: [NSComparisonPredicate.Operator] = [.equalTo, .lessThan, .greaterThan, .notEqualTo]) {
-        self.init(titles, type: .floatAttributeType, operators: operators, initialValue: initialValue)
+    convenience init(double titles: [String], initialValue: Double? = nil, operators: [NSComparisonPredicate.Operator] = [.equalTo, .lessThan, .greaterThan, .notEqualTo]) {
+        self.init(titles, type: .doubleAttributeType, operators: operators, initialValue: initialValue)
     }
     
     /**

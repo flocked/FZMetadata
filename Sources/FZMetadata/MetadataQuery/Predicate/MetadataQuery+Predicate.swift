@@ -1166,7 +1166,7 @@ extension Bool: QueryBool {}
 extension Optional: QueryBool where Wrapped: QueryBool {}
 
 /// Conforms `FileType` to be used in a metadata query predicate.
-public protocol QueryFileType {}
+public protocol QueryFileType: QueryEquatable {}
 extension FileType: QueryFileType {}
 extension Optional: QueryFileType where Wrapped: QueryFileType {}
 
@@ -1210,7 +1210,7 @@ protocol AnyRange {
 extension Range: AnyRange {}
 extension ClosedRange: AnyRange {}
 
-// MARK: MetadataQuery.PredicateStringOptions
+// MARK: QueryDateRange
 
 enum QueryDateRange {
     case now
@@ -1223,9 +1223,7 @@ enum QueryDateRange {
     case last(Int, Calendar.Component)
     case sameDay(Date)
     case same(Calendar.Component, Date)
-}
 
-extension QueryDateRange {
     static func values(for unit: Calendar.Component) -> (String, Int)? {
         switch unit {
         case .year: return ("$this_year", 1)
@@ -1275,6 +1273,8 @@ extension QueryDateRange {
     }
 }
 
+// MARK: FileType + Predicate
+
 extension FileType {
     var metadataPredicate: NSPredicate {
         let key: NSExpression
@@ -1317,3 +1317,563 @@ extension FileType {
         return NSComparisonPredicate(leftExpression: key, rightExpression: value, modifier: modifier, type: type)
     }
 }
+
+/*
+protocol GeneralPredicate {
+    var mdKey: String { get }
+    var predicate: NSPredicate? { get }
+}
+
+protocol _QueryComparable: GeneralPredicate {
+    
+}
+
+@dynamicMemberLookup
+class RootPredicate: GeneralPredicate {
+    typealias ComparisonOperator = NSComparisonPredicate.Operator
+
+    let mdKey: String
+    let predicate: NSPredicate?
+    
+    init(_ predicate: NSPredicate) {
+        self.mdKey = "Root"
+        self.predicate = predicate
+    }
+
+    init() {
+        self.mdKey = "Root"
+        self.predicate = nil
+    }
+    
+    /// Returns the metadata attribute for the specified `MetadataItem` keypath.
+    public subscript(dynamicMember member: KeyPath<MetadataItem, Bool?>) -> MetadataQuery.Predicate<Bool> {
+        .comparison(member.mdItemKey, .equalTo, true)
+    }
+
+    /// Returns the metadata attribute for the specified `MetadataItem` keypath.
+    public subscript<V>(dynamicMember member: KeyPath<MetadataItem, V>) -> CollectionPredicate where V: QueryCollection {
+        .init(member.mdItemKey)
+    }
+    
+    /// Returns the metadata attribute for the specified `MetadataItem` keypath.
+    public subscript<V>(dynamicMember member: KeyPath<MetadataItem, V>) -> DatePredicate where V: QueryDate {
+        .init(member.mdItemKey)
+    }
+    
+    /// Returns the metadata attribute for the specified `MetadataItem` keypath.
+    public subscript<V>(dynamicMember member: KeyPath<MetadataItem, V>) -> StringPredicate where V: QueryString {
+        .init(member.mdItemKey)
+    }
+    
+    static prefix func ! (_ lhs: RootPredicate) -> RootPredicate {
+        .not(lhs)
+    }
+
+    static func && (_ lhs: RootPredicate, _ rhs: RootPredicate) -> RootPredicate {
+        .and([lhs, rhs])
+    }
+
+    static func || (_ lhs: RootPredicate, _ rhs: RootPredicate) -> RootPredicate {
+        .or([lhs, rhs])
+    }
+    
+    static func and(_ predicates: [RootPredicate]) -> RootPredicate {
+        .init(NSCompoundPredicate(and: predicates.compactMap(\.predicate)))
+    }
+
+    static func or(_ predicates: [RootPredicate]) -> RootPredicate {
+        .init(NSCompoundPredicate(or: predicates.compactMap(\.predicate)))
+    }
+
+    static func not(_ predicate: RootPredicate) -> RootPredicate {
+        if let predicate = predicate.predicate {
+            return .init(NSCompoundPredicate(not: predicate))
+        }
+        return predicate
+    }
+    
+    static func comparison(_ mdKey: String, _ type: ComparisonOperator = .equalTo, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .init(_PredicateBuilder.comparison(mdKey, type, value, options))
+    }
+
+    static func between(_ mdKey: String, _ value: Any) -> RootPredicate {
+        .init(_PredicateBuilder.between(mdKey, value: value))
+    }
+
+    static func between(_ mdKey: String, values: [Any]) -> RootPredicate {
+        .init(_PredicateBuilder.between(mdKey, values: values))
+    }
+    
+    static func and(_ mdKey: String, _: ComparisonOperator = .equalTo, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> RootPredicate {
+        .init(_PredicateBuilder.comparisonAnd(mdKey, .equalTo, values, options))
+    }
+
+    static func or(_ mdKey: String, _: ComparisonOperator = .equalTo, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = [[]]) -> RootPredicate {
+        .init(_PredicateBuilder.comparisonOr(mdKey, .equalTo, values, options))
+    }
+}
+
+class CollectionPredicate: GeneralPredicate {
+    let mdKey: String
+    let predicate: NSPredicate?
+    init(_ mdKey: String) {
+        self.mdKey = mdKey
+        self.predicate = nil
+    }
+}
+
+class StringPredicate: GeneralPredicate {
+    let mdKey: String
+    let predicate: NSPredicate?
+    init(_ mdKey: String) {
+        self.mdKey = mdKey
+        self.predicate = nil
+    }
+    
+    /**
+     Checks if a string contains a given string.
+
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
+     */
+    func contains(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .comparison(mdKey, .contains, value, options)
+    }
+    
+    /**
+     Checks if a string contains any of the given strings.
+
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
+     */
+    func contains<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .or(mdKey, .contains, Array(values), [options])
+    }
+
+    /**
+     Checks if a string begins with a given string.
+
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
+     */
+    func begins(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .comparison(mdKey, .beginsWith, value, options)
+    }
+
+    /**
+     Checks if a string begins with any of the given strings.
+
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
+     */
+    func begins<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .or(mdKey, .beginsWith, Array(values), [options])
+    }
+
+    /**
+     Checks if a string ends with a given string.
+
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
+     */
+    func ends(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .comparison(mdKey, .endsWith, value, options)
+    }
+
+    /**
+     Checks if a string ends with any of the given strings.
+
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
+     */
+    func ends<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .or(mdKey, .endsWith, Array(values), [options])
+    }
+
+    /**
+     Checks if a string equals to a given string.
+
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
+     */
+    func equals(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .comparison(mdKey, .equalTo, value, options)
+    }
+
+    /**
+     Checks if a string equals to any of the given strings.
+
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
+     */
+    func equals<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .or(mdKey, .equalTo, Array(values), [options])
+    }
+
+    /**
+     Checks if a string doesn't equal to a given string.
+
+     - Parameters:
+        - value: The string to check.
+        - options: String options used to evaluate the search query.
+     */
+    func equalsNot(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .comparison(mdKey, .notEqualTo, value, options)
+    }
+
+    /**
+     Checks if a string doesn't equal to any of the given strings.
+
+     - Parameters:
+        - values: The strings to check.
+        - options: String options used to evaluate the search query.
+     */
+    func equalsNot<C: Collection<String>>(_ values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> RootPredicate {
+        .or(mdKey, .notEqualTo, Array(values), [options])
+    }
+
+    /// Checks if a string begins with a given string.
+    static func *== (_ lhs: StringPredicate, _ value: String) -> RootPredicate {
+        .comparison(lhs.mdKey, .beginsWith, value)
+    }
+
+    /// Checks if a string begins with any of the given strings.
+    static func *== <C: Collection<String>>(_ lhs: StringPredicate, _ values: C) -> RootPredicate {
+        .or(lhs.mdKey, .beginsWith, Array(values))
+    }
+
+    /// Checks if a string contains a given string.
+    static func *=* (_ lhs: StringPredicate, _ rhs: String) -> RootPredicate {
+        .comparison(lhs.mdKey, .contains, rhs)
+    }
+
+    /// Checks if a string contains any of the given strings.
+    static func *=* <C: Collection<String>>(_ lhs: StringPredicate, _ values: C) -> RootPredicate {
+        .or(lhs.mdKey, .contains, Array(values))
+    }
+
+    /// Checks if a string ends with a given string.
+    static func ==* (_ lhs: StringPredicate, _ rhs: String) -> RootPredicate {
+        .comparison(lhs.mdKey, .endsWith, rhs)
+    }
+
+    /// Checks if a string ends with any of the given strings.
+    static func ==* <C: Collection<String>>(_ lhs: StringPredicate, _ values: C) -> RootPredicate {
+        .or(lhs.mdKey, .endsWith, Array(values))
+    }
+}
+
+class DatePredicate: GeneralPredicate, _QueryComparable {
+    let mdKey: String
+    let predicate: NSPredicate?
+    init(_ mdKey: String) {
+        self.mdKey = mdKey
+        self.predicate = nil
+    }
+    
+    /// Checks if a date is now.
+    var isNow: RootPredicate {
+        .init(query(for: .now, mdKey: mdKey))
+    }
+
+    /// Checks if a date is this hour.
+    var isThisHour: RootPredicate {
+        .init(query(for: .this(.hour), mdKey: mdKey))
+    }
+
+    /// Checks if a date is today.
+    var isToday: RootPredicate {
+        .init(query(for: .today, mdKey: mdKey))
+    }
+
+    /// Checks if a date was yesterday.
+    var isYesterday: RootPredicate {
+        .init(query(for: .yesterday, mdKey: mdKey))
+    }
+
+    /// Checks if a date is the same day as a given date.
+    func isSameDay(as date: Date) -> RootPredicate {
+        .init(query(for: .same(.day, date), mdKey: mdKey))
+    }
+
+    /// Checks if a date is this week.
+    var isThisWeek: RootPredicate {
+        .init(query(for: .this(.weekOfYear), mdKey: mdKey))
+    }
+
+    /// Checks if a date is last week.
+    var isLastWeek: RootPredicate {
+        .init(query(for: .last(1, .weekOfYear), mdKey: mdKey))
+    }
+
+    /// Checks if a date is the same week as a given date.
+    func isSameWeek(as date: Date) -> RootPredicate {
+        .init(query(for: .same(.weekOfYear, date), mdKey: mdKey))
+    }
+
+    /// Checks if a date is this month.
+    var isThisMonth: RootPredicate {
+        .init(query(for: .this(.month), mdKey: mdKey))
+    }
+
+    /// Checks if a date is last month.
+    var isLastMonth: RootPredicate {
+        .init(query(for: .last(1, .month), mdKey: mdKey))
+    }
+
+    /// Checks if a date is the same month as a given date.
+    func isSameMonth(as date: Date) -> RootPredicate {
+        .init(query(for: .same(.month, date), mdKey: mdKey))
+    }
+
+    /// Checks if a date is this year.
+    var isThisYear: RootPredicate {
+        .init(query(for: .this(.year), mdKey: mdKey))
+    }
+
+    /// Checks if a date is last year.
+    var isLastYear: RootPredicate {
+        .init(query(for: .last(1, .year), mdKey: mdKey))
+    }
+
+    /// Checks if a date is the same year as a given date.
+    func isSameYear(as date: Date) -> RootPredicate {
+        .init(query(for: .same(.year, date), mdKey: mdKey))
+    }
+
+    /// Checks if a date is before a given date .
+    func isBefore(_ date: Date) -> RootPredicate {
+        .comparison(mdKey, .lessThan, date)
+    }
+
+    /// Checks if a date is after a given date .
+    func isAfter(_ date: Date) -> RootPredicate {
+        .comparison(mdKey, .greaterThan, date)
+    }
+
+    /**
+     Checks if a date is at the same calendar unit as today.
+
+     Example:
+     ```swift
+     // creationDate was this week.
+     { $0.creationDate.this(.week) }
+
+     // creationDate was this year.
+     { $0.creationDate.this(.year) }
+     ```
+     */
+    func this(_ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
+        .init(query(for: .this(unit), mdKey: mdKey))
+    }
+
+    /**
+     Checks if a date is within the last `amout` of  calendar units.
+
+     Example:
+     ```swift
+     // creationDate was within the last 8 weeks.
+     { $0.creationDate.within(8, .week) }
+
+     // creationDate was within the last 2 years.
+     { $0.creationDate.within(2, .year) }
+     ```
+     */
+    func within(_ amout: Int, _ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
+        .init(query(for: .last(amout, unit), mdKey: mdKey))
+    }
+
+    /// Checks if a date is between the specified date interval.
+    func between(_ interval: DateInterval) -> MetadataQuery.Predicate<Bool> {
+        .between(mdKey, [interval.start, interval.end])
+    }
+
+    /*
+     /// Checks if a date is last week.
+      public var isWeekday:  MetadataQuery.Predicate<Bool> {
+          .init(query(for: .last(1, .year), mdKey: mdKey))
+      }
+
+     /// Checks if a date is last week.
+      public var isWeekend:  MetadataQuery.Predicate<Bool> {
+          .init(query(for: .last(1, .year), mdKey: mdKey))
+      }
+      */
+
+    internal func query(for queryDate: QueryDateRange, mdKey: String) -> NSPredicate {
+        _PredicateBuilder.between(mdKey, values: queryDate.values)
+    }
+}
+
+enum _PredicateBuilder {
+    typealias ComparisonOperator = NSComparisonPredicate.Operator
+
+    static func comparisonAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
+        let predicates = values.enumerated().enumerated().compactMap { comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? []) }
+        return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(and: predicates)
+    }
+
+    static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
+        let predicates = values.enumerated().enumerated().compactMap { comparison(mdKey, type, $0.element, ($0.offset < options.count) ? options[$0.offset] : options.last ?? []) }
+        return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
+    }
+
+    static func comparison(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
+        var value = value
+        switch (mdKey, value) {
+        case let (_, value as String):
+            return string(mdKey, type, value, options)
+        case let (_, value as CGSize):
+            return size(mdKey, type, value)
+        case let (_, rect as CGRect):
+            value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
+        //    case (_, let value as QueryStringOption):
+        //        return queryString(mdKey, type, value)
+        case let (_, _value as (any QueryRawRepresentable)):
+            value = _value.rawValue
+        default: break
+        }
+
+        let key = NSExpression(forKeyPath: mdKey)
+        let valueEx = NSExpression(forConstantValue: value)
+        return NSComparisonPredicate(leftExpression: key, rightExpression: valueEx, modifier: .direct, type: type)
+    }
+
+    static func between(_ mdKey: String, value: Any) -> NSPredicate {
+        var value = value
+        switch value {
+        case let _value as (any AnyRange):
+            value = [_value.lowerBound, _value.upperBound]
+        default: break
+        }
+        let _value = value as! [Any]
+        let predicates = [comparison(mdKey, .greaterThanOrEqualTo, _value[0]), comparison(mdKey, .lessThanOrEqualTo, _value[1])]
+        return NSCompoundPredicate(and: predicates)
+    }
+
+    static func between(_ mdKey: String, values: [Any]) -> NSPredicate {
+        let predicates = values.compactMap { between(mdKey, value: $0) }
+        return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
+    }
+
+    static func size(_ mdKey: String, _ type: ComparisonOperator, _ value: CGSize) -> NSPredicate {
+        let widthMDKey = mdKey.replacingOccurrences(of: "Size", with: "Width")
+        let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
+        let predicates = [comparison(widthMDKey, type, [value.width]), comparison(heightMDKey, type, [value.height])]
+        return NSCompoundPredicate(and: predicates)
+    }
+
+    /*
+     static func queryString(_ mdKey: String, _ type: ComparisonOperator, _ queryString: QueryStringOption) -> NSPredicate {
+             return string(mdKey, type, queryString.value, queryString.options)
+     }
+      */
+
+    static func string(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions? = []) -> NSPredicate {
+        var mdKey = mdKey
+        var value = value
+        var options = options ?? []
+        options.insert(MetadataQuery.PredicateStringOptions.extract(&value))
+        let predicateString: String
+        if mdKey == "kMDItemFSExtension" {
+            mdKey = "kMDItemFSName"
+            predicateString = "\(mdKey) = '*.\(value)'\(options.string)"
+        } else {
+            switch type {
+            case .contains:
+                predicateString = "\(mdKey) = '*\(value)*'\(options.string)"
+            case .beginsWith:
+                predicateString = "\(mdKey) = '\(value)*'\(options.string)"
+            case .endsWith:
+                predicateString = "\(mdKey) = '*\(value)'\(options.string)"
+            case .notEqualTo:
+                predicateString = "\(mdKey) != '\(value)'\(options.string)"
+            default:
+                predicateString = "\(mdKey) = '\(value)'\(options.string)"
+            }
+        }
+        #if os(macOS)
+            return NSPredicate(fromMetadataQueryString: predicateString)!
+        #else
+            return NSPredicate(format: predicateString)
+        #endif
+    }
+}
+
+// extension GeneralPredicate where
+
+func test() {
+    var predicate: ((RootPredicate) -> (RootPredicate))?
+    predicate = { $0.creationDate.isNow && $0.creationDate.isToday && $0.fileName.begins(with: "ff") }
+}
+
+extension _QueryComparable {
+    /// Checks if an element is greater than a given value.
+    static func > (_ lhs: Self, _ rhs: T) -> RootPredicate {
+        .comparison(lhs.mdKey, .greaterThan, rhs)
+    }
+
+    /// Checks if an element is greater than or equal to given value.
+    static func >= (_ lhs: Self, _ rhs: T) -> RootPredicate {
+        .comparison(lhs.mdKey, .greaterThanOrEqualTo, rhs)
+    }
+
+    /// Checks if an element is less than a given value.
+    static func < (_ lhs: Self, _ rhs: T) -> RootPredicate {
+        .comparison(lhs.mdKey, .lessThan, rhs)
+    }
+
+    /// Checks if an element is less than or equal to given value.
+    static func <= (_ lhs: Self, _ rhs: T) -> RootPredicate {
+        .comparison(lhs.mdKey, .lessThanOrEqualTo, rhs)
+    }
+
+    /// Checks if an element is between a given range.
+    func between(_ range: Range<T>) -> RootPredicate {
+        .between(mdKey, range)
+    }
+
+    /// Checks if an element is between a given range.
+    static func == (_ lhs: Self, _ rhs: Range<T>) -> RootPredicate {
+        .between(lhs.mdKey, rhs)
+    }
+
+    /// Checks if an element is between a given range.
+    func between(_ range: ClosedRange<T>) -> RootPredicate {
+        .between(mdKey, range)
+    }
+
+    /// Checks if an element is between a given range.
+    static func == (_ lhs: Self, _ rhs: ClosedRange<T>) -> RootPredicate {
+        .between(lhs.mdKey, rhs)
+    }
+
+    /// Checks if an element is between any given range.
+    func between<C>(any ranges: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == Range<T> {
+        .between(mdKey, values: Array(ranges))
+    }
+
+    /// Checks if an element is between any given range.
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == Range<T> {
+        .between(lhs.mdKey, values: Array(rhs))
+    }
+
+    /// Checks if an element is between any given range.
+    func between<C>(any ranges: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == ClosedRange<T> {
+        .between(mdKey, values: Array(ranges))
+    }
+
+    /// Checks if an element is between any given range.
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == ClosedRange<T> {
+        .between(lhs.mdKey, values: Array(rhs))
+    }
+}
+*/

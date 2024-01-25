@@ -48,7 +48,7 @@ import FZSwiftUtils
  query.start()
  ```
 
- It can also monitor for changes via ``enableMonitoring()``.  The query calls your results handler, whenever new files match the query or file attributes change.
+ It can also monitor for updates to the results via ``enableMonitoring()``.  The query calls your results handler, whenever new files match the query or the observed file attributes change.
 
  ```swift
  query.predicate = { $0.isScreenCapture } // Screenshots files
@@ -349,9 +349,11 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     Enables the monitoring of changes to the result.
+     Enables the monitoring of updates to the results.
+     
+     The query calls your results handler, whenever new files match the query or the observed metadata attributes change.
 
-     By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
+     By default, notification of updated results occurs at `1.0` seconds. Use ``updateNotificationInterval`` to change the internval.
      */
     open func enableMonitoring() {
         query.enableUpdates()
