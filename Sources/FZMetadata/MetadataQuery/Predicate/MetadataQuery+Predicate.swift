@@ -379,6 +379,24 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 // MARK: FileType
 
 public extension MetadataQuery.Predicate where T: QueryFileType {
+    static func == (_ lhs: Self, _ rhs: FileType) -> MetadataQuery.Predicate<Bool> {
+        .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
+    }
+
+    static func != (_ lhs: Self, _ rhs: FileType) -> MetadataQuery.Predicate<Bool> {
+        .comparison(lhs.mdKey, .notEqualTo, rhs.identifier!)
+    }
+    
+    /// Checks if an element equals any given values.
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
+        .or(lhs.mdKey, .equalTo, rhs.compactMap(\.optional?.identifier))
+    }
+
+    /// Checks if an element equals any given values.
+    static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
+        .and(lhs.mdKey, .notEqualTo, rhs.compactMap(\.optional?.identifier))
+    }
+    
     static func == (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol, T.Wrapped == FileType {
         .comparison(lhs.mdKey, .equalTo, rhs.identifier!)
     }
@@ -1179,7 +1197,7 @@ extension Bool: QueryBool {}
 extension Optional: QueryBool where Wrapped: QueryBool {}
 
 /// Conforms `FileType` to be used in a metadata query predicate.
-public protocol QueryFileType: QueryEquatable {}
+public protocol QueryFileType {}
 extension FileType: QueryFileType {}
 extension Optional: QueryFileType where Wrapped: QueryFileType {}
 
