@@ -1002,10 +1002,11 @@ extension MetadataQuery.Predicate {
         static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
             values.enumerated().compactMap({ comparison(mdKey, type, $0.element) })
             var options = options
+            Swift.print("ooo", values.count, options.count)
+
             if options.count < values.count, let last = options.last {
                 options = options + Array(repeating: last, count: values.count - options.count)
             }
-            Swift.print("ooo", values.count, options.count)
             
             let predicates = values.enumerated().compactMap {
                 Swift.print("opti", (($0.offset < options.count) ? options[$0.offset] : options.last ?? []).rawValue)
