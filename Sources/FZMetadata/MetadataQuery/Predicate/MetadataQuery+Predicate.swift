@@ -376,7 +376,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
 }
 
 // MARK: FileType
-/*
+
 public extension MetadataQuery.Predicate where T: QueryFileType {
     /// Checks if the file type equals any of the specified file types.
     static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.Predicate<Bool> where C: Collection, C.Element == T, T: OptionalProtocol, T.Wrapped == FileType {
@@ -423,7 +423,7 @@ public extension MetadataQuery.Predicate where T: QueryFileType {
     }
     */
 }
- */
+ 
 
 // MARK: Comparable
 
@@ -1213,7 +1213,7 @@ extension Optional: QueryBool where Wrapped: QueryBool {}
 
 /// Conforms `FileType` to be used in a metadata query predicate.
 public protocol QueryFileType {}
-extension FileType: QueryFileType, QueryEquatable {}
+extension FileType: QueryFileType {}
 extension Optional: QueryFileType where Wrapped: QueryFileType {}
 
 /// Conforms `UTType` to be used in a metadata query predicate.
