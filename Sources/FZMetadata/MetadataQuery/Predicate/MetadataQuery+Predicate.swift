@@ -265,7 +265,7 @@ public extension MetadataQuery.Predicate where T == MetadataItem {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.folder")
     }
 
-    var isItem: MetadataQuery.Predicate<Bool> {
+    internal var isItem: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.item")
     }
 
