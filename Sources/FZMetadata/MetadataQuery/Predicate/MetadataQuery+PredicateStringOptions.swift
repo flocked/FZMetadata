@@ -8,18 +8,18 @@
 import Foundation
 
 public extension MetadataQuery {
-    /// Options for string comparison in a metadata query predicate.
+    /// Options for string comparison in a query predicate.
     struct PredicateStringOptions: OptionSet {
-        /// Case-sensitive predicate.
+        /// Case-sensitive string comparison.
         public static let caseSensitive = Self(rawValue: 1 << 0)
-        /// Diacritic-sensitive predicate.
+        /// Diacritic-sensitive string comparison.
         public static let diacriticSensitive = Self(rawValue: 1 << 1)
 
-        /// Case-sensitive predicate.
+        /// Case-sensitive string comparison.
         public static let c = Self(rawValue: 1 << 0)
-        /// Diacritic-sensitive predicate.
+        /// Diacritic-sensitive string comparison.
         public static let d = Self(rawValue: 1 << 1)
-        /// Case and diacritical-sensitive predicate.
+        /// Case and diacritical-sensitive string comparison.
         public static let cd: Self = [.c, .d]
 
         static let wordBased = Self(rawValue: 1 << 2)

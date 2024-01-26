@@ -68,6 +68,7 @@
 - ``==*(_:_:)-rzgf``
 - ``*=*(_:_:)-274ns``
 - ``*=*(_:_:)-7ijg7``
+- ``MetadataQuery/PredicateStringOptions``
 
 ### Date
 

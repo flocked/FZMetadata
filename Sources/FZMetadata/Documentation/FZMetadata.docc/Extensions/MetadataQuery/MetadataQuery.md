@@ -18,6 +18,7 @@
 - ``groupingAttributes``
 - ``predicate``
 - ``Predicate``
+- ``predicateFormat``
 - ``urls``
 - ``searchLocations``
 - ``searchScopes``
