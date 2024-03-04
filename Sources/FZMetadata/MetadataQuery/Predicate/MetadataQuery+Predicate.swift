@@ -1003,9 +1003,9 @@ enum QueryDateRange {
                 return ["\(values.0)", "\(values.0)(\(values.1 * value)"]
             }
         case let .sameDay(day):
-            return ["\(day.beginning(of: .day) ?? day)", "\(day.end(of: .day))"]
+            return ["\(day.beginning(of: .day) ?? day)", "\(day.end(of: .day) ?? day)"]
         case let .same(unit, date):
-            return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit))"]
+            return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
         }
         return []
     }
