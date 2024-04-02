@@ -414,6 +414,7 @@ open class MetadataQuery: NSObject {
             let changed: [MetadataItem] = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
 
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
+            Swift.print("queryUpdated", added.count, changed.count, removed.count)
 
             _results.remove(removed)
             _results = _results + added
