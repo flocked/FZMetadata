@@ -301,12 +301,15 @@ open class MetadataQuery: NSObject {
     }
     
     var _results: SynchronizedArray<MetadataItem> = []
+    var currentResults: SynchronizedArray<MetadataItem> = []
+
     func updateResults() {
         _results.synchronized = results(at: Array(0 ..< query.resultCount))
     }
 
     func resetResults() {
-        self._results.removeAll()
+        _results.removeAll()
+        currentResults.removeAll()
     }
 
     func results(at indexes: [Int]) -> [MetadataItem] {
@@ -418,10 +421,13 @@ open class MetadataQuery: NSObject {
                 (changed + added).forEach { _results.move($0, to: query.index(ofResult: $0) + 1) }
             }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            postResults(_results.synchronized, difference: diff)
+            if currentResults.synchronized != _results.synchronized {
+                currentResults.synchronized = _results.synchronized
+                postResults(_results.synchronized, difference: diff)
+            }
         }
     }
-
+    
     func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
         runWithOperationQueue {
             self.resultsHandler?(items, difference)
@@ -431,7 +437,7 @@ open class MetadataQuery: NSObject {
     func addObserver() {
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
-     //   NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
 
