@@ -449,7 +449,7 @@ open class MetadataQuery: NSObject {
     }
     
     /// Creates a metadata query with the specified operation queue.
-    convenience init(queue: OperationQueue) {
+    public convenience init(queue: OperationQueue) {
         self.init()
         operationQueue = queue
     }
