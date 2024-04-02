@@ -414,18 +414,20 @@ open class MetadataQuery: NSObject {
             let changed: [MetadataItem] = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
 
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
-            Swift.print("queryUpdated", added.count, changed.count, removed.count)
-
+            // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             _results.remove(removed)
             _results = _results + added
             if changed.isEmpty == false {
                 (changed + added).forEach { _results.move($0, to: query.index(ofResult: $0) + 1) }
             }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
+            postResults(_results.synchronized, difference: diff)
+            /*
             if currentResults.synchronized != _results.synchronized {
                 currentResults.synchronized = _results.synchronized
                 postResults(_results.synchronized, difference: diff)
             }
+             */
         }
     }
     
@@ -444,6 +446,12 @@ open class MetadataQuery: NSObject {
 
     func removeObserver() {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    /// Creates a metadata query with the specified operation queue.
+    convenience init(queue: OperationQueue) {
+        self.init()
+        operationQueue = queue
     }
 
     override public init() {
