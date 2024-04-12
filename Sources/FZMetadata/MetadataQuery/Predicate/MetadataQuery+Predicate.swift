@@ -195,7 +195,7 @@ public extension MetadataQuery {
 
         /// All mdKeys used for the predicate.
         var mdKeys: [String] {
-            self.predicate?.predicateFormat.matches(regex: #"\bkMDItem[a-zA-Z]*\b"#).compactMap(\.string).uniqued() ?? []
+            self.predicate?.predicateFormat.matches(pattern: #"\bkMDItem[a-zA-Z]*\b"#).compactMap(\.string).uniqued() ?? []
         }
 
         /// All attributes used for the predicate.
