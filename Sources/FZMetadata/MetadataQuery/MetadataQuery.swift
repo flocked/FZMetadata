@@ -312,16 +312,16 @@ open class MetadataQuery: NSObject {
 
     func result(at index: Int) -> MetadataItem? {
         let result = query.result(at: index) as? MetadataItem
-        //    values["kMDItemPath"] = result?.path
+        // result?.values["kMDItemPath"] = result?.path
         result?.values = resultAttributeValues(at: index)
         return result
     }
 
-    func resultAttributeValues(at index: Int) -> [String: Any] {
-        query.values(of: allAttributeKeys, forResultsAt: index)
+    open func resultAttributeValues(at index: Int) -> [String: Any] {
+        query.values(of: usedAttributeKeys, forResultsAt: index)
     }
 
-    var allAttributeKeys: [String] {
+    var usedAttributeKeys: [String] {
         var attributes = query.valueListAttributes
         attributes += ["kMDQueryResultContentRelevance"]
         attributes += predicate?(.root).mdKeys ?? ["kMDItemContentTypeTree"]
