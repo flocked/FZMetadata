@@ -171,8 +171,8 @@ open class MetadataQuery: NSObject {
      An array of file-system directory URLs.
 
      The query searches for files at these search locations. An empty array indicates that there is no limitation on where the query searches.
-
-     The query can alternativly also search globally or at specific scopes via ``searchScopes``.
+     
+     The query can alternativly also search at specific scopes via ``searchScopes``.
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
@@ -184,8 +184,8 @@ open class MetadataQuery: NSObject {
     /**
      An array containing the seatch scopes.
 
-     The query searches for files at the search scropes. The default value is an empty array which indicates that the query searches globally.
-     
+     The query searches for files at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
+          
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
