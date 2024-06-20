@@ -8,7 +8,7 @@
 import Foundation
 
 public extension MetadataQuery {
-    /// The result of a query grouped by the metadata attributes specified in ``groupingAttributes``.
+    /// The results of a query grouped by the metadata attributes specified in ``groupingAttributes``.
     struct ResultGroup {
         /// The metadata attribute of the group.
         public var attribute: MetadataItem.Attribute

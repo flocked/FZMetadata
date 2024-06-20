@@ -72,7 +72,7 @@ open class MetadataQuery: NSObject {
         /// The query is in it's initial phase of gathering matching items.
         case isGatheringFiles
 
-        /// The query is monitoring for updates to the result.
+        /// The query is monitoring for updates to the results.
         case isMonitoring
 
         /// The query is stopped.
@@ -122,7 +122,7 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     An array of attributes for grouping the result.
+     An array of attributes for grouping the results.
 
      The grouped results can be accessed via ``groupedResults``.
 
@@ -138,6 +138,8 @@ open class MetadataQuery: NSObject {
 
     /**
      The predicate used to filter query results.
+     
+     A value of `nil` returns all files and directories.
 
      The predicate is constructed by comparing ``MetadataItem`` properties to values using operators and functions. For example:
 
@@ -152,8 +154,6 @@ open class MetadataQuery: NSObject {
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      
-     A value of `nil` returns any file or directory.
-
      **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
@@ -172,7 +172,7 @@ open class MetadataQuery: NSObject {
 
      The query searches for files at these search locations. An empty array indicates that there is no limitation on where the query searches.
 
-     The query can alternativly search globally or at specific scopes via ``searchScopes``.
+     The query can alternativly also search globally or at specific scopes via ``searchScopes``.
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
@@ -185,7 +185,7 @@ open class MetadataQuery: NSObject {
      An array containing the seatch scopes.
 
      The query searches for files at the search scropes. The default value is an empty array which indicates that the query searches globally.
-
+     
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
@@ -196,7 +196,7 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     An array of sort descriptor objects for sorting the query result.
+     An array of sort descriptor objects for sorting the query results.
 
      Example usage:
 
@@ -204,13 +204,13 @@ open class MetadataQuery: NSObject {
      query.sortedBy = [.ascending(.fileSize), .descending(.creationDate)]
      ```
 
-     The result can be sorted by item relevance via the ``MetadataItem/Attribute/queryRelevance`` attribute.
+     The results can be sorted by item relevance via the ``MetadataItem/Attribute/queryRelevance`` attribute.
 
      ```swift
      query.sortedBy = [.ascending(.queryRelevance)]
      ```
 
-     The sorted result can be accessed via ``groupedResults``.
+     The sorted results can be accessed via ``groupedResults``.
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
@@ -235,7 +235,7 @@ open class MetadataQuery: NSObject {
         set { query.operationQueue = newValue }
     }
 
-    /// Starts the query, if it isn't running and resets the current result.
+    /// Starts the query and discards the previous results.
     open func start() {
         runWithOperationQueue {
             if self.query.start() {
@@ -247,7 +247,7 @@ open class MetadataQuery: NSObject {
     
     
 
-    /// Stops the  current query from gathering any further results.
+    /// Stops the query from gathering any further results.
     open func stop() {
         state = .isStopped
         query.stop()
@@ -283,7 +283,7 @@ open class MetadataQuery: NSObject {
     /**
      An array containing the query’s results.
 
-     The array contains ``MetadataItem`` objects. Accessing the result before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
+     The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
         if state != .isStopped {

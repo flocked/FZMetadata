@@ -9,7 +9,7 @@ import Foundation
 
 extension MetadataQuery {
     /**
-      A description of how to order the result of a query according to a metadata attribute.
+      A description of how to order the results of a query according to a metadata attribute.
 
       SortDescriptor can also be created by prependding `>>` ror an ascending, or `<<` (descending) to a metadata attribute.
 

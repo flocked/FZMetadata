@@ -53,12 +53,7 @@ open class MetadataItem {
     
     let item: NSMetadataItem
     var values: [String: Any] = [:] {
-        didSet { 
-            Swift.print("-----")
-            Swift.print("Changed old:", oldValue.keys)
-            Swift.print("Changed new:", oldValue.keys)
-            previousValues = oldValue
-        }
+        didSet { previousValues = oldValue }
     }
     
     var previousValues: [String: Any] = [:] {
@@ -69,6 +64,7 @@ open class MetadataItem {
     
     func calculateChangedAttributes() {
         guard !didCalculateChangedAttributes else { return }
+        Swift.print("calculateChangedAttributes")
         for val in previousValues {
             if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable), !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
                 _changedAttributes.append(attribute)
