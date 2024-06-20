@@ -286,7 +286,7 @@ open class MetadataQuery: NSObject {
      The array contains ``MetadataItem`` objects. Accessing the result before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        if state == .isGatheringFiles {
+        if state != .isStopped {
             updateResults()
         }
         return _results.synchronized
@@ -306,26 +306,22 @@ open class MetadataQuery: NSObject {
         _results.removeAll()
     }
 
+    func result(at index: Int) -> MetadataItem? {
+        let result = query.result(at: index) as? MetadataItem
+        result?.values = resultAttributeValues(at: index)
+        if usedAttributeKeys.contains("kMDItemURL"), result?.values["kMDItemURL"] == nil {
+            result?.values["kMDItemURL"] = result?.url
+        }
+        result?.values["kMDItemPath"] = result?.path
+        return result
+    }
+    
     func results(at indexes: [Int]) -> [MetadataItem] {
         indexes.compactMap { result(at: $0) }
     }
 
-    func result(at index: Int) -> MetadataItem? {
-        let result = query.result(at: index) as? MetadataItem
-        // result?.values["kMDItemPath"] = result?.path
-        result?.values = resultAttributeValues(at: index)
-        if usedAttributeKeys.contains("kMDItemURL"), let url = result?.url {
-            result?.values["kMDItemURL"] = url
-        }
-        if usedAttributeKeys.contains("kMDItemPath"), let path = result?.path {
-            result?.values["kMDItemPath"] = path
-        }
-        return result
-    }
-
     func resultAttributeValues(at index: Int) -> [String: Any] {
-        var values = query.values(of: usedAttributeKeys, forResultsAt: index)
-        return query.values(of: usedAttributeKeys, forResultsAt: index)
+        query.values(of: usedAttributeKeys, forResultsAt: index)
     }
 
     var usedAttributeKeys: [String] {
