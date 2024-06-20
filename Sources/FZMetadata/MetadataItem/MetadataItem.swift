@@ -50,9 +50,38 @@ import FZSwiftUtils
  ```
  */
 open class MetadataItem {
+    
     let item: NSMetadataItem
-    var values: [String: Any] = [:]
-
+    var values: [String: Any] = [:] {
+        didSet { previousValues = oldValue }
+    }
+    
+    var previousValues: [String: Any] = [:] {
+        didSet { didCalculateChangedAttributes = false }
+    }
+    
+    var didCalculateChangedAttributes: Bool = false
+    
+    func calculateChangedAttributes() {
+        guard !didCalculateChangedAttributes else { return }
+        for val in previousValues {
+            if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable), !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
+                _changedAttributes.append(attribute)
+            }
+        }
+        didCalculateChangedAttributes = true
+    }
+    
+    var _changedAttributes: [Attribute] = []
+    
+    /// The attributes that changed in a metadata query that is monitoring.
+    open var changedAttributes: [Attribute] {
+        if !didCalculateChangedAttributes {
+            calculateChangedAttributes()
+        }
+        return _changedAttributes
+    }
+    
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
 
