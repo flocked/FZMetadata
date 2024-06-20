@@ -287,7 +287,9 @@ open class MetadataQuery: NSObject {
      */
     open var results: [MetadataItem] {
         if state != .isStopped {
-            updateResults()
+            runWithPausedMonitoring {
+                self.updateResults()
+            }
         }
         return _results.synchronized
     }
@@ -415,7 +417,11 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    /// Creates a metadata query with the specified operation queue.
+    /**
+     Creates a metadata query with the specified operation queue.
+     
+     - Parameter queue: The queue on whicht results handler gets called.
+     */
     public convenience init(queue: OperationQueue) {
         self.init()
         operationQueue = queue
