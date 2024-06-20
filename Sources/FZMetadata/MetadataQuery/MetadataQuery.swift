@@ -427,6 +427,7 @@ open class MetadataQuery: NSObject {
         operationQueue = queue
     }
 
+    /// Creates a metadata query.
     override public init() {
         super.init()
         reset()
