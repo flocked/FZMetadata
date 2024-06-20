@@ -88,11 +88,20 @@ open class MetadataQuery: NSObject {
     open var stateHandler: ((_ state: State) -> Void)?
 
     let delegate = DelegateProxy()
-    open var isRunning: Bool { query.isStarted }
+    open var isRunning: Bool { query.isStarted && !query.isStopped }
     open var isGathering: Bool { query.isGathering }
     open var isStopped: Bool { query.isStopped }
     // var isMonitoring: Bool { return !isStopped && !isGathering }
-
+    
+    /// The state of the query.
+    open var state: State = .isStopped {
+        didSet {
+            guard oldValue != state else { return }
+            stateHandler?(state)
+        }
+    }
+    
+    /*
     /// The state of the query.
     open var state: State {
         if isStopped || !isRunning {
@@ -100,6 +109,7 @@ open class MetadataQuery: NSObject {
         }
         return isGathering ? .isGatheringFiles : isMonitoring ? .isMonitoring : .isStopped
     }
+    */
 
     /**
      An array of URLs whose metadata attributes are gathered by the query.
@@ -240,7 +250,7 @@ open class MetadataQuery: NSObject {
     /// Starts the query, if it isn't running and resets the current result.
     open func start() {
         runWithOperationQueue {
-            if self.query.start() == true {
+            if self.query.start() {
                 self.resetResults()
             }
         }
@@ -250,9 +260,7 @@ open class MetadataQuery: NSObject {
 
     /// Stops the  current query from gathering any further results.
     open func stop() {
-        if !isStopped {
-            stateHandler?(.isStopped)
-        }
+        state = .isStopped
         query.stop()
     }
 
@@ -379,7 +387,7 @@ open class MetadataQuery: NSObject {
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
         resetResults()
-        stateHandler?(.isGatheringFiles)
+        state = .isGatheringFiles
     }
 
     @objc func queryGatheringFinished(_: Notification) {
@@ -391,7 +399,7 @@ open class MetadataQuery: NSObject {
         }
 
         if isMonitoring {
-            stateHandler?(.isMonitoring)
+            state = .isMonitoring
         } else {
             stop()
         }
@@ -412,7 +420,7 @@ open class MetadataQuery: NSObject {
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             _results.remove(removed)
             _results = _results + added
-            if changed.isEmpty == false {
+            if !changed.isEmpty {
                 (changed + added).forEach { _results.move($0, to: query.index(ofResult: $0) + 1) }
             }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
@@ -462,7 +470,7 @@ open class MetadataQuery: NSObject {
 import AppKit
 extension MetadataQuery {
     /// Displays a Spotlight search results window in Finder for the ``predicate-swift.property``.
-    public func showSearchResultsInFinder() {
+    open func showSearchResultsInFinder() {
         if let format = query.predicate?.predicateFormat {
             NSWorkspace.shared.showSearchResults(forQueryString: format)
         }
