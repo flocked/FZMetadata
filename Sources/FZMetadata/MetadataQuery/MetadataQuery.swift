@@ -151,6 +151,8 @@ open class MetadataQuery: NSObject {
      ```
 
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     
+     A value of `nil` returns any file or directory.
 
      **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
