@@ -54,7 +54,9 @@ open class MetadataItem {
     let item: NSMetadataItem
     var values: [String: Any] = [:] {
         didSet { 
-            Swift.print("Value changed", oldValue.keys)
+            Swift.print("-----")
+            Swift.print("Changed old:", oldValue.keys)
+            Swift.print("Changed new:", oldValue.keys)
             previousValues = oldValue
         }
     }
