@@ -69,7 +69,11 @@ open class MetadataItem {
         Swift.print("calculateChangedAttributes")
         for val in previousValues {
             if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable) {
-                Swift.print(val.key, "equal:", old.isEqual(new), ", attr:", Attribute(rawValue: val.key) != nil)
+                if val.key == "kMDItemUserTags" {
+                    Swift.print(val.key, "equal:", old.isEqual(new), ", attr:", Attribute(rawValue: val.key) != nil)
+                    Swift.print(previousValues[val.key] as? [String] ?? "nil", values[val.key] as? [String] ?? "nil")
+                    Swift.print(values[val.key] as? [String] ?? "nil")
+                }
                 if !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
                     _changedAttributes.append(attribute)
                 }
