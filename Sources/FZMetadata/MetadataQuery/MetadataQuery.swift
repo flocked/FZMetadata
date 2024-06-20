@@ -304,22 +304,15 @@ open class MetadataQuery: NSObject {
         }
     }
 
-    func result(at index: Int) -> MetadataItem? {
-        let result = query.result(at: index) as? MetadataItem
-        result?.values = resultAttributeValues(at: index)
-        if allAttributeKeys.contains("kMDItemURL"), result?.values["kMDItemURL"] == nil {
-            result?.values["kMDItemURL"] = result?.url
-        }
-        result?.values["kMDItemPath"] = result?.path
+    func result(at index: Int, keys: [String]) -> MetadataItem? {
+        guard let result = query.result(at: index) as? MetadataItem else { return nil }
+        updateItemValues(result, index: index, keys: keys)
         return result
     }
     
     func results(at indexes: [Int]) -> [MetadataItem] {
-        indexes.compactMap { result(at: $0) }
-    }
-
-    func resultAttributeValues(at index: Int) -> [String: Any] {
-        query.values(of: allAttributeKeys, forResultsAt: index)
+        let keys = allAttributeKeys
+        return indexes.compactMap { result(at: $0, keys: keys) }
     }
 
     var allAttributeKeys: [String] {
@@ -329,6 +322,14 @@ open class MetadataQuery: NSObject {
         attributes += sortedBy.compactMap(\.key)
         attributes += groupingAttributes.compactMap(\.rawValue)
         return attributes.uniqued()
+    }
+    
+    func updateItemValues(_ item: MetadataItem, index: Int, keys: [String]) {
+        item.values = query.values(of: keys, forResultsAt: index)
+        if keys.contains("kMDItemURL"), item.values["kMDItemURL"] == nil {
+            item.values["kMDItemURL"] = item.url
+        }
+        item.values["kMDItemPath"] = item.path
     }
 
     /**
@@ -399,7 +400,12 @@ open class MetadataQuery: NSObject {
             results.remove(removed)
             results = results + added
             if !changed.isEmpty {
-                (changed + added).forEach { results.move($0, to: query.index(ofResult: $0) + 1) }
+                let keys = allAttributeKeys
+                (changed + added).forEach {
+                    let itemIndex = query.index(ofResult: $0)
+                    results.move($0, to: itemIndex + 1)
+                    updateItemValues($0, index: itemIndex, keys: keys)
+                }
             }
             _results.synchronized = results
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
