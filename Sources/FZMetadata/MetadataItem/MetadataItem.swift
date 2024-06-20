@@ -57,39 +57,7 @@ open class MetadataItem {
     }
     
     var previousValues: [String: Any] = [:] {
-        didSet { didCalculateChangedAttributes = false }
-    }
-    
-    var didCalculateChangedAttributes: Bool = false
-    
-    func calculateChangedAttributes() {
-        guard !didCalculateChangedAttributes else { return }
-        Swift.print()
-        Swift.print("---------")
-        Swift.print("calculateChangedAttributes")
-        for val in previousValues {
-            if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable) {
-                if val.key == "kMDItemUserTags" {
-                    Swift.print(val.key, "equal:", old.isEqual(new), ", attr:", Attribute(rawValue: val.key) != nil)
-                    Swift.print(previousValues[val.key] as? [String] ?? "nil", values[val.key] as? [String] ?? "nil")
-                    Swift.print(values[val.key] as? [String] ?? "nil")
-                }
-                if !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
-                    _changedAttributes.append(attribute)
-                }
-            }
-        }
-        didCalculateChangedAttributes = true
-    }
-    
-    var _changedAttributes: [Attribute] = []
-    
-    /// The attributes that changed in a metadata query that is monitoring.
-    open var changedAttributes: [Attribute] {
-        if !didCalculateChangedAttributes {
-            calculateChangedAttributes()
-        }
-        return _changedAttributes
+        didSet { _modifiedAttributes = nil }
     }
     
     /**
@@ -134,17 +102,9 @@ open class MetadataItem {
             }
         }
 
-        init?(url: URL, values: [String: Any]? = nil) {
-            if let item = NSMetadataItem(url: url) {
-                self.item = item
-                var values = values ?? [:]
-                values[NSMetadataItemURLKey] = url
-                self.values = values
-            } else {
-                return nil
-            }
-        }
     #endif
+    
+    // MARK: - Attributes
 
     /**
      The available attributes for this metadata item.
@@ -161,6 +121,27 @@ open class MetadataItem {
         }
         attributes = attributes.sorted()
         return attributes.compactMap { Attribute(rawValue: $0) }
+    }
+        
+    /// The attributes that changed in a metadata query that is monitoring.
+    open var modifiedAttributes: [Attribute] {
+        if _modifiedAttributes == nil {
+            updateModifiedAttributes()
+        }
+        return _modifiedAttributes ?? []
+    }
+    
+    var _modifiedAttributes: [Attribute]? = nil
+    
+    func updateModifiedAttributes() {
+        _modifiedAttributes = []
+        for val in previousValues {
+            if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable) {
+                if !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
+                    _modifiedAttributes?.append(attribute)
+                }
+            }
+        }
     }
 
     // MARK: - File

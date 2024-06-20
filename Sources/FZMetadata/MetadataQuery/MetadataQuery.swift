@@ -84,18 +84,10 @@ open class MetadataQuery: NSObject {
     /// The handler that gets called when the results changes with the items of the results and the difference compared to the previous results.
     open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)?
 
-    /// The handler that gets called when the state changes.
-    open var stateHandler: ((_ state: State) -> Void)?
-
     let delegate = DelegateProxy()
     
     /// The state of the query.
-    open var state: State = .isStopped {
-        didSet {
-            guard oldValue != state else { return }
-            stateHandler?(state)
-        }
-    }
+    open var state: State = .isStopped
 
     /**
      An array of URLs whose metadata attributes are gathered by the query.
@@ -325,11 +317,13 @@ open class MetadataQuery: NSObject {
     }
     
     func updateItemValues(_ item: MetadataItem, index: Int, keys: [String]) {
-        item.values = query.values(of: keys, forResultsAt: index)
-        if keys.contains("kMDItemURL"), item.values["kMDItemURL"] == nil {
-            item.values["kMDItemURL"] = item.url
+        var values = query.values(of: keys, forResultsAt: index)
+        
+        if keys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
+            values["kMDItemURL"] = item.url
         }
-        item.values["kMDItemPath"] = item.path
+        values["kMDItemPath"] = item.path
+        item.values = values
     }
 
     /**
@@ -395,7 +389,7 @@ open class MetadataQuery: NSObject {
             let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
 
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
-            // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
+            Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
             results.remove(removed)
             results = results + added
