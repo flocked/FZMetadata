@@ -240,7 +240,7 @@ open class MetadataQuery: NSObject {
         runWithOperationQueue {
             if self.query.start() {
                 self.state = .isGatheringFiles
-                self.resetResults()
+                self._results.removeAll()
             }
         }
     }
@@ -287,9 +287,7 @@ open class MetadataQuery: NSObject {
      */
     open var results: [MetadataItem] {
         if state != .isStopped {
-            runWithPausedMonitoring {
-                self.updateResults()
-            }
+            updateResults()
         }
         return _results.synchronized
     }
@@ -301,17 +299,15 @@ open class MetadataQuery: NSObject {
     var _results: SynchronizedArray<MetadataItem> = []
 
     func updateResults() {
-        _results.synchronized = results(at: Array(0 ..< query.resultCount))
-    }
-
-    func resetResults() {
-        _results.removeAll()
+        runWithPausedMonitoring {
+            self._results.synchronized = self.results(at: Array(0 ..< self.query.resultCount))
+        }
     }
 
     func result(at index: Int) -> MetadataItem? {
         let result = query.result(at: index) as? MetadataItem
         result?.values = resultAttributeValues(at: index)
-        if usedAttributeKeys.contains("kMDItemURL"), result?.values["kMDItemURL"] == nil {
+        if allAttributeKeys.contains("kMDItemURL"), result?.values["kMDItemURL"] == nil {
             result?.values["kMDItemURL"] = result?.url
         }
         result?.values["kMDItemPath"] = result?.path
@@ -323,10 +319,10 @@ open class MetadataQuery: NSObject {
     }
 
     func resultAttributeValues(at index: Int) -> [String: Any] {
-        query.values(of: usedAttributeKeys, forResultsAt: index)
+        query.values(of: allAttributeKeys, forResultsAt: index)
     }
 
-    var usedAttributeKeys: [String] {
+    var allAttributeKeys: [String] {
         var attributes = query.valueListAttributes
         attributes += ["kMDQueryResultContentRelevance"]
         attributes += predicate?(.root).mdKeys ?? ["kMDItemContentTypeTree"]
@@ -370,7 +366,7 @@ open class MetadataQuery: NSObject {
 
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
-        resetResults()
+        _results.removeAll()
         state = .isGatheringFiles
     }
 
@@ -382,11 +378,9 @@ open class MetadataQuery: NSObject {
             stop()
         }
         
-        runWithPausedMonitoring {
-            updateResults()
-            let results = _results.synchronized
-            postResults(results, difference: .added(results))
-        }
+        updateResults()
+        let results = _results.synchronized
+        postResults(results, difference: .added(results))
     }
 
     @objc func queryGatheringProgress(_: Notification) {
