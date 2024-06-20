@@ -88,9 +88,9 @@ open class MetadataQuery: NSObject {
     open var stateHandler: ((_ state: State) -> Void)?
 
     let delegate = DelegateProxy()
-    open var isRunning: Bool { query.isStarted && !query.isStopped }
-    open var isGathering: Bool { query.isGathering }
-    open var isStopped: Bool { query.isStopped }
+    var isRunning: Bool { query.isStarted && !query.isStopped }
+    var isGathering: Bool { query.isGathering }
+    var isStopped: Bool { query.isStopped }
     // var isMonitoring: Bool { return !isStopped && !isGathering }
     
     /// The state of the query.
@@ -373,7 +373,7 @@ open class MetadataQuery: NSObject {
 
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
-    open var isMonitoring = false {
+    var isMonitoring = false {
         didSet {
             guard oldValue != isMonitoring else { return }
             if isMonitoring {
