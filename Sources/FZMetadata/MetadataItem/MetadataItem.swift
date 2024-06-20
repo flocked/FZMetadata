@@ -64,10 +64,15 @@ open class MetadataItem {
     
     func calculateChangedAttributes() {
         guard !didCalculateChangedAttributes else { return }
+        Swift.print()
+        Swift.print("---------")
         Swift.print("calculateChangedAttributes")
         for val in previousValues {
-            if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable), !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
-                _changedAttributes.append(attribute)
+            if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable) {
+                Swift.print(val.key)
+                if !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
+                    _changedAttributes.append(attribute)
+                }
             }
         }
         didCalculateChangedAttributes = true
