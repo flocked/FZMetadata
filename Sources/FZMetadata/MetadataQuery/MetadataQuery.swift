@@ -68,7 +68,7 @@ import FZSwiftUtils
  */
 open class MetadataQuery: NSObject {
     /// The state of the query.
-    public enum State: Int {
+    public enum State: Int, CustomStringConvertible {
         /// The query is in it's initial phase of gathering matching items.
         case isGatheringFiles
 
@@ -77,6 +77,14 @@ open class MetadataQuery: NSObject {
 
         /// The query is stopped.
         case isStopped
+        
+        public var description: String {
+            switch self {
+            case .isGatheringFiles: return "isGatheringFiles"
+            case .isMonitoring: return "isMonitoring"
+            case .isStopped: return "isStopped"
+            }
+        }
     }
 
     let query = NSMetadataQuery()
