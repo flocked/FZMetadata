@@ -359,7 +359,7 @@ open class MetadataQuery: NSObject {
 
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
-    open var isMonitoring = false {
+    var isMonitoring = false {
         didSet {
             guard oldValue != isMonitoring else { return }
             if isMonitoring {
@@ -376,9 +376,9 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    open var isStarted: Bool { query.isStarted }
-    open var isGathering: Bool { query.isGathering }
-    open var isStopped: Bool { query.isStopped }
+    var isStarted: Bool { query.isStarted }
+    var isGathering: Bool { query.isGathering }
+    var isStopped: Bool { query.isStopped }
 
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
