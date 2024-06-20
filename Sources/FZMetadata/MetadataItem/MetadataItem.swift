@@ -51,7 +51,7 @@ import FZSwiftUtils
  */
 open class MetadataItem {
     let item: NSMetadataItem
-    open var values: [String: Any] = [:]
+    var values: [String: Any] = [:]
 
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
