@@ -314,11 +314,18 @@ open class MetadataQuery: NSObject {
         let result = query.result(at: index) as? MetadataItem
         // result?.values["kMDItemPath"] = result?.path
         result?.values = resultAttributeValues(at: index)
+        if usedAttributeKeys.contains("kMDItemURL"), let url = result?.url {
+            result?.values["kMDItemURL"] = url
+        }
+        if usedAttributeKeys.contains("kMDItemPath"), let path = result?.path {
+            result?.values["kMDItemPath"] = path
+        }
         return result
     }
 
-    open func resultAttributeValues(at index: Int) -> [String: Any] {
-        query.values(of: usedAttributeKeys, forResultsAt: index)
+    func resultAttributeValues(at index: Int) -> [String: Any] {
+        var values = query.values(of: usedAttributeKeys, forResultsAt: index)
+        return query.values(of: usedAttributeKeys, forResultsAt: index)
     }
 
     var usedAttributeKeys: [String] {
