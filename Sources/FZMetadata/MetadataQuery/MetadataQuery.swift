@@ -364,8 +364,14 @@ open class MetadataQuery: NSObject {
             guard oldValue != isMonitoring else { return }
             if isMonitoring {
                 query.enableUpdates()
+                if isStarted || !isStopped {
+                    state = .isMonitoring
+                }
             } else {
                 query.disableUpdates()
+                if state == .isMonitoring {
+                    state = .isStopped
+                }
             }
         }
     }
@@ -391,7 +397,7 @@ open class MetadataQuery: NSObject {
         if isMonitoring {
             state = .isMonitoring
         } else {
-            stop()
+            state = .isStopped
         }
     }
 
