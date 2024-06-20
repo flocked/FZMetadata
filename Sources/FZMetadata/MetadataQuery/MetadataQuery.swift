@@ -94,12 +94,14 @@ open class MetadataQuery: NSObject {
     var isRunning: Bool { query.isStarted }
     var isGathering: Bool { query.isGathering }
     var isStopped: Bool { query.isStopped }
-    // var isMonitoring: Bool { return query.isStopped == false && query.isGathering == false  }
+    // var isMonitoring: Bool { return !isStopped && !isGathering }
 
     /// The state of the query.
     open var state: State {
-        guard isStopped == false else { return .isStopped }
-        return (isGathering == true) ? .isGatheringFiles : .isMonitoring
+        if isStopped || (!isStopped && !isGathering && !isRunning) {
+            return .isStopped
+        }
+        return isGathering ? .isGatheringFiles : .isMonitoring        
     }
 
     /**
