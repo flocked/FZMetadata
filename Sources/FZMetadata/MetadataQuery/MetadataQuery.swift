@@ -286,7 +286,9 @@ open class MetadataQuery: NSObject {
      The array contains ``MetadataItem`` objects. Accessing the result before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        updateResults()
+        if state == .isGatheringFiles {
+            updateResults()
+        }
         return _results.synchronized
     }
 
@@ -295,7 +297,6 @@ open class MetadataQuery: NSObject {
     }
     
     var _results: SynchronizedArray<MetadataItem> = []
-    var currentResults: SynchronizedArray<MetadataItem> = []
 
     func updateResults() {
         _results.synchronized = results(at: Array(0 ..< query.resultCount))
@@ -303,7 +304,6 @@ open class MetadataQuery: NSObject {
 
     func resetResults() {
         _results.removeAll()
-        currentResults.removeAll()
     }
 
     func results(at indexes: [Int]) -> [MetadataItem] {
@@ -351,14 +351,8 @@ open class MetadataQuery: NSObject {
             guard oldValue != monitorResults else { return }
             if monitorResults {
                 query.enableUpdates()
-                if isStarted || !isStopped {
-                    state = .isMonitoring
-                }
             } else {
                 query.disableUpdates()
-                if state == .isMonitoring {
-                    state = .isStopped
-                }
             }
         }
     }
@@ -378,13 +372,13 @@ open class MetadataQuery: NSObject {
         if monitorResults {
             state = .isMonitoring
         } else {
-            state = .isStopped
+            stop()
         }
         
         runWithPausedMonitoring {
-            let results = results
-            let diff = ResultsDifference.added(_results.synchronized)
-            postResults(results, difference: diff)
+            updateResults()
+            let results = _results.synchronized
+            postResults(results, difference: .added(results))
         }
     }
 
@@ -393,27 +387,22 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func queryUpdated(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery updated")
         runWithPausedMonitoring {
-            let added: [MetadataItem] = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
-            let removed: [MetadataItem] = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
-            let changed: [MetadataItem] = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
+            let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
+            let removed = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
+            let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
 
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
-            _results.remove(removed)
-            _results = _results + added
+            var results = _results.synchronized
+            results.remove(removed)
+            results = results + added
             if !changed.isEmpty {
-                (changed + added).forEach { _results.move($0, to: query.index(ofResult: $0) + 1) }
+                (changed + added).forEach { results.move($0, to: query.index(ofResult: $0) + 1) }
             }
+            _results.synchronized = results
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            postResults(_results.synchronized, difference: diff)
-            /*
-            if currentResults.synchronized != _results.synchronized {
-                currentResults.synchronized = _results.synchronized
-                postResults(_results.synchronized, difference: diff)
-            }
-             */
+            postResults(results, difference: diff)
         }
     }
     
@@ -421,13 +410,6 @@ open class MetadataQuery: NSObject {
         runWithOperationQueue {
             self.resultsHandler?(items, difference)
         }
-    }
-
-    func addObserver() {
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
     
     /// Creates a metadata query with the specified operation queue.
@@ -439,8 +421,12 @@ open class MetadataQuery: NSObject {
     override public init() {
         super.init()
         reset()
-        addObserver()
         query.delegate = delegate
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
     
     deinit {
@@ -448,7 +434,7 @@ open class MetadataQuery: NSObject {
     }
 }
 
-
+/*
 #if os(macOS)
 import AppKit
 extension MetadataQuery {
@@ -460,4 +446,4 @@ extension MetadataQuery {
     }
 }
 #endif
-
+*/
