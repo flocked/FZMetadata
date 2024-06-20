@@ -88,10 +88,6 @@ open class MetadataQuery: NSObject {
     open var stateHandler: ((_ state: State) -> Void)?
 
     let delegate = DelegateProxy()
-    var isRunning: Bool { query.isStarted && !query.isStopped }
-    var isGathering: Bool { query.isGathering }
-    var isStopped: Bool { query.isStopped }
-    // var isMonitoring: Bool { return !isStopped && !isGathering }
     
     /// The state of the query.
     open var state: State = .isStopped {
@@ -100,16 +96,6 @@ open class MetadataQuery: NSObject {
             stateHandler?(state)
         }
     }
-    
-    /*
-    /// The state of the query.
-    open var state: State {
-        if isStopped || !isRunning {
-            return .isStopped
-        }
-        return isGathering ? .isGatheringFiles : isMonitoring ? .isMonitoring : .isStopped
-    }
-    */
 
     /**
      An array of URLs whose metadata attributes are gathered by the query.
@@ -383,6 +369,10 @@ open class MetadataQuery: NSObject {
             }
         }
     }
+    
+    var isStarted: Bool { query.isStarted }
+    var isGathering: Bool { query.isGathering }
+    var isStopped: Bool { query.isStopped }
 
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
