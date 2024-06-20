@@ -388,16 +388,16 @@ open class MetadataQuery: NSObject {
 
     @objc func queryGatheringFinished(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringFinished")
-        runWithPausedMonitoring {
-            let results = results
-            let diff = ResultsDifference.added(_results.synchronized)
-            postResults(results, difference: diff)
-        }
-
         if isMonitoring {
             state = .isMonitoring
         } else {
             state = .isStopped
+        }
+        
+        runWithPausedMonitoring {
+            let results = results
+            let diff = ResultsDifference.added(_results.synchronized)
+            postResults(results, difference: diff)
         }
     }
 
