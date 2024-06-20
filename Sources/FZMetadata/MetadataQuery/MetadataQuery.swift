@@ -453,7 +453,7 @@ open class MetadataQuery: NSObject {
 import AppKit
 extension MetadataQuery {
     /// Displays a Spotlight search results window in Finder for the ``predicate-swift.property``.
-    open func showSearchResultsInFinder() {
+    public func showSearchResultsInFinder() {
         if let format = query.predicate?.predicateFormat {
             NSWorkspace.shared.showSearchResults(forQueryString: format)
         }
