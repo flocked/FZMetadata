@@ -363,7 +363,9 @@ open class MetadataQuery: NSObject {
     }
     
     var isStarted: Bool { query.isStarted }
+    
     var isGathering: Bool { query.isGathering }
+    
     var isStopped: Bool { query.isStopped }
 
     @objc func queryGatheringDidStart(_: Notification) {
