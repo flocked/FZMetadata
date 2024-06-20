@@ -69,7 +69,7 @@ open class MetadataItem {
         Swift.print("calculateChangedAttributes")
         for val in previousValues {
             if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable) {
-                Swift.print(val.key)
+                Swift.print(val.key, "equal:", old.isEqual(new), ", attr:", Attribute(rawValue: val.key) != nil)
                 if !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
                     _changedAttributes.append(attribute)
                 }
