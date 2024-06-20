@@ -81,14 +81,11 @@ open class MetadataQuery: NSObject {
 
     let query = NSMetadataQuery()
 
-    /// The handler that gets called when the results changes.
-    open var resultsHandler: ResultsHandler? = nil
-
-    /// A handler that gets called when the results changes with the items of the results and the difference compared to the previous results.
-    public typealias ResultsHandler = (_ items: [MetadataItem], _ difference: ResultsDifference) -> Void
+    /// The handler that gets called when the results changes with the items of the results and the difference compared to the previous results.
+    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)?
 
     /// The handler that gets called when the state changes.
-    open var stateHandler: ((_ state: State) -> Void)? = nil
+    open var stateHandler: ((_ state: State) -> Void)?
 
     let delegate = DelegateProxy()
     var isRunning: Bool { query.isStarted }
@@ -98,10 +95,10 @@ open class MetadataQuery: NSObject {
 
     /// The state of the query.
     open var state: State {
-        if isStopped || (!isStopped && !isGathering && !isRunning) {
+        if isStopped || !isRunning {
             return .isStopped
         }
-        return isGathering ? .isGatheringFiles : .isMonitoring        
+        return isGathering ? .isGatheringFiles : isMonitoring ? .isMonitoring : .isStopped
     }
 
     /**
@@ -253,7 +250,7 @@ open class MetadataQuery: NSObject {
 
     /// Stops the  current query from gathering any further results.
     open func stop() {
-        if isStopped == false {
+        if !isStopped {
             stateHandler?(.isStopped)
         }
         query.stop()
@@ -273,9 +270,7 @@ open class MetadataQuery: NSObject {
         let _isMonitoring = isMonitoring
         isMonitoring = false
         block()
-        if _isMonitoring == true {
-            isMonitoring = true
-        }
+        isMonitoring = _isMonitoring
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
@@ -355,13 +350,11 @@ open class MetadataQuery: NSObject {
      By default, notification of updated results occurs at `1.0` seconds. Use ``updateNotificationInterval`` to change the internval.
      */
     open func enableMonitoring() {
-        query.enableUpdates()
         isMonitoring = true
     }
 
     /// Disables the monitoring of changes to the result.
     open func disableMonitoring() {
-        query.disableUpdates()
         isMonitoring = false
     }
 
@@ -445,10 +438,6 @@ open class MetadataQuery: NSObject {
         NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
-
-    func removeObserver() {
-        NotificationCenter.default.removeObserver(self)
-    }
     
     /// Creates a metadata query with the specified operation queue.
     public convenience init(queue: OperationQueue) {
@@ -461,6 +450,10 @@ open class MetadataQuery: NSObject {
         reset()
         addObserver()
         query.delegate = delegate
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 

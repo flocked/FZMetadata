@@ -35,7 +35,6 @@
 - ``enableMonitoring()``
 - ``disableMonitoring()``
 - ``resultsHandler``
-- ``ResultsHandler``
 - ``ResultGroup``
 - ``ResultsDifference``
 
