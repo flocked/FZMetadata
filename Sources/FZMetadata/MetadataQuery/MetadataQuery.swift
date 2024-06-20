@@ -48,13 +48,13 @@ import FZSwiftUtils
  query.start()
  ```
 
- It can also monitor for updates to the results via ``enableMonitoring()``.  The query calls your results handler, whenever new files match the query or the observed file attributes change.
+ It can also monitor for updates to the results via ``monitorResults``.  The query calls your results handler, whenever new files match the query or the observed file attributes change.
 
  ```swift
  query.predicate = { $0.isScreenCapture } // Screenshots files
  
  // Enables monitoring. Whenever a new screenshot gets captures the results handler gets called
- query.enableMonitoring()
+ query.monitorResults = true
  
  query.resultsHandler = { files, _ in
     for file in files {
@@ -217,7 +217,7 @@ open class MetadataQuery: NSObject {
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
     }
 
-    /// The interval (in seconds) at which notification of updated results occurs. The default value is 1.0 seconds.
+    /// The interval (in seconds) at which notification of updated results occurs. The default value is `1.0` seconds.
     open var updateNotificationInterval: TimeInterval {
         get { query.notificationBatchingInterval }
         set { query.notificationBatchingInterval = newValue }
@@ -237,6 +237,7 @@ open class MetadataQuery: NSObject {
     open func start() {
         runWithOperationQueue {
             if self.query.start() {
+                self.state = .isGatheringFiles
                 self.resetResults()
             }
         }
@@ -261,10 +262,10 @@ open class MetadataQuery: NSObject {
     }
 
     func runWithPausedMonitoring(_ block: () -> Void) {
-        let _isMonitoring = isMonitoring
-        isMonitoring = false
+        let _monitorResults = monitorResults
+        monitorResults = false
         block()
-        isMonitoring = _isMonitoring
+        monitorResults = _monitorResults
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
@@ -337,32 +338,16 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     Enables the monitoring of updates to the results.
-     
-     The query calls your results handler, whenever new files match the query or the observed metadata attributes change.
-
-     By default, notification of updated results occurs at `1.0` seconds. Use ``updateNotificationInterval`` to change the internval.
-     */
-    open func enableMonitoring() {
-        isMonitoring = true
-    }
-
-    /// Disables the monitoring of changes to the result.
-    open func disableMonitoring() {
-        isMonitoring = false
-    }
-
-    /**
-     A Boolean value indicating whether the monitoring of changes to the result is enabled.
+     A Boolean value indicating whether the monitoring of changes to the results is enabled.
 
      If `true` the ``resultsHandler-swift.property`` gets called whenever the results changes.
 
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
-    var isMonitoring = false {
+    open var monitorResults = false {
         didSet {
-            guard oldValue != isMonitoring else { return }
-            if isMonitoring {
+            guard oldValue != monitorResults else { return }
+            if monitorResults {
                 query.enableUpdates()
                 if isStarted || !isStopped {
                     state = .isMonitoring
@@ -388,7 +373,7 @@ open class MetadataQuery: NSObject {
 
     @objc func queryGatheringFinished(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringFinished")
-        if isMonitoring {
+        if monitorResults {
             state = .isMonitoring
         } else {
             state = .isStopped

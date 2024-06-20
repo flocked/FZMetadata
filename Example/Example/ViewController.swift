@@ -82,7 +82,7 @@ class ViewController: NSViewController {
     
     func startQuery(fileType: String) {
         queryProgressIndicator.startAnimation(nil)
-        query.enableMonitoring()
+        query.monitorResults = true
         query.resultsHandler = { files, _ in
             DispatchQueue.main.async {
                 self.displayResults(files, fileType: fileType)

@@ -75,7 +75,7 @@ query.start()
 
 MetadataQuery can monitor for changes to search results & queried attributes. It calls the completionHandler whenever changes happen.
 
-To enable monitoring use `enableMonitoring()`.
+To enable monitoring use `monitorResults()`.
 
 ```swift
 // Files that are screenshots
@@ -85,7 +85,7 @@ query.predicate = { $0.isScreenCapture }
 query.searchScopes = [.local]
 
 // Enables monitoring. Whenever a new screenshot gets captures the results handler gets called
-query.enableMonitoring()
+query.monitorResults = true
 
 query.resultsHandler = { files, _ in
     for file in files {

@@ -32,8 +32,7 @@
 - ``stop()``
 - ``results``
 - ``groupedResults``
-- ``enableMonitoring()``
-- ``disableMonitoring()``
+- ``monitorResults``
 - ``resultsHandler``
 - ``ResultGroup``
 - ``ResultsDifference``
