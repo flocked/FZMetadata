@@ -64,11 +64,7 @@ import FZSwiftUtils
 open class MetadataQuery: NSObject {
 
     let query = NSMetadataQuery()
-    
     let delegate = Delegate()
-
-    /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
-    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
     
     /// The state of the query.
     open var state: State = .isStopped
@@ -84,6 +80,9 @@ open class MetadataQuery: NSObject {
         /// The query is stopped.
         case isStopped
     }
+    
+    /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
+    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
 
     /**
      An array of URLs whose metadata attributes are gathered by the query.
@@ -261,9 +260,6 @@ open class MetadataQuery: NSObject {
         get { query.notificationBatchingInterval }
         set { query.notificationBatchingInterval = newValue }
     }
-    
-    // monitoringUpdateInterval
-    // The interval (in seconds) at which results are updated. The default value is `1.0` seconds.
 
     /// Starts the query and discards the previous results.
     open func start() {
@@ -276,23 +272,6 @@ open class MetadataQuery: NSObject {
     open func stop() {
         state = .isStopped
         query.stop()
-    }
-
-    func runWithPausedMonitoring(_ block: () -> Void) {
-        let _monitorResults = monitorResults
-        monitorResults = false
-        block()
-        monitorResults = _monitorResults
-    }
-    
-    func runWithOperationQueue(_ block: @escaping () -> Void) {
-        if let operationQueue = operationQueue {
-            operationQueue.addOperation {
-                block()
-            }
-        } else {
-            block()
-        }
     }
 
     /**
@@ -330,82 +309,9 @@ open class MetadataQuery: NSObject {
         }
         _results.synchronized = results
     }
-
-    func result(at index: Int) -> MetadataItem? {
-        guard let result = query.result(at: index) as? MetadataItem else { return nil }
-        updateResult(result, index: index, inital: true)
-        return result
-    }
     
-    func results(at indexes: [Int]) -> [MetadataItem] {
-        return indexes.compactMap { result(at: $0) }
-    }
-
-    var allAttributeKeys: [String] = []
-    
-    func updateAllAttributeKeys() {
-        allAttributeKeys = query.valueListAttributes
-        allAttributeKeys += ["kMDQueryResultContentRelevance"]
-        allAttributeKeys += predicate?(.root).mdKeys ?? ["kMDItemContentTypeTree"]
-        allAttributeKeys += sortedBy.compactMap(\.key)
-        allAttributeKeys += groupingAttributes.compactMap(\.rawValue)
-        allAttributeKeys = allAttributeKeys.uniqued()
-    }
-    
-    func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
-        var values = query.values(of: allAttributeKeys, forResultsAt: index)
-        if allAttributeKeys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
-            values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
-        }
-        values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
-        item.previousValues = inital ? nil : item.values
-        item.values = values
-    }
-
-    /**
-     An array containing hierarchical groups of query results.
-
-     These groups are based on the ``groupingAttributes``.
-     */
-    open var groupedResults: [ResultGroup] {
-        query.groupedResults.compactMap { ResultGroup($0) }
-    }
-    
-    var isStarted: Bool { query.isStarted }
-    var isGathering: Bool { query.isGathering }
-    var isStopped: Bool { query.isStopped }
-
-    @objc func queryGatheringDidStart(_: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringDidStart")
-        _results.removeAll()
-        updateAllAttributeKeys()
-        state = .isGatheringFiles
-    }
-
-    @objc func queryGatheringFinished(_: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringFinished")
-        if monitorResults {
-            state = .isMonitoring
-        } else {
-            stop()
-        }
-        
-        updateResults()
-        let results = _results.synchronized
-        postResults(results, difference: .added(results))
-    }
-
-    var ccc = 0
-    @objc func queryGatheringProgress(_: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringProgress")
-    }
-
-    @objc func queryUpdated(_ notification: Notification) {
+    func updateResults(added: [MetadataItem], removed: [MetadataItem], changed: [MetadataItem]) {
         runWithPausedMonitoring {
-            let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
-            let removed = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
-            let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
-            
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
@@ -433,10 +339,103 @@ open class MetadataQuery: NSObject {
             }
         }
     }
+
+    func result(at index: Int) -> MetadataItem? {
+        guard let result = query.result(at: index) as? MetadataItem else { return nil }
+        updateResult(result, index: index, inital: true)
+        return result
+    }
+    
+    func results(at indexes: [Int]) -> [MetadataItem] {
+        return indexes.compactMap { result(at: $0) }
+    }
+    /// All attributes of the query.
+    var queryAttributes: [String] = []
+    
+    func updateQueryAttributes() {
+        queryAttributes = query.valueListAttributes
+        queryAttributes += ["kMDQueryResultContentRelevance"]
+        queryAttributes += predicate?(.root).mdKeys ?? []
+        queryAttributes += sortedBy.compactMap(\.key)
+        queryAttributes += groupingAttributes.compactMap(\.rawValue)
+        queryAttributes = queryAttributes.uniqued()
+    }
+    
+    func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
+        var values = query.values(of: queryAttributes, forResultsAt: index)
+        if queryAttributes.contains("kMDItemURL"), values["kMDItemURL"] == nil {
+            values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
+        }
+        values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
+        item.previousValues = inital ? nil : item.values
+        item.values = values
+    }
+
+    /**
+     An array containing hierarchical groups of query results.
+
+     These groups are based on the ``groupingAttributes``.
+     */
+    open var groupedResults: [ResultGroup] {
+        query.groupedResults.compactMap { ResultGroup($0) }
+    }
+    
+    var isStarted: Bool { query.isStarted }
+    var isGathering: Bool { query.isGathering }
+    var isStopped: Bool { query.isStopped }
+
+    @objc func queryGatheringDidStart(_: Notification) {
+        // Swift.debugPrint("MetadataQuery gatheringDidStart")
+        _results.removeAll()
+        updateQueryAttributes()
+        state = .isGatheringFiles
+    }
+
+    @objc func queryGatheringFinished(_: Notification) {
+        // Swift.debugPrint("MetadataQuery gatheringFinished")
+        if monitorResults {
+            state = .isMonitoring
+        } else {
+            stop()
+        }
+        
+        updateResults()
+        let results = _results.synchronized
+        postResults(results, difference: .added(results))
+    }
+
+    @objc func queryGatheringProgress(_: Notification) {
+        // Swift.debugPrint("MetadataQuery gatheringProgress")
+    }
+
+    @objc func queryUpdated(_ notification: Notification) {
+        let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
+        let removed = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
+        let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
+        // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
+        updateResults(added: added, removed: removed, changed: changed)
+    }
     
     func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
         runWithOperationQueue {
             self.resultsHandler?(items, difference)
+        }
+    }
+    
+    func runWithPausedMonitoring(_ block: () -> Void) {
+        let _monitorResults = monitorResults
+        monitorResults = false
+        block()
+        monitorResults = _monitorResults
+    }
+    
+    func runWithOperationQueue(_ block: @escaping () -> Void) {
+        if let operationQueue = operationQueue {
+            operationQueue.addOperation {
+                block()
+            }
+        } else {
+            block()
         }
     }
     
