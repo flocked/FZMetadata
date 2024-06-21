@@ -220,7 +220,7 @@
 
 ### iCloud
 
-- ``itemIsUbiquitous``
+- ``isUbiquitousItem``
 - ``ubiquitousItemContainerDisplayName``
 - ``ubiquitousItemDownloadRequested``
 - ``ubiquitousItemIsExternalDocument``

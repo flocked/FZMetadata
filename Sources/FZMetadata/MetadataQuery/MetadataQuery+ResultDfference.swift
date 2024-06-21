@@ -25,10 +25,6 @@ public extension MetadataQuery {
             self.changed = changed
         }
 
-        static var none: ResultsDifference {
-            ResultsDifference()
-        }
-
         static func added(_ items: [MetadataItem]) -> ResultsDifference {
             ResultsDifference(added: items)
         }

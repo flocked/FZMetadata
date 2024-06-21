@@ -15,31 +15,27 @@ import FZSwiftUtils
 
  ```swift
  let query = MetadataQuery()
-
- // Searches for files at the downloads and documents directory
- query.searchLocations = [.downloadsDirectory, .documentsDirectory]
+ query.searchLocations = [.downloadsDirectory]
  
- // Image & videos files, added this week, large than 10mb
+ // Videos files, added this week, large than 10mb
  query.predicate = {
-     $0.fileTypes(.image, .video) &&
+     $0.fileType == .video &&
      $0.addedDate.isThisWeek &&
      $0.fileSize.megabytes >= 10
  }
- 
  query.resultsHandler = { files, _ in
- // found files
+    // matching files
  }
  query.start()
  ```
+ 
+ ## Fetching Attributes
 
- It can also fetch metadata attributes for large batches of file URLs.
+ It can also fetch metadata attributes for large batches of files via ``attributes``:
+ 
  ```swift
- // URLs for querying of attributes
  query.urls = videoFileURLs
- 
- // Attributes to query
  query.attributes = [.pixelSize, .duration, .fileSize, .creationDate]
- 
  query.resultsHandler = { files in
      for file in files {
      // file.pixelSize, file.duration, file.fileSize, file.creationDate
@@ -47,19 +43,18 @@ import FZSwiftUtils
  }
  query.start()
  ```
+ 
+ ## Monitoring Results
 
- It can also monitor for updates to the results via ``monitorResults``.  The query calls your results handler, whenever new files match the query or the observed file attributes change.
+ It can also monitor for updates to the results via ``monitorResults``.  The query calls your results handler, whenever the matching items changes or the observed attributes of the items change.
 
+ In the following example the results handler is called whenever the available screenshots change:
+ 
  ```swift
  query.predicate = { $0.isScreenCapture } // Screenshots files
- 
- // Enables monitoring. Whenever a new screenshot gets captures the results handler gets called
  query.monitorResults = true
- 
- query.resultsHandler = { files, _ in
-    for file in files {
-    // screenshot files
-    }
+ query.resultsHandler = { items, _ in
+    // Screenshot files
  }
  query.start()
  ```
@@ -67,6 +62,17 @@ import FZSwiftUtils
  Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger` or `NSMetadataItem`.
  */
 open class MetadataQuery: NSObject {
+
+    let query = NSMetadataQuery()
+    
+    let delegate = Delegate()
+
+    /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
+    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
+    
+    /// The state of the query.
+    open var state: State = .isStopped
+    
     /// The state of the query.
     public enum State: Int {
         /// The query is in it's initial phase of gathering matching items.
@@ -79,22 +85,12 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
-    let query = NSMetadataQuery()
-
-    /// The handler that gets called when the results changes with the items of the results and the difference compared to the previous results.
-    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)?
-
-    let delegate = DelegateProxy()
-    
-    /// The state of the query.
-    open var state: State = .isStopped
-
     /**
      An array of URLs whose metadata attributes are gathered by the query.
 
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
 
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      */
     open var urls: [URL] {
         get { (query.searchItems as? [URL]) ?? [] }
@@ -102,28 +98,15 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     An array of metadata attributes whose values are fetched by the query.
+     An array of metadata attributes whose values are gathered by the query.
+     
+     If ``monitorResults`` is enabled, any changes to those attributes updates the results and calls the results handler.
 
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
         set { query.valueListAttributes = (newValue + [.path]).flatMap(\.mdKeys).uniqued() }
-    }
-
-    /**
-     An array of attributes for grouping the results.
-
-     The grouped results can be accessed via ``groupedResults``.
-
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
-     */
-    open var groupingAttributes: [MetadataItem.Attribute] {
-        get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
-        set {
-            let newValue = newValue.flatMap(\.mdKeys).uniqued()
-            query.groupingAttributes = newValue.isEmpty ? nil : newValue
-        }
     }
 
     /**
@@ -142,7 +125,7 @@ open class MetadataQuery: NSObject {
      }
      ```
 
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      
      **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
@@ -164,7 +147,7 @@ open class MetadataQuery: NSObject {
      
      The query can alternativly also search at specific scopes via ``searchScopes``.
 
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
@@ -178,7 +161,7 @@ open class MetadataQuery: NSObject {
           
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
 
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      */
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
@@ -186,33 +169,55 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     An array of sort descriptor objects for sorting the query results.
+     The sort descriptors for sorting the query results.
 
      Example usage:
 
      ```swift
-     query.sortedBy = [.ascending(.fileSize), .descending(.creationDate)]
+     query.sortedBy = [.descending(.creationDate), .ascending(.fileSize)]
      ```
 
-     The results can be sorted by item relevance via the ``MetadataItem/Attribute/queryRelevance`` attribute.
+     The results can also be sorted by item relevance via ``MetadataItem/Attribute/queryContentRelevance``:
 
      ```swift
      query.sortedBy = [.ascending(.queryRelevance)]
      ```
 
-     The sorted results can be accessed via ``groupedResults``.
-
-     Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      */
     open var sortedBy: [SortDescriptor] {
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
         set { query.sortDescriptors = newValue }
     }
+    
+    /**
+     An array of attributes for grouping the results.
 
-    /// The interval (in seconds) at which notification of updated results occurs. The default value is `1.0` seconds.
-    open var updateNotificationInterval: TimeInterval {
-        get { query.notificationBatchingInterval }
-        set { query.notificationBatchingInterval = newValue }
+     The grouped results can be accessed via ``groupedResults``.
+     the items of the results are grouped by unique content types (e.g. video, image…). Each group contains the matching items and sub groups where it's matching items are grouped by unique finder tags:
+     
+     ```
+     query.groupingAttributes = [.contentType, .finderTags]
+     
+     // ... later
+     for group in query.groupedResults {
+     
+        group.items // items with same content type
+  
+        for subGroup in group.subGroups! {
+            subGroup.items // items with same finder tags
+        }
+     }
+     ```
+
+     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     */
+    open var groupingAttributes: [MetadataItem.Attribute] {
+        get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
+        set {
+            let newValue = newValue.flatMap(\.mdKeys).uniqued()
+            query.groupingAttributes = newValue.isEmpty ? nil : newValue
+        }
     }
 
     /**
@@ -224,14 +229,46 @@ open class MetadataQuery: NSObject {
         get { query.operationQueue }
         set { query.operationQueue = newValue }
     }
+    
+    /**
+     A Boolean value indicating whether the monitoring of changes to the results is enabled.
+
+     If `true` the ``resultsHandler`` gets called whenever the results changes. For example:
+     
+     ```swift
+     query.predicate = { $0.isScreenCapture }
+     query.monitorResults = true
+     query.resultsHandler = { items, _ in
+        // Is called whenever a new screenshot is taken.
+     }
+     query.start()
+     ```
+     
+     By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
+     */
+    open var monitorResults = false {
+        didSet {
+            guard oldValue != monitorResults else { return }
+            if monitorResults {
+                query.enableUpdates()
+            } else {
+                query.disableUpdates()
+            }
+        }
+    }
+    /// The interval (in seconds) at which notification of updated results occurs. The default value is `1.0` seconds.
+    open var updateNotificationInterval: TimeInterval {
+        get { query.notificationBatchingInterval }
+        set { query.notificationBatchingInterval = newValue }
+    }
+    
+    // monitoringUpdateInterval
+    // The interval (in seconds) at which results are updated. The default value is `1.0` seconds.
 
     /// Starts the query and discards the previous results.
     open func start() {
         runWithOperationQueue {
-            if self.query.start() {
-                self.state = .isGatheringFiles
-                self._results.removeAll()
-            }
+            self.query.start()
         }
     }
     
@@ -276,35 +313,48 @@ open class MetadataQuery: NSObject {
     
     var _results: SynchronizedArray<MetadataItem> = []
 
+    /*
     func updateResults() {
         runWithPausedMonitoring {
-            self._results.synchronized = self.results(at: Array(0 ..< self.query.resultCount))
+            _results.synchronized = self.results(at: Array(0 ..< self.query.resultCount))
         }
     }
+     */
+    
+    func updateResults() {
+        var results: [MetadataItem] = []
+        query.enumerateResults { item, index, _ in
+            let item = item as! MetadataItem
+            updateResult(item, index: index, inital: true)
+            results.append(item)
+        }
+        _results.synchronized = results
+    }
 
-    func result(at index: Int, keys: [String]) -> MetadataItem? {
+    func result(at index: Int) -> MetadataItem? {
         guard let result = query.result(at: index) as? MetadataItem else { return nil }
-        updateResult(result, index: index, keys: keys, inital: true)
+        updateResult(result, index: index, inital: true)
         return result
     }
     
     func results(at indexes: [Int]) -> [MetadataItem] {
-        let keys = allAttributeKeys
-        return indexes.compactMap { result(at: $0, keys: keys) }
+        return indexes.compactMap { result(at: $0) }
     }
 
-    var allAttributeKeys: [String] {
-        var attributes = query.valueListAttributes
-        attributes += ["kMDQueryResultContentRelevance"]
-        attributes += predicate?(.root).mdKeys ?? ["kMDItemContentTypeTree"]
-        attributes += sortedBy.compactMap(\.key)
-        attributes += groupingAttributes.compactMap(\.rawValue)
-        return attributes.uniqued()
+    var allAttributeKeys: [String] = []
+    
+    func updateAllAttributeKeys() {
+        allAttributeKeys = query.valueListAttributes
+        allAttributeKeys += ["kMDQueryResultContentRelevance"]
+        allAttributeKeys += predicate?(.root).mdKeys ?? ["kMDItemContentTypeTree"]
+        allAttributeKeys += sortedBy.compactMap(\.key)
+        allAttributeKeys += groupingAttributes.compactMap(\.rawValue)
+        allAttributeKeys = allAttributeKeys.uniqued()
     }
     
-    func updateResult(_ item: MetadataItem, index: Int, keys: [String], inital: Bool) {
-        var values = query.values(of: keys, forResultsAt: index)
-        if keys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
+    func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
+        var values = query.values(of: allAttributeKeys, forResultsAt: index)
+        if allAttributeKeys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
             values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
         }
         values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
@@ -320,41 +370,15 @@ open class MetadataQuery: NSObject {
     open var groupedResults: [ResultGroup] {
         query.groupedResults.compactMap { ResultGroup($0) }
     }
-
-    /**
-     A Boolean value indicating whether the monitoring of changes to the results is enabled.
-
-     If `true` the ``resultsHandler`` gets called whenever the results changes. For example:
-     
-     ```swift
-     query.predicate = { $0.isScreenCapture }
-     query.monitorResults = true
-     query.resultsHandler = { items, _ in
-        // Is called whenever a new screenshot is taken.
-     }
-     query.start()
-     ```
-     
-     By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
-     */
-    open var monitorResults = false {
-        didSet {
-            guard oldValue != monitorResults else { return }
-            if monitorResults {
-                query.enableUpdates()
-            } else {
-                query.disableUpdates()
-            }
-        }
-    }
     
     var isStarted: Bool { query.isStarted }
     var isGathering: Bool { query.isGathering }
     var isStopped: Bool { query.isStopped }
 
     @objc func queryGatheringDidStart(_: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringDidStart")
+        Swift.debugPrint("MetadataQuery gatheringDidStart")
         _results.removeAll()
+        updateAllAttributeKeys()
         state = .isGatheringFiles
     }
 
@@ -371,6 +395,7 @@ open class MetadataQuery: NSObject {
         postResults(results, difference: .added(results))
     }
 
+    var ccc = 0
     @objc func queryGatheringProgress(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringProgress")
     }
@@ -386,22 +411,21 @@ open class MetadataQuery: NSObject {
             var results = _results.synchronized
             results.remove(removed)
             results.forEach({ item in
-                item._queryChangedAttributes = []
+                item._updatedAttributes = []
                 item.previousValues = nil
             })
             results = results + added
             if !changed.isEmpty || !added.isEmpty {
-                let keys = allAttributeKeys
                 (changed + added).forEach { item in
                     let index = query.index(ofResult: item)
                     results.move(item, to: index)
-                    updateResult(item, index: index, keys: keys, inital: false)
+                    updateResult(item, index: index, inital: false)
                 }
             }
             _results.synchronized = results
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
             if added.isEmpty, removed.isEmpty, !changed.isEmpty {
-                if changed.contains(where: { !$0.queryChangedAttributes.isEmpty }) {
+                if changed.contains(where: { !$0.updatedAttributes.isEmpty }) {
                     postResults(results, difference: diff)
                 }
             } else {

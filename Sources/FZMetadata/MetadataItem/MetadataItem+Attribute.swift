@@ -28,7 +28,7 @@ public extension MetadataItem {
         /// The alternative names of the file.
         case alternateNames = "kMDItemAlternateNames"
         /// The extension of the file.
-        case fileExtension = "_kMDItemFSName"
+        case fileExtension = "__kMDItemContentType"
         /// The size of the file.
         case fileSize = "kMDItemFSSize"
         /// A Boolean value that indicates whether the file is invisible.
@@ -397,7 +397,7 @@ public extension MetadataItem {
         // MARK: - iCloud
         
         /// A Boolean indicating whether the item is stored in the cloud.
-        case itemIsUbiquitous = "NSMetadataItemIsUbiquitousKey"
+        case isUbiquitousItem = "NSMetadataItemIsUbiquitousKey"
         /// The name of the item’s container as the system displays it to users.
         case ubiquitousItemContainerDisplayName = "NSMetadataUbiquitousItemContainerDisplayNameKey"
         /// A Boolean value that indicates whether the user or the system requests a download of the item.
@@ -439,7 +439,7 @@ public extension MetadataItem {
          The value is a value between `0.0` and `1.0`.
          */
         case queryContentRelevance = "kMDQueryResultContentRelevance"
-        
+                
         static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap { Self(rawValue: $0) }
             if attriutes.contains(all: [.pixelWidth, .pixelHeight]) {

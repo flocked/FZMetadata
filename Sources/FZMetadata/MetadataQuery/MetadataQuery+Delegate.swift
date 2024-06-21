@@ -8,7 +8,7 @@
 import Foundation
 
 extension MetadataQuery {
-    class DelegateProxy: NSObject, NSMetadataQueryDelegate {
+    class Delegate: NSObject, NSMetadataQueryDelegate {
         func metadataQuery(_: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
             MetadataItem(item: result)
         }

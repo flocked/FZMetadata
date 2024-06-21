@@ -11,14 +11,14 @@ public extension MetadataQuery {
     /// The results of a query grouped by the metadata attributes specified in ``groupingAttributes``.
     struct ResultGroup {
         /// The metadata attribute of the group.
-        public var attribute: MetadataItem.Attribute
-
+        public let attribute: MetadataItem.Attribute
+        
         /// An array containing the group’s metadata items.
-        public var items: [MetadataItem]
-
+        public let items: [MetadataItem]
+        
         /// An array containing the group’s subgroups.
-        public var subgroups: [ResultGroup]?
-
+        public let subgroups: [ResultGroup]?
+        
         init?(_ nsResultGroup: NSMetadataQueryResultGroup) {
             if let attribute = MetadataItem.Attribute(rawValue: nsResultGroup.attribute) {
                 self.attribute = attribute

@@ -22,7 +22,6 @@
 - ``searchLocations``
 - ``searchScopes``
 - ``SearchScope``
-- ``updateNotificationInterval``
 - ``operationQueue``
 
 ### Getting query results
@@ -32,6 +31,7 @@
 - ``results``
 - ``groupedResults``
 - ``monitorResults``
+- ``updateNotificationInterval``
 - ``resultsHandler``
 - ``ResultGroup``
 - ``ResultsDifference``

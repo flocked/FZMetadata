@@ -14,7 +14,7 @@
 ### Accessing Attributes
 
 - ``availableAttributes``
-- ``queryChangedAttributes``
+- ``updatedAttributes``
 - ``Attribute``
 
 ### Common Attributes
@@ -236,7 +236,7 @@
 
 ### iCloud
 
-- ``itemIsUbiquitous``
+- ``isUbiquitousItem``
 - ``ubiquitousItemContainerDisplayName``
 - ``ubiquitousItemDownloadRequested``
 - ``ubiquitousItemIsExternalDocument``
