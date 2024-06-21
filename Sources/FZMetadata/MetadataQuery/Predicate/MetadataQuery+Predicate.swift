@@ -781,7 +781,9 @@ extension MetadataQuery.Predicate {
             var value = value
             switch (mdKey, value) {
             case let (_, value as String):
-                return string(mdKey, type, value, options)
+                if !value.hasPrefix("$time") {
+                    return string(mdKey, type, value, options)
+                }
             case let (_, value as CGSize):
                 return size(mdKey, type, value)
             case let (_, rect as CGRect):
@@ -811,8 +813,11 @@ extension MetadataQuery.Predicate {
         }
 
         static func between(_ mdKey: String, values: [Any]) -> NSPredicate {
+            return between(mdKey, value: values)
+            /*
             let predicates = values.compactMap { between(mdKey, value: $0) }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
+             */
         }
 
         static func size(_ mdKey: String, _ type: ComparisonOperator, _ value: CGSize) -> NSPredicate {
