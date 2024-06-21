@@ -970,7 +970,7 @@ open class MetadataItem: Identifiable {
 
 extension MetadataItem {
     func value<T>(for attribute: String) -> T? {
-        values[attribute] as? T ?? item.value(for: attribute)
+        values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
     }
     
     func value<T>(for attribute: Attribute) -> T? {

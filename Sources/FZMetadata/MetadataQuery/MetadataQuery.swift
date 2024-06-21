@@ -339,9 +339,6 @@ open class MetadataQuery: NSObject {
         
     func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
         var values = query.values(of: queryAttributes, forResultsAt: index)
-        if queryAttributes.contains("kMDItemURL"), values["kMDItemURL"] == nil {
-            values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
-        }
         values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
         item.previousValues = inital ? nil : item.values
         item.values = values
@@ -349,13 +346,6 @@ open class MetadataQuery: NSObject {
     
     /// All attributes of the query.
     var queryAttributes: [String] = []
-    
-    func updateQueryAttributes() {
-        queryAttributes = query.valueListAttributes
-        queryAttributes += sortedBy.compactMap(\.key)
-        queryAttributes += groupingAttributes.compactMap(\.rawValue)
-        queryAttributes = queryAttributes.uniqued()
-    }
 
     /**
      An array containing hierarchical groups of query results.
@@ -369,7 +359,10 @@ open class MetadataQuery: NSObject {
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
         _results.removeAll()
-        updateQueryAttributes()
+        queryAttributes = query.valueListAttributes
+        queryAttributes += query.groupingAttributes ?? []
+        queryAttributes += sortedBy.compactMap(\.key)
+        queryAttributes = queryAttributes.uniqued()
         state = .isGatheringFiles
     }
 
@@ -380,7 +373,6 @@ open class MetadataQuery: NSObject {
         } else {
             stop()
         }
-        
         updateResults()
         let results = _results.synchronized
         postResults(results, difference: .added(results))
