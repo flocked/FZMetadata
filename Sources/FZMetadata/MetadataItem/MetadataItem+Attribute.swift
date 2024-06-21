@@ -28,7 +28,7 @@ public extension MetadataItem {
         /// The alternative names of the file.
         case alternateNames = "kMDItemAlternateNames"
         /// The extension of the file.
-        case fileExtension = "__kMDItemContentType"
+        case fileExtension = "kMDItemFSExtension"
         /// The size of the file.
         case fileSize = "kMDItemFSSize"
         /// A Boolean value that indicates whether the file is invisible.
