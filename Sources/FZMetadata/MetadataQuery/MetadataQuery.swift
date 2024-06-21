@@ -318,9 +318,9 @@ open class MetadataQuery: NSObject {
         var values = query.values(of: keys, forResultsAt: index)
         
         if keys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
-            values["kMDItemURL"] = item.url
+            values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
         }
-        values["kMDItemPath"] = item.path
+        values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
         item.values = values
     }
 
@@ -385,6 +385,13 @@ open class MetadataQuery: NSObject {
             let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
             let removed = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
             let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
+            
+            let res = _results.synchronized
+            if !changed.isEmpty {
+                Swift.print("Changed:")
+                Swift.print(changed.compactMap({ query.index(ofResult: $0) }))
+                Swift.print(changed.compactMap({ res.firstIndex(of: $0) }))
+            }
 
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
@@ -396,7 +403,7 @@ open class MetadataQuery: NSObject {
                 let keys = allAttributeKeys
                 (changed + added).forEach {
                     let itemIndex = query.index(ofResult: $0)
-                    results.move($0, to: itemIndex + 1)
+                    results.move($0, to: itemIndex)
                     updateItemValues($0, index: itemIndex, keys: keys)
                 }
             }
