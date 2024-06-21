@@ -54,18 +54,8 @@ open class MetadataItem {
     let item: NSMetadataItem
     
     /// Metadata attribute values fetched by a query.
-    var values: [String: Any] = [:] {
-        didSet { 
-            if initalValues {
-                initalValues = false
-            } else {
-                previousValues = oldValue
-            }
-        }
-    }
-    
-    var initalValues = true
-    
+    var values: [String: Any] = [:]
+        
     /// Previous metadata attribute values fetched by a query., or `nil` if there aren't any previous values.
     var previousValues: [String: Any]? = nil
         
@@ -167,7 +157,7 @@ open class MetadataItem {
      */
     open var queryChangedAttributes: [Attribute] {
         if let previous = previousValues {
-            _queryChangedAttributes = values.keyDifference(to: previous).compactMap({ Attribute(rawValue: $0 ) })
+            _queryChangedAttributes = values.keyDifference(to: previous).compactMap({ Attribute(rawValue: $0) })
             previousValues = nil
         }
         return _queryChangedAttributes

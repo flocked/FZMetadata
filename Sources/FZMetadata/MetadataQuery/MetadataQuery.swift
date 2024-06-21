@@ -284,7 +284,7 @@ open class MetadataQuery: NSObject {
 
     func result(at index: Int, keys: [String]) -> MetadataItem? {
         guard let result = query.result(at: index) as? MetadataItem else { return nil }
-        updateItemValues(result, index: index, keys: keys)
+        updateItemValues(result, index: index, keys: keys, inital: true)
         return result
     }
     
@@ -302,13 +302,13 @@ open class MetadataQuery: NSObject {
         return attributes.uniqued()
     }
     
-    func updateItemValues(_ item: MetadataItem, index: Int, keys: [String]) {
+    func updateItemValues(_ item: MetadataItem, index: Int, keys: [String], inital: Bool) {
         var values = query.values(of: keys, forResultsAt: index)
-        
         if keys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
             values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
         }
         values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
+        item.previousValues = inital ? nil : item.values
         item.values = values
     }
 
@@ -385,14 +385,17 @@ open class MetadataQuery: NSObject {
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
             results.remove(removed)
-            results.forEach({ $0._queryChangedAttributes = [] })
+            results.forEach({ item in
+                item._queryChangedAttributes = []
+                item.previousValues = nil
+            })
             results = results + added
-            if !changed.isEmpty {
+            if !changed.isEmpty || !added.isEmpty {
                 let keys = allAttributeKeys
-                (changed + added).forEach {
-                    let itemIndex = query.index(ofResult: $0)
-                    results.move($0, to: itemIndex)
-                    updateItemValues($0, index: itemIndex, keys: keys)
+                (changed + added).forEach { item in
+                    let index = query.index(ofResult: item)
+                    results.move(item, to: index)
+                    updateItemValues(item, index: index, keys: keys, inital: false)
                 }
             }
             _results.synchronized = results
