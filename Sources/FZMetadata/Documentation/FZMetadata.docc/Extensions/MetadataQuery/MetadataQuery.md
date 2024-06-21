@@ -9,7 +9,6 @@
 ### Getting the state
 
 - ``state``
-- ``stateHandler``
 - ``State``
 
 ### Configuring the query

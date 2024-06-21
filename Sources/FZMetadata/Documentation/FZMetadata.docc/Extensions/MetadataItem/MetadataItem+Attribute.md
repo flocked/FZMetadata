@@ -218,6 +218,45 @@
 - ``screenCaptureType``
 - ``screenCaptureRect``
 
+### iCloud
+
+- ``itemIsUbiquitous``
+- ``ubiquitousItemContainerDisplayName``
+- ``ubiquitousItemDownloadRequested``
+- ``ubiquitousItemIsExternalDocument``
+- ``ubiquitousItemURLInLocalContainer``
+- ``ubiquitousItemHasUnresolvedConflicts``
+- ``ubiquitousItemIsDownloaded``
+- ``ubiquitousItemIsDownloading``
+- ``ubiquitousItemIsUploaded``
+- ``ubiquitousItemIsUploading``
+- ``ubiquitousItemPercentDownloaded``
+- ``ubiquitousItemPercentUploaded``
+- ``ubiquitousItemDownloadingStatus``
+- ``ubiquitousItemDownloadingError``
+- ``ubiquitousItemUploadingError``
+- ``ubiquitousItemIsShared``
+- ``ubiquitousSharedItemCurrentUserPermissions``
+- ``ubiquitousSharedItemCurrentUserRole``
+- ``ubiquitousSharedItemMostRecentEditorNameComponents``
+- ``ubiquitousSharedItemOwnerNameComponents``
+
+### iCloud Download Status
+
+- ``ubiquitousItemDownloadingStatusCurrent``
+- ``ubiquitousItemDownloadingStatusDownloaded``
+- ``ubiquitousItemDownloadingStatusNotDownloaded``
+
+### iCloud Sharing Permissions Values
+
+- ``ubiquitousSharedItemPermissionsReadOnly``
+- ``ubiquitousSharedItemPermissionsReadWrite``
+
+### iCloud Sharing Role Values
+
+- ``ubiquitousSharedItemRoleOwner``
+- ``ubiquitousSharedItemRoleParticipant``
+
 ### Metadata Query Attributes
 
 - ``queryContentRelevance``

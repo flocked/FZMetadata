@@ -133,19 +133,34 @@ open class MetadataItem {
     }
     
     /**
-     The attributes that were modified since the last results of a metadata query.
+     The attributes that changed since the last metadata query results.
     
-     This array only provides attributes if the item was fetched by a metadata query that is monitoring for changes.
+     The attributes that changed, if the item is part of a metadata query results.
+     
+     When ``MetadataQuery/monitorResults`` of a metadata query is enabled, the results are updated whenever attributes changes. The p
+     
+     When ``MetadataQuery/monitorResults`` of a metadata query is enabled, the array provides the attributes that changed since the last query results
+     When a query is monitoring for changes
+     
+     It provides the attributes that changed since the last metadata query results.
+     
+     The array only provides attributes, if the item is part of a metadata query results.
+     
+     This array only provides attributes, if the item was fetched by a metadata query that is monitoring for changes.
      */
-    open var modifiedAttributes: [Attribute] {
+    open var queryChangedAttributes: [Attribute] {
         if let previous = previousValues {
-            _modifiedAttributes = values.differenceKeys(to: previous).compactMap({ Attribute(rawValue: $0 ) })
+            _queryChangedAttributes = values.keyDifference(to: previous).compactMap({ Attribute(rawValue: $0 ) })
             previousValues = nil
         }
-        return _modifiedAttributes
+        return _queryChangedAttributes
     }
     
-    var _modifiedAttributes: [Attribute] = []
+    // var queryChangedAttributes: [Attribute]
+    // var queryModifiedAttributes: [Attribute]
+
+    
+    var _queryChangedAttributes: [Attribute] = []
 
     // MARK: - File
 
@@ -983,7 +998,7 @@ open class MetadataItem {
     // MARK: - Query Content Relevance
     
     /**
-     The relevance of the item's content, if it's part of a metadata query result.
+     The relevance of the item's content, if it's part of a metadata query results.
 
      The value is a value between `0.0` and `1.0`.
      */
@@ -1055,20 +1070,5 @@ extension MetadataItem: Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(item)
-    }
-}
-
-fileprivate extension Dictionary where Value: Any {
-    /// An array of the keys where the value is different to the specified dictionary.
-    func differenceKeys(to dictionary: [Key : Value]) -> [Key] {
-        var keys: [Key] = keys.filter({ dictionary[$0] == nil })
-        keys += dictionary.keys.filter({ self[$0] == nil })
-
-        for val in dictionary {
-            if let old = dictionary[val.key] as? (any Equatable), let new = self[val.key] as? (any Equatable), !old.isEqual(new) {
-                keys.append(val.key)
-            }
-        }
-        return keys
     }
 }

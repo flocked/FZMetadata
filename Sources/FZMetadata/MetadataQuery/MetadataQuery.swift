@@ -397,7 +397,7 @@ open class MetadataQuery: NSObject {
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
             results.remove(removed)
-            results.forEach({ $0._modifiedAttributes = [] })
+            results.forEach({ $0._queryChangedAttributes = [] })
             results = results + added
             if !changed.isEmpty {
                 let keys = allAttributeKeys
@@ -410,7 +410,7 @@ open class MetadataQuery: NSObject {
             _results.synchronized = results
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
             if added.isEmpty, removed.isEmpty, !changed.isEmpty {
-                if changed.contains(where: { !$0.modifiedAttributes.isEmpty }) {
+                if changed.contains(where: { !$0.queryChangedAttributes.isEmpty }) {
                     postResults(results, difference: diff)
                 }
             } else {
