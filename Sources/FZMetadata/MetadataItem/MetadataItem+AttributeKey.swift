@@ -31,7 +31,6 @@ extension MetadataItem {
             \.displayName: "kMDItemDisplayName",
             \.alternateNames: "kMDItemAlternateNames",
             \.fileExtension: "kMDItemFSExtension",
-            \.fileSizeBytes: "kMDItemFSSize",
             \.fileSize: "kMDItemFSSize",
             \.fileIsInvisible: "kMDItemFSInvisible",
             \.fileExtensionIsHidden: "kMDItemFSIsExtensionHidden",
@@ -64,7 +63,6 @@ extension MetadataItem {
             \.whereFroms: "kMDItemWhereFroms",
             \.finderComment: "kMDItemFinderComment",
             \.finderTags: "kMDItemUserTags",
-            \.finderTagPrimaryColorIndex: "kMDItemFSLabel",
             \.finderTagPrimaryColor: "kMDItemFSLabel",
             \.hasCustomIcon: "kMDItemFSHasCustomIcon",
             \.usageCount: "kMDItemUseCount",
@@ -154,7 +152,6 @@ extension MetadataItem {
 
             // MARK: - Media
 
-            \.durationSeconds: "kMDItemDurationSeconds",
             \.duration: "kMDItemDurationSeconds",
             \.mediaTypes: "kMDItemMediaTypes",
             \.codecs: "kMDItemCodecs",

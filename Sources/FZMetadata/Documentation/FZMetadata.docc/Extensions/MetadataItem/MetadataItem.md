@@ -66,6 +66,7 @@
 - ``finderComment``
 - ``finderTags``
 - ``finderTagPrimaryColor``
+- ``FinderTagColor``
 - ``hasCustomIcon``
 - ``usageCount``
 - ``bundleIdentifier``

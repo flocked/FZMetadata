@@ -96,7 +96,7 @@ open class MetadataQuery: NSObject {
      Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
      */
     open var urls: [URL] {
-        get { (query.searchItems as? [URL]) ?? [] }
+        get { query.searchItems as? [URL] ?? [] }
         set { query.searchItems = newValue.isEmpty ? nil : (newValue as [NSURL]) }
     }
 
@@ -236,7 +236,7 @@ open class MetadataQuery: NSObject {
     /**
      A Boolean value indicating whether the monitoring of changes to the results is enabled.
 
-     If `true` the ``resultsHandler`` gets called whenever the results changes. For example:
+     If `true` the ``resultsHandler`` gets called whenever the results changes. In the following example the result handler is called whenever a screenshot is captured.
      
      ```swift
      query.predicate = { $0.isScreenCapture }

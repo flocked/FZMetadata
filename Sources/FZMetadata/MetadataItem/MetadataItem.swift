@@ -186,11 +186,9 @@ open class MetadataItem: Identifiable {
     /// The extension of the file.
     open var fileExtension: String? { url?.pathExtension }
 
-    var fileSizeBytes: Int? { value(for: .fileSize) }
-
     /// The size of the file.
     open var fileSize: DataSize? {
-        if let bytes = fileSizeBytes {
+        if let bytes: Int = value(for: .fileSize) {
             return DataSize(bytes)
         }
         return nil
@@ -205,8 +203,8 @@ open class MetadataItem: Identifiable {
     /// The file type. For example: `video`, `document` or `directory`
     open var fileType: FileType? { if let contentTypeTree: [String] = value(for: .contentTypeTree) {
         return FileType(contentTypeTree: contentTypeTree)
-    }
-    return nil
+        }
+        return nil
     }
 
     /// The content type identifier (`UTI`) of the file.
@@ -356,26 +354,11 @@ open class MetadataItem: Identifiable {
             #endif
         }
     }
-
-    var finderTagPrimaryColorIndex: Int? { value(for: .finderTagPrimaryColor) }
-
-    #if os(macOS)
-        /// The primary (first) finder tag color.
-        open var finderTagPrimaryColor: NSColor? {
-            if let index = finderTagPrimaryColorIndex {
-                return FinderTagColor.allCases[safe: index]?.color
-            }
-            return nil
-        }
-    #else
-        /// The primary (first) finder tag color.
-        open var finderTagPrimaryColor: UIColor? {
-            if let index = finderTagPrimaryColorIndex {
-                return FinderTagColor.allCases[safe: index]?.color
-            }
-            return nil
-        }
-    #endif
+    
+    /// The primary (first) finder tag color.
+    open var finderTagPrimaryColor: FinderTagColor? {
+        value(for: .finderTagPrimaryColor)
+    }
 
     /// A Boolean value that indicates whether the file has a custom icon.
     open var hasCustomIcon: Bool? { value(for: .hasCustomIcon) }
@@ -383,8 +366,8 @@ open class MetadataItem: Identifiable {
     /// The number of usages of the file.
     open var usageCount: Int? { if let useCount: Int = value(for: .usageCount) {
         return useCount - 2
-    }
-    return nil
+        }
+        return nil
     }
 
     /// The bundle identifier of this item. If this item is a bundle, then this is the `CFBundleIdentifier`.
@@ -629,14 +612,12 @@ open class MetadataItem: Identifiable {
     // MARK: - Media
 
     /// The duration of the content of file. Usually for videos and audio.
-    open var duration: TimeDuration? { if let durationSeconds = durationSeconds {
-        return TimeDuration(durationSeconds)
+    open var duration: TimeDuration? {
+        if let durationSeconds: Double = value(for: .duration) {
+            return TimeDuration(durationSeconds)
+        }
+        return nil
     }
-    return nil
-    }
-
-    /// The duration, in seconds, of the media. Usually for videos and audio.
-    var durationSeconds: Double? { value(for: .duration) }
 
     /// The media types (video, sound) present in the content.
     open var mediaTypes: [String]? { value(for: .mediaTypes) }
@@ -989,12 +970,7 @@ open class MetadataItem: Identifiable {
 
 extension MetadataItem {
     func value<T>(for attribute: String) -> T? {
-        if let value = values[attribute] as? T {
-            return value
-        } else if let value: T = item.value(for: attribute) {
-            return value
-        }
-        return nil
+        values[attribute] as? T ?? item.value(for: attribute)
     }
     
     func value<T>(for attribute: Attribute) -> T? {
@@ -1007,6 +983,11 @@ extension MetadataItem {
         }
         return nil
     }
+    
+    func getExplicity<V: Any, K: KeyPath<MetadataItem, V?>>(_ keyPath: K) -> V? {
+        let key = "com.apple.metadata:" + keyPath.mdItemKey
+        return url?.extendedAttributes[key]
+    }
 
     func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
         if keyPath == \.pixelSize, let value = value as? CGSize {
@@ -1016,11 +997,6 @@ extension MetadataItem {
             let key = "com.apple.metadata:" + keyPath.mdItemKey
             url?.extendedAttributes[key] = value
         }
-    }
-
-    func getExplicity<V: Any, K: KeyPath<MetadataItem, V?>>(_ keyPath: K) -> V? {
-        let key = "com.apple.metadata:" + keyPath.mdItemKey
-        return url?.extendedAttributes[key]
     }
 
     subscript<T>(key: String, _: T? = nil) -> T? {

@@ -13,27 +13,28 @@ import Foundation
 #endif
 
 extension MetadataItem {
-    /// A finder tag.
-    enum FinderTagColor: String, CaseIterable, QueryRawRepresentable {
-        /// A finder tag with no color.
-        case none = "None"
-        /// Gray finder tag.
-        case gray = "Gray"
-        /// Green finder tag.
-        case green = "Green"
-        /// Purple finder tag.
-        case purple = "Purple"
-        /// Blue finder tag.
-        case blue = "Blue"
-        /// Yellow finder tag.
-        case yellow = "Yellow"
-        /// Red finder tag.
-        case red = "Red"
-        /// Orange finder tag.
-        case orange = "Orange"
+    /// The primary Finder tag color.
+    public enum FinderTagColor: Int, QueryRawRepresentable, CustomStringConvertible {
+        /// A Finder tag with no color.
+        case none = 0
+        /// Gray Finder tag.
+        case gray
+        /// Green Finder tag.
+        case green
+        /// Purple Finder tag.
+        case purple
+        /// Blue Finder tag.
+        case blue
+        /// Yellow Finder tag.
+        case yellow
+        /// Red Finder tag.
+        case red
+        /// Orange Finder tag.
+        case orange
+        
         #if os(macOS)
-            /// The color of the finder tag.
-            public var color: NSColor {
+            /// `NSColor` representation.
+            public var nsColor: NSColor {
                 switch self {
                 case .none: return .clear
                 case .gray: return .systemGray
@@ -46,7 +47,7 @@ extension MetadataItem {
                 }
             }
         #elseif os(iOS) || os(tvOS)
-            /// The color of the finder tag.
+            /// `UIColor` representation.
             public var color: UIColor {
                 switch self {
                 case .none: return .clear
@@ -60,7 +61,7 @@ extension MetadataItem {
                 }
             }
         #else
-        /// The color of the finder tag.
+        /// `UIColor` representation.
         public var color: UIColor {
             switch self {
             case .none: return .clear
@@ -74,14 +75,27 @@ extension MetadataItem {
             }
         }
         #endif
+        
+        public var description: String {
+            switch self {
+            case .none: return "None"
+            case .gray: return "None"
+            case .green: return "None"
+            case .purple: return "None"
+            case .blue: return "None"
+            case .yellow: return "None"
+            case .red: return "None"
+            case .orange: return "None"
+            }
+        }
     }
 }
 
 /*
  #if os(macOS)
  extension NSWorkspace {
-     /// The available finder tags.
-     var finderTagColors: [MetadataItem.FinderTagColor] {
+     /// The available Finder tags.
+     var FinderTagColors: [MetadataItem.FinderTagColor] {
          return fileLabels.compactMap({MetadataItem.FinderTagColor(rawValue: $0)})
      }
  }
