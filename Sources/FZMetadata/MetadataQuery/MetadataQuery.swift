@@ -217,10 +217,7 @@ open class MetadataQuery: NSObject {
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
-        set {
-            let newValue = newValue.flatMap(\.mdKeys).uniqued()
-            query.groupingAttributes = newValue.isEmpty ? nil : newValue
-        }
+        set { query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() }
     }
 
     /**
