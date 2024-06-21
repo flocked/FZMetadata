@@ -393,14 +393,54 @@ public extension MetadataItem {
         case receivedTypes = "kMDItemUserSharedReceivedTransport"
         /// A Boolean value that indicates whether the file is likely to be considered a junk file.
         case isLikelyJunk = "kMDItemIsLikelyJunk"
+        
+        // MARK: - iCloud
+        
+        /// A Boolean indicating whether the item is stored in the cloud.
+        case itemIsUbiquitous = "NSMetadataItemIsUbiquitousKey"
+        case ubiquitousItemContainerDisplayName = "NSMetadataUbiquitousItemContainerDisplayNameKey"
+        case ubiquitousItemDownloadRequested = "NSMetadataUbiquitousItemDownloadRequestedKey"
+        case ubiquitousItemIsExternalDocument = "NSMetadataUbiquitousItemIsExternalDocumentKey"
+        case ubiquitousItemURLInLocalContainer = "NSMetadataUbiquitousItemURLInLocalContainerKey"
+        case ubiquitousItemHasUnresolvedConflicts = "NSMetadataUbiquitousItemHasUnresolvedConflictsKey"
+        case ubiquitousItemIsDownloaded = "NSMetadataUbiquitousItemIsDownloadedKey"
+        case ubiquitousItemIsDownloading = "NSMetadataUbiquitousItemIsDownloadingKey"
+        case ubiquitousItemIsUploaded = "NSMetadataUbiquitousItemIsUploadedKey"
+        case ubiquitousItemIsUploading = "NSMetadataUbiquitousItemIsUploadingKey"
+        case ubiquitousItemPercentDownloaded = "NSMetadataUbiquitousItemPercentDownloadedKey"
+        case ubiquitousItemPercentUploaded = "NSMetadataUbiquitousItemPercentUploadedKey"
+        case ubiquitousItemDownloadingStatus = "NSMetadataUbiquitousItemDownloadingStatusKey"
+        case ubiquitousItemDownloadingError = "NSMetadataUbiquitousItemDownloadingErrorKey"
+        case ubiquitousItemUploadingError = "NSMetadataUbiquitousItemUploadingErrorKey"
+        case ubiquitousItemIsShared = "NSMetadataUbiquitousItemIsSharedKey"
+        case ubiquitousSharedItemCurrentUserPermissions = "NSMetadataUbiquitousSharedItemCurrentUserPermissionsKey"
+        case ubiquitousSharedItemCurrentUserRole = "NSMetadataUbiquitousSharedItemCurrentUserRoleKey"
+        case ubiquitousSharedItemMostRecentEditorNameComponents = "NSMetadataUbiquitousSharedItemMostRecentEditorNameComponentsKey"
+        case ubiquitousSharedItemOwnerNameComponents = "NSMetadataUbiquitousSharedItemOwnerNameComponentsKey"
+        
+        // MARK: - iCloud Download Status
+        
+        case ubiquitousItemDownloadingStatusCurrent = "NSMetadataUbiquitousItemDownloadingStatusCurrent"
+        case ubiquitousItemDownloadingStatusDownloaded = "NSMetadataUbiquitousItemDownloadingStatusDownloaded"
+        case ubiquitousItemDownloadingStatusNotDownloaded = "NSMetadataUbiquitousItemDownloadingStatusNotDownloaded"
+        
+        // MARK: - iCloud Sharing Permissions Values
+        
+        case ubiquitousSharedItemPermissionsReadOnly = "NSMetadataUbiquitousSharedItemPermissionsReadOnly"
+        case ubiquitousSharedItemPermissionsReadWrite = "NSMetadataUbiquitousSharedItemPermissionsReadWrite"
 
+        // MARK: - iCloud Sharing Role Values
+        
+        case ubiquitousSharedItemRoleOwner = "NSMetadataUbiquitousSharedItemRoleOwner"
+        case ubiquitousSharedItemRoleParticipant = "NSMetadataUbiquitousSharedItemRoleParticipant"
+        
         /**
          The relevance of the item's content, if it's part of a metadata query result.
 
          The value is a value between `0.0` and `1.0`.
          */
         case queryContentRelevance = "kMDQueryResultContentRelevance"
-
+        
         static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap { Self(rawValue: $0) }
             if attriutes.contains(all: [.pixelWidth, .pixelHeight]) {

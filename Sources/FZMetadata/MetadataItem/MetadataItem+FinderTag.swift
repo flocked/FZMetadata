@@ -45,7 +45,7 @@ extension MetadataItem {
                 case .orange: return .systemOrange
                 }
             }
-        #else
+        #elseif os(iOS) || os(tvOS)
             /// The color of the finder tag.
             public var color: UIColor {
                 switch self {
@@ -59,6 +59,20 @@ extension MetadataItem {
                 case .orange: return .systemOrange
                 }
             }
+        #else
+        /// The color of the finder tag.
+        public var color: UIColor {
+            switch self {
+            case .none: return .clear
+            case .gray: return .gray
+            case .green: return .green
+            case .purple: return .purple
+            case .blue: return .blue
+            case .yellow: return .yellow
+            case .red: return .red
+            case .orange: return .orange
+            }
+        }
         #endif
     }
 }

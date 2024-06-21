@@ -108,9 +108,7 @@ open class MetadataQuery: NSObject {
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
-        set { let newValue: [MetadataItem.Attribute] = [.path] + newValue
-            query.valueListAttributes = newValue.flatMap(\.mdKeys).uniqued()
-        }
+        set { query.valueListAttributes = (newValue + [.path]).flatMap(\.mdKeys).uniqued() }
     }
 
     /**
@@ -339,7 +337,7 @@ open class MetadataQuery: NSObject {
      A Boolean value indicating whether the monitoring of changes to the results is enabled.
 
      If `true` the ``resultsHandler-swift.property`` gets called whenever the results changes.
-
+     
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
     open var monitorResults = false {
@@ -389,9 +387,10 @@ open class MetadataQuery: NSObject {
             let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
 
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
-            Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
+            // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
             results.remove(removed)
+            results.forEach({ $0._modifiedAttributes = [] })
             results = results + added
             if !changed.isEmpty {
                 let keys = allAttributeKeys
@@ -403,7 +402,13 @@ open class MetadataQuery: NSObject {
             }
             _results.synchronized = results
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            postResults(results, difference: diff)
+            if added.isEmpty, removed.isEmpty, !changed.isEmpty {
+                if changed.contains(where: { !$0.modifiedAttributes.isEmpty }) {
+                    postResults(results, difference: diff)
+                }
+            } else {
+                postResults(results, difference: diff)
+            }
         }
     }
     
@@ -432,7 +437,7 @@ open class MetadataQuery: NSObject {
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
-        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
+        // NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
     
     deinit {

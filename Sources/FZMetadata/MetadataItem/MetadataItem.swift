@@ -52,13 +52,22 @@ import FZSwiftUtils
 open class MetadataItem {
     
     let item: NSMetadataItem
+    
+    /// Metadata attribute values fetched by a query.
     var values: [String: Any] = [:] {
-        didSet { previousValues = oldValue }
+        didSet { 
+            if initalValues {
+                initalValues = false
+            } else {
+                previousValues = oldValue
+            }
+        }
     }
     
-    var previousValues: [String: Any] = [:] {
-        didSet { _modifiedAttributes = nil }
-    }
+    var initalValues = true
+    
+    /// Previous metadata attribute values fetched by a query., or `nil` if there aren't any previous values.
+    var previousValues: [String: Any]? = nil
     
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
@@ -122,27 +131,21 @@ open class MetadataItem {
         attributes = attributes.sorted()
         return attributes.compactMap { Attribute(rawValue: $0) }
     }
-        
-    /// The attributes that changed in a metadata query that is monitoring.
+    
+    /**
+     The attributes that were modified since the last results of a metadata query.
+    
+     This array only provides attributes if the item was fetched by a metadata query that is monitoring for changes.
+     */
     open var modifiedAttributes: [Attribute] {
-        if _modifiedAttributes == nil {
-            updateModifiedAttributes()
+        if let previous = previousValues {
+            _modifiedAttributes = values.differenceKeys(to: previous).compactMap({ Attribute(rawValue: $0 ) })
+            previousValues = nil
         }
-        return _modifiedAttributes ?? []
+        return _modifiedAttributes
     }
     
-    var _modifiedAttributes: [Attribute]? = nil
-    
-    func updateModifiedAttributes() {
-        _modifiedAttributes = []
-        for val in previousValues {
-            if let old = previousValues[val.key] as? (any Equatable), let new = values[val.key] as? (any Equatable) {
-                if !old.isEqual(new), let attribute = Attribute(rawValue: val.key) {
-                    _modifiedAttributes?.append(attribute)
-                }
-            }
-        }
-    }
+    var _modifiedAttributes: [Attribute] = []
 
     // MARK: - File
 
@@ -354,7 +357,7 @@ open class MetadataItem {
         /// The primary (first) finder tag color.
         open var finderTagPrimaryColor: UIColor? {
             if let index = finderTagPrimaryColorIndex {
-                return FinderTag.allCases[safe: index]?.color
+                return FinderTagColor.allCases[safe: index]?.color
             }
             return nil
         }
@@ -859,7 +862,126 @@ open class MetadataItem {
 
     /// A Boolean value that indicates whether the file is likely to be considered a junk file.
     open var isLikelyJunk: Bool? { value(for: \.isLikelyJunk) }
+    
+    // MARK: - iCloud
+    
+    /// A Boolean indicating whether the item is stored in the cloud.
+    open var itemIsUbiquitous: Bool? {
+        value(for: \.itemIsUbiquitous)
+    }
 
+    open var ubiquitousItemContainerDisplayName: String? {
+        value(for: \.ubiquitousItemContainerDisplayName)
+    }
+
+    open var ubiquitousItemDownloadRequested: Bool? {
+        value(for: \.ubiquitousItemDownloadRequested)
+    }
+
+    open var ubiquitousItemIsExternalDocument: Bool? {
+        value(for: \.ubiquitousItemIsExternalDocument)
+    }
+
+    open var ubiquitousItemURLInLocalContainer: URL? {
+        value(for: \.ubiquitousItemURLInLocalContainer)
+    }
+
+    open var ubiquitousItemHasUnresolvedConflicts: Bool? {
+        value(for: \.ubiquitousItemHasUnresolvedConflicts)
+    }
+
+    open var ubiquitousItemIsDownloaded: Bool? {
+        value(for: \.ubiquitousItemIsDownloaded)
+    }
+
+    open var ubiquitousItemIsDownloading: Bool? {
+        value(for: \.ubiquitousItemIsDownloading)
+    }
+
+    open var ubiquitousItemIsUploaded: Bool? {
+        value(for: \.ubiquitousItemIsUploaded)
+    }
+
+    open var ubiquitousItemIsUploading: Bool? {
+        value(for: \.ubiquitousItemIsUploading)
+    }
+
+    open var ubiquitousItemPercentDownloaded: Double? {
+        value(for: \.ubiquitousItemPercentDownloaded)
+    }
+
+    open var ubiquitousItemPercentUploaded: Double? {
+        value(for: \.ubiquitousItemPercentUploaded)
+    }
+
+    open var ubiquitousItemDownloadingStatus: String? {
+        value(for: \.ubiquitousItemDownloadingStatus)
+    }
+
+    open var ubiquitousItemDownloadingError: String? {
+        value(for: \.ubiquitousItemDownloadingError)
+    }
+
+    open var ubiquitousItemUploadingError: String? {
+        value(for: \.ubiquitousItemUploadingError)
+    }
+
+    open var ubiquitousItemIsShared: Bool? {
+        value(for: \.ubiquitousItemIsShared)
+    }
+
+    open var ubiquitousSharedItemCurrentUserPermissions: String? {
+        value(for: \.ubiquitousSharedItemCurrentUserPermissions)
+    }
+
+    open var ubiquitousSharedItemCurrentUserRole: String? {
+        value(for: \.ubiquitousSharedItemCurrentUserRole)
+    }
+
+    open var ubiquitousSharedItemMostRecentEditorNameComponents: [String]? {
+        value(for: \.ubiquitousSharedItemMostRecentEditorNameComponents)
+    }
+
+    open var ubiquitousSharedItemOwnerNameComponents: [String]? {
+        value(for: \.ubiquitousSharedItemOwnerNameComponents)
+    }
+    
+    // MARK: - iCloud Download Status
+    
+    open var ubiquitousItemDownloadingStatusCurrent: String? {
+        value(for: \.ubiquitousItemDownloadingStatusCurrent)
+    }
+
+    open var ubiquitousItemDownloadingStatusDownloaded: Bool? {
+        value(for: \.ubiquitousItemDownloadingStatusDownloaded)
+    }
+
+    open var ubiquitousItemDownloadingStatusNotDownloaded: Bool? {
+        value(for: \.ubiquitousItemDownloadingStatusNotDownloaded)
+    }
+    
+    // MARK: - iCloud Sharing Permissions Values
+        
+    open var ubiquitousSharedItemPermissionsReadOnly: Bool? {
+        value(for: \.ubiquitousSharedItemPermissionsReadOnly)
+    }
+
+    open var ubiquitousSharedItemPermissionsReadWrite: Bool? {
+        value(for: \.ubiquitousSharedItemPermissionsReadWrite)
+    }
+    
+    // MARK: - iCloud Sharing Role Values
+
+    open var ubiquitousSharedItemRoleOwner: String? {
+        value(for: \.ubiquitousSharedItemRoleOwner)
+    }
+
+    open var ubiquitousSharedItemRoleParticipant: String? {
+        value(for: \.ubiquitousSharedItemRoleParticipant)
+    }
+    
+    // MARK: - Query Content Relevance
+    
     /**
      The relevance of the item's content, if it's part of a metadata query result.
 
@@ -933,5 +1055,20 @@ extension MetadataItem: Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(item)
+    }
+}
+
+fileprivate extension Dictionary where Value: Any {
+    /// An array of the keys where the value is different to the specified dictionary.
+    func differenceKeys(to dictionary: [Key : Value]) -> [Key] {
+        var keys: [Key] = keys.filter({ dictionary[$0] == nil })
+        keys += dictionary.keys.filter({ self[$0] == nil })
+
+        for val in dictionary {
+            if let old = dictionary[val.key] as? (any Equatable), let new = self[val.key] as? (any Equatable), !old.isEqual(new) {
+                keys.append(val.key)
+            }
+        }
+        return keys
     }
 }

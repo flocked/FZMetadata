@@ -219,8 +219,47 @@ extension MetadataItem {
             \.receivedSenderHandles: "kMDItemUserSharedReceivedSenderHandle",
             \.receivedTypes: "kMDItemUserSharedReceivedTransport",
             \.isLikelyJunk: "kMDItemIsLikelyJunk",
+             
+             // MARK: - iCloud
+             
+             \.itemIsUbiquitous: "NSMetadataItemIsUbiquitousKey",
+             \.ubiquitousItemContainerDisplayName: "NSMetadataUbiquitousItemContainerDisplayNameKey",
+             \.ubiquitousItemDownloadRequested: "NSMetadataUbiquitousItemDownloadRequestedKey",
+             \.ubiquitousItemIsExternalDocument: "NSMetadataUbiquitousItemIsExternalDocumentKey",
+             \.ubiquitousItemURLInLocalContainer: "NSMetadataUbiquitousItemURLInLocalContainerKey",
+             \.ubiquitousItemHasUnresolvedConflicts: "NSMetadataUbiquitousItemHasUnresolvedConflictsKey",
+             \.ubiquitousItemIsDownloaded: "NSMetadataUbiquitousItemIsDownloadedKey",
+             \.ubiquitousItemIsDownloading: "NSMetadataUbiquitousItemIsDownloadingKey",
+             \.ubiquitousItemIsUploaded: "NSMetadataUbiquitousItemIsUploadedKey",
+             \.ubiquitousItemIsUploading: "NSMetadataUbiquitousItemIsUploadingKey",
+             \.ubiquitousItemPercentDownloaded: "NSMetadataUbiquitousItemPercentDownloadedKey",
+             \.ubiquitousItemPercentUploaded: "NSMetadataUbiquitousItemPercentUploadedKey",
+             \.ubiquitousItemDownloadingStatus: "NSMetadataUbiquitousItemDownloadingStatusKey",
+             \.ubiquitousItemDownloadingError: "NSMetadataUbiquitousItemDownloadingErrorKey",
+             \.ubiquitousItemUploadingError: "NSMetadataUbiquitousItemUploadingErrorKey",
+             \.ubiquitousItemIsShared: "NSMetadataUbiquitousItemIsSharedKey",
+             \.ubiquitousSharedItemCurrentUserPermissions: "NSMetadataUbiquitousSharedItemCurrentUserPermissionsKey",
+             \.ubiquitousSharedItemCurrentUserRole: "NSMetadataUbiquitousSharedItemCurrentUserRoleKey",
+             \.ubiquitousSharedItemMostRecentEditorNameComponents: "NSMetadataUbiquitousSharedItemMostRecentEditorNameComponentsKey",
+             \.ubiquitousSharedItemOwnerNameComponents: "NSMetadataUbiquitousSharedItemOwnerNameComponentsKey",
+             
+             // MARK: - iCloud Download Status
+             
+             \.ubiquitousItemDownloadingStatusCurrent: "NSMetadataUbiquitousItemDownloadingStatusCurrent",
+             \.ubiquitousItemDownloadingStatusDownloaded: "NSMetadataUbiquitousItemDownloadingStatusDownloaded",
+             \.ubiquitousItemDownloadingStatusNotDownloaded: "NSMetadataUbiquitousItemDownloadingStatusNotDownloaded",
+             
+             // MARK: - iCloud Sharing Permissions Values
+             
+             \.ubiquitousSharedItemPermissionsReadOnly: "NSMetadataUbiquitousSharedItemPermissionsReadOnly",
+             \.ubiquitousSharedItemPermissionsReadWrite: "NSMetadataUbiquitousSharedItemPermissionsReadWrite",
+             
+             // MARK: - iCloud Sharing Role Values
+             
+             \.ubiquitousSharedItemRoleOwner: "NSMetadataUbiquitousSharedItemRoleOwner",
+             \.ubiquitousSharedItemRoleParticipant: "NSMetadataUbiquitousSharedItemRoleParticipant",
 
-            \.queryContentRelevance: "kMDQueryResultContentRelevance",
+             \.queryContentRelevance: "kMDQueryResultContentRelevance",
         ]
 }
 

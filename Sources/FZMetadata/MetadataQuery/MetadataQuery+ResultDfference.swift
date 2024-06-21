@@ -18,7 +18,7 @@ public extension MetadataQuery {
 
         /// Changed items compared to the previous results.
         public let changed: [MetadataItem]
-
+        
         init(added: [MetadataItem] = [], removed: [MetadataItem] = [], changed: [MetadataItem] = []) {
             self.added = added
             self.removed = removed

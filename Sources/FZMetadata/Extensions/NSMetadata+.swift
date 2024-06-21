@@ -14,6 +14,7 @@ extension NSMetadataItem {
 }
 
 extension NSMetadataQuery {
+    /// Updates the values for the specified attribute names.
     func values(of attributes: [String], forResultsAt index: Int) -> [String: Any] {
         var values = [String: Any]()
         attributes.forEach { 
