@@ -5,11 +5,10 @@
 //  Created by Florian Zand on 30.03.23.
 //
 
-import Foundation
 #if os(macOS)
-    import AppKit
+import AppKit
 #else
-    import UIKit
+import UIKit
 #endif
 
 extension MetadataItem {
@@ -33,33 +32,33 @@ extension MetadataItem {
         case orange
         
         #if os(macOS)
-            /// `NSColor` representation.
-            public var nsColor: NSColor {
-                switch self {
-                case .none: return .clear
-                case .gray: return .systemGray
-                case .green: return .systemGreen
-                case .purple: return .systemPurple
-                case .blue: return .systemBlue
-                case .yellow: return .systemYellow
-                case .red: return .systemRed
-                case .orange: return .systemOrange
-                }
+        /// `NSColor` representation.
+        public var nsColor: NSColor {
+            switch self {
+            case .none: return .clear
+            case .gray: return .systemGray
+            case .green: return .systemGreen
+            case .purple: return .systemPurple
+            case .blue: return .systemBlue
+            case .yellow: return .systemYellow
+            case .red: return .systemRed
+            case .orange: return .systemOrange
             }
+        }
         #elseif os(iOS) || os(tvOS)
-            /// `UIColor` representation.
-            public var color: UIColor {
-                switch self {
-                case .none: return .clear
-                case .gray: return .systemGray
-                case .green: return .systemGreen
-                case .purple: return .systemPurple
-                case .blue: return .systemBlue
-                case .yellow: return .systemYellow
-                case .red: return .systemRed
-                case .orange: return .systemOrange
-                }
+        /// `UIColor` representation.
+        public var color: UIColor {
+            switch self {
+            case .none: return .clear
+            case .gray: return .systemGray
+            case .green: return .systemGreen
+            case .purple: return .systemPurple
+            case .blue: return .systemBlue
+            case .yellow: return .systemYellow
+            case .red: return .systemRed
+            case .orange: return .systemOrange
             }
+        }
         #else
         /// `UIColor` representation.
         public var color: UIColor {
@@ -94,10 +93,10 @@ extension MetadataItem {
 /*
  #if os(macOS)
  extension NSWorkspace {
-     /// The available Finder tags.
-     var FinderTagColors: [MetadataItem.FinderTagColor] {
-         return fileLabels.compactMap({MetadataItem.FinderTagColor(rawValue: $0)})
-     }
+ /// The available Finder tags.
+ var FinderTagColors: [MetadataItem.FinderTagColor] {
+ return fileLabels.compactMap({MetadataItem.FinderTagColor(rawValue: $0)})
+ }
  }
  #endif
  */

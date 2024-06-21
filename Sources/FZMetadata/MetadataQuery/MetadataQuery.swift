@@ -352,8 +352,6 @@ open class MetadataQuery: NSObject {
     
     func updateQueryAttributes() {
         queryAttributes = query.valueListAttributes
-        queryAttributes += ["kMDQueryResultContentRelevance"]
-        queryAttributes += predicate?(.root).mdKeys ?? []
         queryAttributes += sortedBy.compactMap(\.key)
         queryAttributes += groupingAttributes.compactMap(\.rawValue)
         queryAttributes = queryAttributes.uniqued()
