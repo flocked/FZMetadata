@@ -235,22 +235,10 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    
-
     /// Stops the query from gathering any further results.
     open func stop() {
         state = .isStopped
         query.stop()
-    }
-
-    func reset() {
-        resultsHandler = nil
-        searchScopes = []
-        urls = []
-        predicate = nil
-        attributes = []
-        groupingAttributes = []
-        sortedBy = []
     }
 
     func runWithPausedMonitoring(_ block: () -> Void) {
@@ -336,7 +324,16 @@ open class MetadataQuery: NSObject {
     /**
      A Boolean value indicating whether the monitoring of changes to the results is enabled.
 
-     If `true` the ``resultsHandler-swift.property`` gets called whenever the results changes.
+     If `true` the ``resultsHandler`` gets called whenever the results changes. For example:
+     
+     ```swift
+     query.predicate = { $0.isScreenCapture }
+     query.monitorResults = true
+     query.resultsHandler = { items, _ in
+        // Is called whenever a new screenshot is taken.
+     }
+     query.start()
+     ```
      
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
      */
@@ -352,9 +349,7 @@ open class MetadataQuery: NSObject {
     }
     
     var isStarted: Bool { query.isStarted }
-    
     var isGathering: Bool { query.isGathering }
-    
     var isStopped: Bool { query.isStopped }
 
     @objc func queryGatheringDidStart(_: Notification) {
@@ -386,13 +381,6 @@ open class MetadataQuery: NSObject {
             let removed = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
             let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
             
-            let res = _results.synchronized
-            if !changed.isEmpty {
-                Swift.print("Changed:")
-                Swift.print(changed.compactMap({ query.index(ofResult: $0) }))
-                Swift.print(changed.compactMap({ res.firstIndex(of: $0) }))
-            }
-
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
             // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
@@ -438,19 +426,19 @@ open class MetadataQuery: NSObject {
     /// Creates a metadata query.
     override public init() {
         super.init()
-        reset()
         query.delegate = delegate
         
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
-        // NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
+        NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringProgress(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 }
+
 
 /*
 #if os(macOS)

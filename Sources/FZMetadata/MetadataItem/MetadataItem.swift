@@ -68,7 +68,7 @@ open class MetadataItem {
     
     /// Previous metadata attribute values fetched by a query., or `nil` if there aren't any previous values.
     var previousValues: [String: Any]? = nil
-    
+        
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
 
@@ -133,11 +133,28 @@ open class MetadataItem {
     }
     
     /**
-     The attributes that changed since the last metadata query results.
-    
-     The attributes that changed, if the item is part of a metadata query results.
+     The attributes that changed since the last metadata query results, if the item is part of a metadata query results.
+
+     When a metadata query is monitoring
+     When ``MetadataQuery/monitorResults`` of a metadata query is enabled, the results Enables updates to the query results.
      
-     When ``MetadataQuery/monitorResults`` of a metadata query is enabled, the results are updated whenever attributes changes. The p
+     ```swift
+     query.predicate = { $0.isFile }
+     query.attributes = [.finderTags, .lastUsedDate]
+     query.monitorResults = true
+     query.resultsHandler = { items, _ in
+        // Is called whenever the available files change, or their finder tags and last usage date.
+     
+        // Items where the finder tags changed.
+        let finderTagItems = items.filter({$0.queryChangedAttributes.contains(.finderTags)})
+     
+        // Items where the last usage date changed.
+        let lastUsedItems = items.filter({$0.queryChangedAttributes.contains(.lastUsedDate)})
+     }
+     query.start()
+     
+     // Change the finder tag of a file. The results handler is called and finderTagItems provides th
+     ```
      
      When ``MetadataQuery/monitorResults`` of a metadata query is enabled, the array provides the attributes that changed since the last query results
      When a query is monitoring for changes
@@ -155,10 +172,6 @@ open class MetadataItem {
         }
         return _queryChangedAttributes
     }
-    
-    // var queryChangedAttributes: [Attribute]
-    // var queryModifiedAttributes: [Attribute]
-
     
     var _queryChangedAttributes: [Attribute] = []
 
@@ -990,7 +1003,7 @@ open class MetadataItem {
     open var ubiquitousSharedItemRoleOwner: String? {
         value(for: \.ubiquitousSharedItemRoleOwner)
     }
-
+        
     open var ubiquitousSharedItemRoleParticipant: String? {
         value(for: \.ubiquitousSharedItemRoleParticipant)
     }
