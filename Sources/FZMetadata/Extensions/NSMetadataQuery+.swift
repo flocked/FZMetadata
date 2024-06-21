@@ -7,14 +7,6 @@
 
 import Foundation
 
-/*
-extension NSMetadataItem {
-    func value<T>(for attribute: String) -> T? {
-        return value(forAttribute: attribute) as? T
-    }
-}
-*/
-
 extension NSMetadataQuery {
     /// Updates the values for the specified attribute names.
     func values(of attributes: [String], forResultsAt index: Int) -> [String: Any] {
