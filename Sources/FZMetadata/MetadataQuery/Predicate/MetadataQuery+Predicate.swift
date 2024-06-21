@@ -908,6 +908,9 @@ extension UTType: QueryRawRepresentable {
     public var rawValue: String { identifier }
 }
 
+extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
+extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
+
 /// Conforms `UTType` to be used in a metadata query predicate.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 public protocol QueryUTType {}

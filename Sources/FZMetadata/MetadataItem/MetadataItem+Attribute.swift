@@ -398,42 +398,41 @@ public extension MetadataItem {
         
         /// A Boolean indicating whether the item is stored in the cloud.
         case itemIsUbiquitous = "NSMetadataItemIsUbiquitousKey"
+        /// The name of the item’s container as the system displays it to users.
         case ubiquitousItemContainerDisplayName = "NSMetadataUbiquitousItemContainerDisplayNameKey"
+        /// A Boolean value that indicates whether the user or the system requests a download of the item.
         case ubiquitousItemDownloadRequested = "NSMetadataUbiquitousItemDownloadRequestedKey"
         case ubiquitousItemIsExternalDocument = "NSMetadataUbiquitousItemIsExternalDocumentKey"
         case ubiquitousItemURLInLocalContainer = "NSMetadataUbiquitousItemURLInLocalContainerKey"
+        /// A Boolean value that indicates whether the item has outstanding conflicts.
         case ubiquitousItemHasUnresolvedConflicts = "NSMetadataUbiquitousItemHasUnresolvedConflictsKey"
         case ubiquitousItemIsDownloaded = "NSMetadataUbiquitousItemIsDownloadedKey"
+        /// A Boolean value that indicates whether the system is downloading the item.
         case ubiquitousItemIsDownloading = "NSMetadataUbiquitousItemIsDownloadingKey"
+        /// A Boolean value that indicates whether data is present in the cloud for the item.
         case ubiquitousItemIsUploaded = "NSMetadataUbiquitousItemIsUploadedKey"
+        /// A Boolean value that indicates whether the system is uploading the item.
         case ubiquitousItemIsUploading = "NSMetadataUbiquitousItemIsUploadingKey"
+        /// The percentage of the file that has already been downloaded from the cloud.
         case ubiquitousItemPercentDownloaded = "NSMetadataUbiquitousItemPercentDownloadedKey"
+        /// The percentage of the file that has already been downloaded from the cloud.
         case ubiquitousItemPercentUploaded = "NSMetadataUbiquitousItemPercentUploadedKey"
+        /// The download status of the item.
         case ubiquitousItemDownloadingStatus = "NSMetadataUbiquitousItemDownloadingStatusKey"
+        /// The error when downloading the item from iCloud fails.
         case ubiquitousItemDownloadingError = "NSMetadataUbiquitousItemDownloadingErrorKey"
+        /// The error when uploading the item to iCloud fails.
         case ubiquitousItemUploadingError = "NSMetadataUbiquitousItemUploadingErrorKey"
+        /// A Boolean value that indicates a shared item.
         case ubiquitousItemIsShared = "NSMetadataUbiquitousItemIsSharedKey"
+        /// The current user’s permissions for the shared item.
         case ubiquitousSharedItemCurrentUserPermissions = "NSMetadataUbiquitousSharedItemCurrentUserPermissionsKey"
         case ubiquitousSharedItemCurrentUserRole = "NSMetadataUbiquitousSharedItemCurrentUserRoleKey"
         case ubiquitousSharedItemMostRecentEditorNameComponents = "NSMetadataUbiquitousSharedItemMostRecentEditorNameComponentsKey"
         case ubiquitousSharedItemOwnerNameComponents = "NSMetadataUbiquitousSharedItemOwnerNameComponentsKey"
         
-        // MARK: - iCloud Download Status
-        
-        case ubiquitousItemDownloadingStatusCurrent = "NSMetadataUbiquitousItemDownloadingStatusCurrent"
-        case ubiquitousItemDownloadingStatusDownloaded = "NSMetadataUbiquitousItemDownloadingStatusDownloaded"
-        case ubiquitousItemDownloadingStatusNotDownloaded = "NSMetadataUbiquitousItemDownloadingStatusNotDownloaded"
-        
-        // MARK: - iCloud Sharing Permissions Values
-        
-        case ubiquitousSharedItemPermissionsReadOnly = "NSMetadataUbiquitousSharedItemPermissionsReadOnly"
-        case ubiquitousSharedItemPermissionsReadWrite = "NSMetadataUbiquitousSharedItemPermissionsReadWrite"
+        // MARK: - Query Content Relevance
 
-        // MARK: - iCloud Sharing Role Values
-        
-        case ubiquitousSharedItemRoleOwner = "NSMetadataUbiquitousSharedItemRoleOwner"
-        case ubiquitousSharedItemRoleParticipant = "NSMetadataUbiquitousSharedItemRoleParticipant"
-        
         /**
          The relevance of the item's content, if it's part of a metadata query result.
 

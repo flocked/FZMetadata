@@ -205,8 +205,8 @@ open class MetadataQuery: NSObject {
      Setting this property while a query is running stops the query and discards the current results. The receiver immediately starts a new query.
      */
     open var sortedBy: [SortDescriptor] {
-        set { query.sortDescriptors = newValue }
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
+        set { query.sortDescriptors = newValue }
     }
 
     /// The interval (in seconds) at which notification of updated results occurs. The default value is `1.0` seconds.
@@ -284,7 +284,7 @@ open class MetadataQuery: NSObject {
 
     func result(at index: Int, keys: [String]) -> MetadataItem? {
         guard let result = query.result(at: index) as? MetadataItem else { return nil }
-        updateItemValues(result, index: index, keys: keys, inital: true)
+        updateResult(result, index: index, keys: keys, inital: true)
         return result
     }
     
@@ -302,7 +302,7 @@ open class MetadataQuery: NSObject {
         return attributes.uniqued()
     }
     
-    func updateItemValues(_ item: MetadataItem, index: Int, keys: [String], inital: Bool) {
+    func updateResult(_ item: MetadataItem, index: Int, keys: [String], inital: Bool) {
         var values = query.values(of: keys, forResultsAt: index)
         if keys.contains("kMDItemURL"), values["kMDItemURL"] == nil {
             values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
@@ -395,7 +395,7 @@ open class MetadataQuery: NSObject {
                 (changed + added).forEach { item in
                     let index = query.index(ofResult: item)
                     results.move(item, to: index)
-                    updateItemValues(item, index: index, keys: keys, inital: false)
+                    updateResult(item, index: index, keys: keys, inital: false)
                 }
             }
             _results.synchronized = results

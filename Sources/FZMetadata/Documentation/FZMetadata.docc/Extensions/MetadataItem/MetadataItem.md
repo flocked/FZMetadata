@@ -257,22 +257,6 @@
 - ``ubiquitousSharedItemMostRecentEditorNameComponents``
 - ``ubiquitousSharedItemOwnerNameComponents``
 
-### iCloud Download Status
-
-- ``ubiquitousItemDownloadingStatusCurrent``
-- ``ubiquitousItemDownloadingStatusDownloaded``
-- ``ubiquitousItemDownloadingStatusNotDownloaded``
-
-### iCloud Sharing Permissions Values
-
-- ``ubiquitousSharedItemPermissionsReadOnly``
-- ``ubiquitousSharedItemPermissionsReadWrite``
-
-### iCloud Sharing Role Values
-
-- ``ubiquitousSharedItemRoleOwner``
-- ``ubiquitousSharedItemRoleParticipant``
-
 ### Metadata Query Attributes
 
 - ``queryContentRelevance``

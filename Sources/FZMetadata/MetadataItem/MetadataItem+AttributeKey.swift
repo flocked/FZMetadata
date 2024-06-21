@@ -243,22 +243,6 @@ extension MetadataItem {
              \.ubiquitousSharedItemMostRecentEditorNameComponents: "NSMetadataUbiquitousSharedItemMostRecentEditorNameComponentsKey",
              \.ubiquitousSharedItemOwnerNameComponents: "NSMetadataUbiquitousSharedItemOwnerNameComponentsKey",
              
-             // MARK: - iCloud Download Status
-             
-             \.ubiquitousItemDownloadingStatusCurrent: "NSMetadataUbiquitousItemDownloadingStatusCurrent",
-             \.ubiquitousItemDownloadingStatusDownloaded: "NSMetadataUbiquitousItemDownloadingStatusDownloaded",
-             \.ubiquitousItemDownloadingStatusNotDownloaded: "NSMetadataUbiquitousItemDownloadingStatusNotDownloaded",
-             
-             // MARK: - iCloud Sharing Permissions Values
-             
-             \.ubiquitousSharedItemPermissionsReadOnly: "NSMetadataUbiquitousSharedItemPermissionsReadOnly",
-             \.ubiquitousSharedItemPermissionsReadWrite: "NSMetadataUbiquitousSharedItemPermissionsReadWrite",
-             
-             // MARK: - iCloud Sharing Role Values
-             
-             \.ubiquitousSharedItemRoleOwner: "NSMetadataUbiquitousSharedItemRoleOwner",
-             \.ubiquitousSharedItemRoleParticipant: "NSMetadataUbiquitousSharedItemRoleParticipant",
-
              \.queryContentRelevance: "kMDQueryResultContentRelevance",
         ]
 }

@@ -888,10 +888,12 @@ open class MetadataItem {
         value(for: \.itemIsUbiquitous)
     }
 
+    /// The name of the item’s container as the system displays it to users.
     open var ubiquitousItemContainerDisplayName: String? {
         value(for: \.ubiquitousItemContainerDisplayName)
     }
 
+    /// A Boolean value that indicates whether the user or the system requests a download of the item.
     open var ubiquitousItemDownloadRequested: Bool? {
         value(for: \.ubiquitousItemDownloadRequested)
     }
@@ -904,6 +906,7 @@ open class MetadataItem {
         value(for: \.ubiquitousItemURLInLocalContainer)
     }
 
+    /// A Boolean value that indicates whether the item has outstanding conflicts.
     open var ubiquitousItemHasUnresolvedConflicts: Bool? {
         value(for: \.ubiquitousItemHasUnresolvedConflicts)
     }
@@ -912,90 +915,69 @@ open class MetadataItem {
         value(for: \.ubiquitousItemIsDownloaded)
     }
 
+    /// A Boolean value that indicates whether the system is downloading the item.
     open var ubiquitousItemIsDownloading: Bool? {
         value(for: \.ubiquitousItemIsDownloading)
     }
 
+    /// A Boolean value that indicates whether data is present in the cloud for the item.
     open var ubiquitousItemIsUploaded: Bool? {
         value(for: \.ubiquitousItemIsUploaded)
     }
 
+    /// A Boolean value that indicates whether the system is uploading the item.
     open var ubiquitousItemIsUploading: Bool? {
         value(for: \.ubiquitousItemIsUploading)
     }
 
+    /// The percentage of the file that has already been downloaded from the cloud.
     open var ubiquitousItemPercentDownloaded: Double? {
         value(for: \.ubiquitousItemPercentDownloaded)
     }
 
+    /// The percentage of the file that has already been downloaded from the cloud.
     open var ubiquitousItemPercentUploaded: Double? {
         value(for: \.ubiquitousItemPercentUploaded)
     }
 
-    open var ubiquitousItemDownloadingStatus: String? {
+    /// The download status of the item.
+    open var ubiquitousItemDownloadingStatus: URLUbiquitousItemDownloadingStatus? {
         value(for: \.ubiquitousItemDownloadingStatus)
     }
 
-    open var ubiquitousItemDownloadingError: String? {
+    /// The error when downloading the item from iCloud fails.
+    open var ubiquitousItemDownloadingError: NSError? {
         value(for: \.ubiquitousItemDownloadingError)
     }
 
-    open var ubiquitousItemUploadingError: String? {
+    /// The error when uploading the item to iCloud fails.
+    open var ubiquitousItemUploadingError: NSError? {
         value(for: \.ubiquitousItemUploadingError)
     }
 
+    /// A Boolean value that indicates a shared item.
     open var ubiquitousItemIsShared: Bool? {
         value(for: \.ubiquitousItemIsShared)
     }
 
-    open var ubiquitousSharedItemCurrentUserPermissions: String? {
+    /// The current user’s permissions for the shared item.
+    open var ubiquitousSharedItemCurrentUserPermissions: URLUbiquitousSharedItemPermissions? {
         value(for: \.ubiquitousSharedItemCurrentUserPermissions)
     }
 
-    open var ubiquitousSharedItemCurrentUserRole: String? {
+    /// The current user’s role for the shared item.
+    open var ubiquitousSharedItemCurrentUserRole: URLUbiquitousSharedItemRole? {
         value(for: \.ubiquitousSharedItemCurrentUserRole)
     }
 
-    open var ubiquitousSharedItemMostRecentEditorNameComponents: [String]? {
+    /// The name components of the most recent editor of the shared item.
+    open var ubiquitousSharedItemMostRecentEditorNameComponents: PersonNameComponents? {
         value(for: \.ubiquitousSharedItemMostRecentEditorNameComponents)
     }
 
-    open var ubiquitousSharedItemOwnerNameComponents: [String]? {
+    /// The name components of the owner of the shared item.
+    open var ubiquitousSharedItemOwnerNameComponents: PersonNameComponents? {
         value(for: \.ubiquitousSharedItemOwnerNameComponents)
-    }
-    
-    // MARK: - iCloud Download Status
-    
-    open var ubiquitousItemDownloadingStatusCurrent: String? {
-        value(for: \.ubiquitousItemDownloadingStatusCurrent)
-    }
-
-    open var ubiquitousItemDownloadingStatusDownloaded: Bool? {
-        value(for: \.ubiquitousItemDownloadingStatusDownloaded)
-    }
-
-    open var ubiquitousItemDownloadingStatusNotDownloaded: Bool? {
-        value(for: \.ubiquitousItemDownloadingStatusNotDownloaded)
-    }
-    
-    // MARK: - iCloud Sharing Permissions Values
-        
-    open var ubiquitousSharedItemPermissionsReadOnly: Bool? {
-        value(for: \.ubiquitousSharedItemPermissionsReadOnly)
-    }
-
-    open var ubiquitousSharedItemPermissionsReadWrite: Bool? {
-        value(for: \.ubiquitousSharedItemPermissionsReadWrite)
-    }
-    
-    // MARK: - iCloud Sharing Role Values
-
-    open var ubiquitousSharedItemRoleOwner: String? {
-        value(for: \.ubiquitousSharedItemRoleOwner)
-    }
-        
-    open var ubiquitousSharedItemRoleParticipant: String? {
-        value(for: \.ubiquitousSharedItemRoleParticipant)
     }
     
     // MARK: - Query Content Relevance
