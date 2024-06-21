@@ -289,27 +289,22 @@ open class MetadataQuery: NSObject {
         }
         return _results.synchronized
     }
+    
+    var _results: SynchronizedArray<MetadataItem> = []
 
     var resultsCount: Int {
         query.resultCount
     }
-    
-    var _results: SynchronizedArray<MetadataItem> = []
-    
+        
     func updateResults() {
-        var results: [MetadataItem] = []
-        query.enumerateResults { item, index, _ in
-            let item = item as! MetadataItem
-            updateResult(item, index: index, inital: true)
-            results.append(item)
+        runWithPausedMonitoring {
+            _results.synchronized = (0..<resultsCount).compactMap({ result(at: $0) })
         }
-        _results.synchronized = results
     }
     
     func updateResults(added: [MetadataItem], removed: [MetadataItem], changed: [MetadataItem]) {
         runWithPausedMonitoring {
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
-            // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
             var results = _results.synchronized
             results.remove(removed)
             results.forEach({ item in
@@ -341,6 +336,16 @@ open class MetadataQuery: NSObject {
         updateResult(result, index: index, inital: true)
         return result
     }
+        
+    func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
+        var values = query.values(of: queryAttributes, forResultsAt: index)
+        if queryAttributes.contains("kMDItemURL"), values["kMDItemURL"] == nil {
+            values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
+        }
+        values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
+        item.previousValues = inital ? nil : item.values
+        item.values = values
+    }
     
     /// All attributes of the query.
     var queryAttributes: [String] = []
@@ -352,16 +357,6 @@ open class MetadataQuery: NSObject {
         queryAttributes += sortedBy.compactMap(\.key)
         queryAttributes += groupingAttributes.compactMap(\.rawValue)
         queryAttributes = queryAttributes.uniqued()
-    }
-    
-    func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
-        var values = query.values(of: queryAttributes, forResultsAt: index)
-        if queryAttributes.contains("kMDItemURL"), values["kMDItemURL"] == nil {
-            values["kMDItemURL"] = item.item.value(forAttribute: "kMDItemURL")
-        }
-        values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
-        item.previousValues = inital ? nil : item.values
-        item.values = values
     }
 
     /**
@@ -394,16 +389,12 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
-        let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
-        Swift.debugPrint("MetadataQuery gatheringProgress", added.count)
+        // Swift.debugPrint("MetadataQuery gatheringProgress")
     }
 
     @objc func queryUpdated(_ notification: Notification) {
-        let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
-        let removed = (notification.userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem]) ?? []
-        let changed = (notification.userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem]) ?? []
-        // Swift.debugPrint("MetadataQuery updated, added: \(added.count), removed: \(removed.count), changed: \(changed.count)")
-        updateResults(added: added, removed: removed, changed: changed)
+        // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)")
+        updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
     }
     
     func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
@@ -451,6 +442,11 @@ open class MetadataQuery: NSObject {
     }
 }
 
+fileprivate extension Notification {
+    var added: [MetadataItem] { userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [] }
+    var removed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [] }
+    var changed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [] }
+}
 
 /*
 #if os(macOS)
