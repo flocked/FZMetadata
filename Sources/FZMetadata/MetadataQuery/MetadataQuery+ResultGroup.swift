@@ -19,20 +19,11 @@ public extension MetadataQuery {
         /// An array containing the group’s subgroups.
         public let subgroups: [ResultGroup]?
         
-        init?(_ nsResultGroup: NSMetadataQueryResultGroup) {
-            if let attribute = MetadataItem.Attribute(rawValue: nsResultGroup.attribute) {
-                self.attribute = attribute
-                var items = [MetadataItem]()
-                for index in 0 ..< nsResultGroup.resultCount {
-                    if let item = nsResultGroup.result(at: index) as? MetadataItem {
-                        items.append(item)
-                    }
-                }
-                self.items = items
-                subgroups = nsResultGroup.subgroups?.compactMap { Self($0) }
-            } else {
-                return nil
-            }
+        init?(_ group: NSMetadataQueryResultGroup) {
+            guard let attribute = MetadataItem.Attribute(rawValue: group.attribute) else { return nil }
+            self.attribute = attribute
+            items = (0..<group.resultCount).compactMap({ group.result(at: $0) as? MetadataItem })
+            subgroups = group.subgroups?.compactMap { Self($0) }
         }
     }
 }

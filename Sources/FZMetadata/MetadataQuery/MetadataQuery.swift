@@ -66,6 +66,10 @@ open class MetadataQuery: NSObject {
     let query = NSMetadataQuery()
     let delegate = Delegate()
     
+    var isStarted: Bool { query.isStarted }
+    var isGathering: Bool { query.isGathering }
+    var isStopped: Bool { query.isStopped }
+    
     /// The state of the query.
     open var state: State = .isStopped
     
@@ -277,10 +281,10 @@ open class MetadataQuery: NSObject {
     /**
      An array containing the query’s results.
 
-     The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide  a snapshot of the current query results.
+     The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        if state != .isStopped {
+        if state == .isGatheringFiles, resultsCount != _results.count {
             updateResults()
         }
         return _results.synchronized
@@ -291,14 +295,6 @@ open class MetadataQuery: NSObject {
     }
     
     var _results: SynchronizedArray<MetadataItem> = []
-
-    /*
-    func updateResults() {
-        runWithPausedMonitoring {
-            _results.synchronized = self.results(at: Array(0 ..< self.query.resultCount))
-        }
-    }
-     */
     
     func updateResults() {
         var results: [MetadataItem] = []
@@ -346,9 +342,6 @@ open class MetadataQuery: NSObject {
         return result
     }
     
-    func results(at indexes: [Int]) -> [MetadataItem] {
-        return indexes.compactMap { result(at: $0) }
-    }
     /// All attributes of the query.
     var queryAttributes: [String] = []
     
@@ -379,10 +372,6 @@ open class MetadataQuery: NSObject {
     open var groupedResults: [ResultGroup] {
         query.groupedResults.compactMap { ResultGroup($0) }
     }
-    
-    var isStarted: Bool { query.isStarted }
-    var isGathering: Bool { query.isGathering }
-    var isStopped: Bool { query.isStopped }
 
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
@@ -404,8 +393,9 @@ open class MetadataQuery: NSObject {
         postResults(results, difference: .added(results))
     }
 
-    @objc func queryGatheringProgress(_: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringProgress")
+    @objc func queryGatheringProgress(_ notification: Notification) {
+        let added = (notification.userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem]) ?? []
+        Swift.debugPrint("MetadataQuery gatheringProgress", added.count)
     }
 
     @objc func queryUpdated(_ notification: Notification) {
