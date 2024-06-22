@@ -9,7 +9,6 @@ import Foundation
 import FZSwiftUtils
 import UniformTypeIdentifiers
 
-
 extension NSPredicate {
     typealias Item = MetadataQuery.Predicate<MetadataItem>
     typealias BoolExpression = MetadataQuery.Predicate<Swift.Bool>
@@ -879,9 +878,6 @@ extension UTType: QueryRawRepresentable {
     public var rawValue: String { identifier }
 }
 
-extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
-extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
-
 /// Conforms `UTType` to be used in a metadata query predicate.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 public protocol QueryUTType {}
@@ -922,6 +918,9 @@ protocol AnyRange {
 extension Range: AnyRange {}
 extension ClosedRange: AnyRange {}
 
+extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
+extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
+
 // MARK: QueryDateRange
 
 enum QueryDateRange {
@@ -936,20 +935,6 @@ enum QueryDateRange {
     case sameDay(Date)
     case same(Calendar.Component, Date)
     
-    static func values(for unit: Calendar.Component) -> (String, Int)? {
-        switch unit {
-        case .year: return ("$this_year", 1)
-        case .month: return ("$time.this_month", 1)
-        case .day: return ("$time.today", 1)
-        case .hour: return ("$time.now", 3600)
-        case .minute: return ("$time.now", 60)
-        case .weekday: return ("$time.this_week", 1)
-        case .quarter: return ("$time.this_month", 3)
-        case .weekOfMonth, .weekOfYear: return ("$time.this_week", 1)
-        default: return nil
-        }
-    }
-
     var values: [String] {
         switch self {
         case .now:
@@ -982,6 +967,20 @@ enum QueryDateRange {
             return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
         }
         return []
+    }
+    
+    static func values(for unit: Calendar.Component) -> (String, Int)? {
+        switch unit {
+        case .year: return ("$this_year", 1)
+        case .month: return ("$time.this_month", 1)
+        case .day: return ("$time.today", 1)
+        case .hour: return ("$time.now", 3600)
+        case .minute: return ("$time.now", 60)
+        case .weekday: return ("$time.this_week", 1)
+        case .quarter: return ("$time.this_month", 3)
+        case .weekOfMonth, .weekOfYear: return ("$time.this_week", 1)
+        default: return nil
+        }
     }
 }
 
