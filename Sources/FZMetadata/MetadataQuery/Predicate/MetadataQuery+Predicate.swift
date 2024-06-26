@@ -577,7 +577,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func contains(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .contains, value, options)
@@ -588,7 +588,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func contains<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .contains, Array(values), [options])
@@ -599,7 +599,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func begins(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .beginsWith, value, options)
@@ -610,7 +610,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func begins<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .beginsWith, Array(values), [options])
@@ -621,7 +621,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func ends(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .endsWith, value, options)
@@ -632,7 +632,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func ends<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .endsWith, Array(values), [options])
@@ -643,7 +643,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func equals(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .equalTo, value, options)
@@ -654,7 +654,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func equals<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .equalTo, Array(values), [options])
@@ -665,7 +665,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func equalsNot(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .notEqualTo, value, options)
@@ -676,7 +676,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query.
+        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
      */
     func equalsNot<C: Collection<String>>(_ values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .notEqualTo, Array(values), [options])
