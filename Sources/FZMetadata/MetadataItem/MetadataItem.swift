@@ -95,7 +95,7 @@ open class MetadataItem: Identifiable {
         public init?(url: URL) {
             guard let item = NSMetadataItem(url: url) else { return nil }
             self.item = item
-            self.values = [NSMetadataItemPathKey:url.path]
+            self.values = ["kMDItemPath":url.path, "kMDItemURL": url]
         }
 
     #endif
@@ -144,9 +144,7 @@ open class MetadataItem: Identifiable {
      query.start()
      ```
      */
-    open var updatedAttributes: [Attribute] {
-        var urls: [URL] = []
-        
+    open var updatedAttributes: [Attribute] {        
         if let previous = previousValues {
             _updatedAttributes = values.keyDifference(to: previous).compactMap({ Attribute(rawValue: $0) })
             previousValues = nil
@@ -340,17 +338,17 @@ open class MetadataItem: Identifiable {
             if let tags: [String] = value(for: .finderTags) {
                 return tags.compactMap { $0.replacingOccurrences(of: "\n6", with: "") }
             }
-            return nil
+            return url?.resources.finderTags
         }
         set {
             #if os(macOS)
                 if let url = url {
                     url.resources.finderTags = newValue ?? []
                 } else {
-                    setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" })
+                    setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
                 }
             #else
-                setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" })
+                setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
             #endif
         }
     }
@@ -705,12 +703,19 @@ open class MetadataItem: Identifiable {
     open var orientation: Orientation? { value(for: .orientation) }
 
     /// The orientation of a contents.
-    public enum Orientation: Int, QueryRawRepresentable {
+    public enum Orientation: Int, QueryRawRepresentable, CustomStringConvertible {
         /// Horizontal orientation.
         case horizontal = 0
 
         /// Vertical orientation.
         case vertical = 1
+        
+        public var description: String {
+            switch self {
+            case .horizontal: return "Horizontal"
+            case .vertical: return "Vertical"
+            }
+        }
     }
 
     /// The names of the layers in the file.
@@ -720,12 +725,19 @@ open class MetadataItem: Identifiable {
     open var whiteBalance: WhiteBalance? { value(for: .whiteBalance) }
 
     /// The white balance setting of a camera.
-    public enum WhiteBalance: Int, QueryRawRepresentable {
+    public enum WhiteBalance: Int, QueryRawRepresentable, CustomStringConvertible {
         /// Automatic white balance.
         case auto = 0
 
         /// White balance is off.
         case off = 1
+        
+        public var description: String {
+            switch self {
+            case .auto: return "Auto"
+            case .off: return "Off"
+            }
+        }
     }
 
     /// The aperture setting used to acquire the document contents. This unit is the APEX value.
@@ -797,7 +809,7 @@ open class MetadataItem: Identifiable {
     open var screenCaptureType: ScreenCaptureType? { value(for: .screenCaptureType) }
 
     /// The screen capture type of a file.
-    public enum ScreenCaptureType: String, QueryRawRepresentable {
+    public enum ScreenCaptureType: String, QueryRawRepresentable, CustomStringConvertible {
         /// A screen capture of a display.
         case display
 
@@ -806,6 +818,14 @@ open class MetadataItem: Identifiable {
 
         /// A screen capture of a selection.
         case selection
+        
+        public var description: String {
+            switch self {
+            case .display: return "Display"
+            case .window: return "Window"
+            case .selection: return "Selection"
+            }
+        }
     }
 
     /// The screen capture rect of the file.
@@ -961,8 +981,8 @@ open class MetadataItem: Identifiable {
     // MARK: - Query Content Relevance
     
     /**
-     The relevance of the item's content, if it's part of a metadata query results.
-
+     The relevance of the item's content, if it's part of a metadata query results that is sorted by this attribute.
+     
      The value is a value between `0.0` and `1.0`.
      */
     open var queryContentRelevance: Double? { value(for: .queryContentRelevance) }
@@ -985,8 +1005,7 @@ extension MetadataItem {
     }
     
     func getExplicity<V: Any, K: KeyPath<MetadataItem, V?>>(_ keyPath: K) -> V? {
-        let key = "com.apple.metadata:" + keyPath.mdItemKey
-        return url?.extendedAttributes[key]
+        self["com.apple.metadata:" + keyPath.mdItemKey]
     }
 
     func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
@@ -994,34 +1013,22 @@ extension MetadataItem {
             setExplicity(\.pixelWidth, to: Double(value.width))
             setExplicity(\.pixelHeight, to: Double(value.height))
         } else {
-            let key = "com.apple.metadata:" + keyPath.mdItemKey
-            url?.extendedAttributes[key] = value
+            self["com.apple.metadata:" + keyPath.mdItemKey] = value
         }
     }
 
     subscript<T>(key: String, _: T? = nil) -> T? {
-        get {
-            guard let _url = url ?? url else { return nil }
-            return _url.extendedAttributes[key]
-        }
-        set {
-            guard let _url = url ?? url else { return }
-            _url.extendedAttributes[key] = newValue
-        }
-    }
-
-    func availableExtendedAttributes() throws -> [String] {
-        guard let _url = url ?? url else { return [] }
-        return try _url.extendedAttributes.listExtendedAttributes()
+        get { url?.extendedAttributes[key] }
+        set { url?.extendedAttributes[key] = newValue }
     }
 }
 
 extension MetadataItem: Hashable {
     public static func == (lhs: MetadataItem, rhs: MetadataItem) -> Bool {
-        lhs.hashValue == rhs.hashValue
+        lhs.id == rhs.id
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(item)
+        hasher.combine(id)
     }
 }

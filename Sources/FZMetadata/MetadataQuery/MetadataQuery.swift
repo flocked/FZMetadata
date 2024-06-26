@@ -93,7 +93,7 @@ open class MetadataQuery: NSObject {
 
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
@@ -105,7 +105,7 @@ open class MetadataQuery: NSObject {
      
      If ``monitorResults`` is enabled, any changes to those attributes updates the results and calls the results handler.
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
@@ -128,7 +128,7 @@ open class MetadataQuery: NSObject {
      }
      ```
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      
      **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      */
@@ -150,7 +150,7 @@ open class MetadataQuery: NSObject {
      
      The query can alternativly also search at specific scopes via ``searchScopes``.
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
@@ -164,7 +164,7 @@ open class MetadataQuery: NSObject {
           
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
@@ -186,7 +186,7 @@ open class MetadataQuery: NSObject {
      query.sortedBy = [.ascending(.queryRelevance)]
      ```
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var sortedBy: [SortDescriptor] {
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
@@ -213,7 +213,7 @@ open class MetadataQuery: NSObject {
      }
      ```
 
-     Setting this property while a query is running stops the query and discards the current results and immediately starts a new query.
+     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
@@ -221,7 +221,7 @@ open class MetadataQuery: NSObject {
     }
 
     /**
-     The queue on whicht results handler gets called.
+     The queue on which results handler gets called.
 
      Use this property to decouple the processing of results from the thread used to execute the query. This makes it easier to synchronize query result processing with other related operations—such as updating the data model or user interface—which you might want to perform on the main queue.
      */
@@ -363,7 +363,7 @@ open class MetadataQuery: NSObject {
         state = .isGatheringFiles
     }
 
-    @objc func queryGatheringFinished(_: Notification) {
+    @objc func queryGatheringFinished(_ notification: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringFinished")
         if monitorResults {
             state = .isMonitoring
@@ -376,7 +376,7 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringProgress")
+        // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count)
     }
 
     @objc func queryUpdated(_ notification: Notification) {

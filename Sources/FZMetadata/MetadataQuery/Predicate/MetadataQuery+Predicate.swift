@@ -946,19 +946,19 @@ enum QueryDateRange {
         case .tomorrow:
             return ["$time.today(+1)", "$time.today(+2)"]
         case let .this(unit):
-            if let values = Self.values(for: unit) {
+            if let values = values(for: unit) {
                 return ["\(values.0)", "\(values.0)(+\(values.1 * 1))"]
             }
         case let .next(unit):
-            if let values = Self.values(for: unit) {
+            if let values = values(for: unit) {
                 return ["\(values.0)(+\(values.1 * 1))", "\(values.0)(+\(values.1 * 2))"]
             }
         case let .previous(unit):
-            if let values = Self.values(for: unit) {
+            if let values = values(for: unit) {
                 return ["\(values.0)(-\(values.1 * 2))", "\(values.0)(-\(values.1 * 1))"]
             }
         case let .last(value, unit):
-            if let values = Self.values(for: unit) {
+            if let values = values(for: unit) {
                 return ["\(values.0)", "\(values.0)(\(values.1 * value)"]
             }
         case let .sameDay(day):
@@ -966,10 +966,10 @@ enum QueryDateRange {
         case let .same(unit, date):
             return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
         }
-        return []
+        return ["$time.today(-1)", "$time.today"]
     }
     
-    static func values(for unit: Calendar.Component) -> (String, Int)? {
+    func values(for unit: Calendar.Component) -> (String, Int)? {
         switch unit {
         case .year: return ("$this_year", 1)
         case .month: return ("$time.this_month", 1)

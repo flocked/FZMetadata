@@ -78,13 +78,13 @@ extension MetadataItem {
         public var description: String {
             switch self {
             case .none: return "None"
-            case .gray: return "None"
-            case .green: return "None"
-            case .purple: return "None"
-            case .blue: return "None"
-            case .yellow: return "None"
-            case .red: return "None"
-            case .orange: return "None"
+            case .gray: return "Gray"
+            case .green: return "Green"
+            case .purple: return "Purple"
+            case .blue: return "Blue"
+            case .yellow: return "Yellow"
+            case .red: return "Red"
+            case .orange: return "Orange"
             }
         }
     }

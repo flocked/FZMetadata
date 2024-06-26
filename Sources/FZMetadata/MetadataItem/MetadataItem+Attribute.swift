@@ -434,8 +434,8 @@ public extension MetadataItem {
         // MARK: - Query Content Relevance
 
         /**
-         The relevance of the item's content, if it's part of a metadata query result.
-
+         The relevance of the item's content, if it's part of a metadata query results that is sorted by this attribute.
+         
          The value is a value between `0.0` and `1.0`.
          */
         case queryContentRelevance = "kMDQueryResultContentRelevance"
