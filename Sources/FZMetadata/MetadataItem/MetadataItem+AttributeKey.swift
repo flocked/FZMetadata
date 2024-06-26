@@ -15,7 +15,7 @@ extension PartialKeyPath where Root == MetadataItem {
             }
             return itemKey
         }
-        return "kMDItemFSName"
+        return MetadataItem.Attribute.fileName.rawValue
     }
 }
 

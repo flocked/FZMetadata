@@ -95,7 +95,7 @@ open class MetadataItem: Identifiable {
         public init?(url: URL) {
             guard let item = NSMetadataItem(url: url) else { return nil }
             self.item = item
-            self.values = ["kMDItemPath":url.path, "kMDItemURL": url]
+            self.values = [Attribute.path.rawValue:url.path, Attribute.url.rawValue: url]
         }
 
     #endif
@@ -109,10 +109,10 @@ open class MetadataItem: Identifiable {
      */
     open var availableAttributes: [Attribute] {
         var attributes = (values.keys + item.attributes).uniqued()
-        if attributes.contains(all: ["kMDItemPixelWidth", "kMDItemPixelHeight"]) {
+        if attributes.contains(all: [Attribute.pixelWidth.rawValue, Attribute.pixelHeight.rawValue]) {
             attributes.append(Attribute.pixelSize.rawValue)
         }
-        if attributes.contains(all: ["kMDItemResolutionWidthDPI", "kMDItemResolutionHeightDPI"]) {
+        if attributes.contains(all: [Attribute.dpiResolutionWidth.rawValue, Attribute.dpiResolutionHeight.rawValue]) {
             attributes.append(Attribute.dpiResolution.rawValue)
         }
         return attributes.sorted().compactMap { Attribute(rawValue: $0) }
@@ -144,7 +144,7 @@ open class MetadataItem: Identifiable {
      query.start()
      ```
      */
-    open var updatedAttributes: [Attribute] {        
+    open var updatedAttributes: [Attribute] {
         if let previous = previousValues {
             _updatedAttributes = values.keyDifference(to: previous).compactMap({ Attribute(rawValue: $0) })
             previousValues = nil
@@ -158,7 +158,7 @@ open class MetadataItem: Identifiable {
 
     /// The url of the file.
     open var url: URL? {
-        if let path = values["kMDItemPath"] as? String {
+        if let path = values[Attribute.path.rawValue] as? String {
             return URL(fileURLWithPath: path)
         }
         return value(for: .url)
@@ -169,7 +169,7 @@ open class MetadataItem: Identifiable {
 
     /// The name of the file including the extension.
     open var fileName: String? {
-        if let path = values["kMDItemPath"] as? String {
+        if let path = values[Attribute.path.rawValue ] as? String {
             return URL(fileURLWithPath: path).lastPathComponent
         }
         return value(for: .fileName) ?? url?.lastPathComponent

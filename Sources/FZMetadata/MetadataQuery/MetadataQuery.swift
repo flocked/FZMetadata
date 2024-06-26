@@ -336,7 +336,7 @@ open class MetadataQuery: NSObject {
         
     func updateResult(_ item: MetadataItem, index: Int, inital: Bool) {
         var values = query.values(of: queryAttributes, forResultsAt: index)
-        values["kMDItemPath"] = item.item.value(forAttribute: "kMDItemPath")
+        values[MetadataItem.Attribute.path.rawValue] = item.item.value(forAttribute: MetadataItem.Attribute.path.rawValue)
         item.previousValues = inital ? nil : item.values
         item.values = values
     }
