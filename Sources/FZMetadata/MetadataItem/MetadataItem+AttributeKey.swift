@@ -8,7 +8,7 @@
 import Foundation
 
 extension PartialKeyPath where Root == MetadataItem {
-    public var mdItemKey: String {
+    var mdItemKey: String {
         if var itemKey = MetadataItem.attributeKeys[self]?.rawValue {
             if itemKey.hasPrefix("_") {
                 itemKey = String(itemKey.dropFirst())
