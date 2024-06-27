@@ -264,7 +264,6 @@ open class MetadataQuery: NSObject {
 
     /// Starts the query and discards the previous results.
     open func start() {
-        Swift.print("start")
         runWithOperationQueue {
             self.query.start()
         }
@@ -408,6 +407,16 @@ open class MetadataQuery: NSObject {
         }
     }
     
+    func reset() {
+        resultsHandler = nil
+        searchScopes = []
+        urls = []
+        predicate = nil
+        attributes = []
+        groupingAttributes = []
+        sortedBy = []
+    }
+    
     /**
      Creates a metadata query with the specified operation queue.
      
@@ -422,6 +431,8 @@ open class MetadataQuery: NSObject {
     override public init() {
         super.init()
         query.delegate = delegate
+        
+        reset()
         
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
