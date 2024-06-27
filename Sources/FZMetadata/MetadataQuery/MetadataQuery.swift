@@ -429,10 +429,10 @@ open class MetadataQuery: NSObject {
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
-        let _monitorResults = monitorResults
+        let monitors = monitorResults
         monitorResults = false
         block()
-        monitorResults = _monitorResults
+        monitorResults = monitors
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
@@ -485,7 +485,7 @@ extension MetadataQuery {
     }
 }
 
-fileprivate extension Notification {
+extension Notification {
     var added: [MetadataItem] { userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [] }
     var removed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [] }
     var changed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [] }
