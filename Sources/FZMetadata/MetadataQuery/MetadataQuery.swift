@@ -383,7 +383,7 @@ open class MetadataQuery: NSObject {
         // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)")
         updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
     }
-    
+        
     func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
         runWithOperationQueue {
             self.resultsHandler?(items, difference)
@@ -408,11 +408,10 @@ open class MetadataQuery: NSObject {
     }
     
     func reset() {
-        resultsHandler = nil
-        searchScopes = []
-        urls = []
         predicate = nil
         attributes = []
+        searchScopes = []
+        urls = []
         groupingAttributes = []
         sortedBy = []
     }
