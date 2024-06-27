@@ -18,13 +18,25 @@ extension MetadataQuery {
      ```
       */
     open class SortDescriptor: NSSortDescriptor {
+        /// The sorting metadata attribute.
+        public let attribute: MetadataItem.Attribute
+        
+        init(attribute: MetadataItem.Attribute, ascending: Bool) {
+            self.attribute = attribute
+            super.init(key: attribute.rawValue, ascending: ascending)
+        }
+        
+        required public init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
         /**
          An ascending sort descriptor for the specified metadata attribute.
 
          - Parameter attribute: The comparable metadata attribute.
          */
         public static func ascending(_ attribute: MetadataItem.Attribute) -> SortDescriptor {
-            SortDescriptor(key: attribute.rawValue, ascending: true)
+            SortDescriptor(attribute: attribute, ascending: true)
         }
 
         /**
@@ -33,7 +45,7 @@ extension MetadataQuery {
          - Parameter attribute: The comparable metadata attribute.
          */
         public static func descending(_ attribute: MetadataItem.Attribute) -> SortDescriptor {
-            SortDescriptor(key: attribute.rawValue, ascending: false)
+            SortDescriptor(attribute: attribute, ascending: false)
         }
     }
 }
@@ -46,7 +58,7 @@ extension MetadataQuery {
  - Parameter attribute: The comparable metadata attribute.
  */
 public prefix func >> (attribute: MetadataItem.Attribute) -> MetadataQuery.SortDescriptor {
-    MetadataQuery.SortDescriptor(key: attribute.rawValue, ascending: true)
+    MetadataQuery.SortDescriptor(attribute: attribute, ascending: true)
 }
 
 /**
@@ -55,5 +67,5 @@ public prefix func >> (attribute: MetadataItem.Attribute) -> MetadataQuery.SortD
  - Parameter attribute: The comparable metadata attribute.
  */
 public prefix func << (attribute: MetadataItem.Attribute) -> MetadataQuery.SortDescriptor {
-    MetadataQuery.SortDescriptor(key: attribute.rawValue, ascending: false)
+    MetadataQuery.SortDescriptor(attribute: attribute, ascending: false)
 }
