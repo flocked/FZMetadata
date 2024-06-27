@@ -971,14 +971,14 @@ enum QueryDateRange {
     
     func values(for unit: Calendar.Component) -> (String, Int)? {
         switch unit {
-        case .year: return ("$time.this_year", 1)
-        case .month: return ("$time.this_month", 1)
-        case .day: return ("$time.today", 1)
-        case .hour: return ("$time.now", 3600)
+        case .second: return ("$time.now", 1)
         case .minute: return ("$time.now", 60)
-        case .weekday: return ("$time.this_week", 1)
-        case .quarter: return ("$time.this_month", 3)
+        case .hour: return ("$time.now", 3600)
+        case .day, .weekday: return ("$time.today", 1)
         case .weekOfMonth, .weekOfYear: return ("$time.this_week", 1)
+        case .month: return ("$time.this_month", 1)
+        case .quarter: return ("$time.this_month", 3)
+        case .year: return ("$time.this_year", 1)
         default: return nil
         }
     }
