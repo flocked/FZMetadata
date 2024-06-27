@@ -62,21 +62,6 @@ import FZSwiftUtils
  Using the query to search items and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger` or `NSMetadataItem`.
  */
 open class MetadataQuery: NSObject {
-
-    let query = NSMetadataQuery()
-    let delegate = Delegate()
-    
-    var isStarted: Bool { query.isStarted }
-    var isGathering: Bool { query.isGathering }
-    var isStopped: Bool { query.isStopped }
-    
-    var _results: SynchronizedArray<MetadataItem> = []
-    var _filteredResults: SynchronizedArray<MetadataItem> = []
-    var queryAttributes: [String] = []
-    var resultsCount: Int { query.resultCount }
-    
-    /// The state of the query.
-    open var state: State = .isStopped
     
     /// The state of the query.
     public enum State: Int {
@@ -89,6 +74,22 @@ open class MetadataQuery: NSObject {
         /// The query is stopped.
         case isStopped
     }
+
+    let query = NSMetadataQuery()
+    let delegate = Delegate()
+    
+    var isStarted: Bool { query.isStarted }
+    var isGathering: Bool { query.isGathering }
+    var isStopped: Bool { query.isStopped }
+    
+    var _results: SynchronizedArray<MetadataItem> = []
+    var _filteredResults: SynchronizedArray<MetadataItem> = []
+    var queryAttributes: [String] = []
+    var needsResultsUpdate = false
+    var resultsCount: Int { query.resultCount }
+    
+    /// The state of the query.
+    open internal(set) var state: State = .isStopped
     
     /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
     open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
@@ -316,12 +317,13 @@ open class MetadataQuery: NSObject {
      The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        if state == .isGatheringItems, resultsCount != _results.count {
+        if state == .isGatheringItems, needsResultsUpdate {
             updateResults()
+            needsResultsUpdate = false
         }
         return _results.synchronized
     }
-        
+            
     func updateResults() {
         runWithPausedMonitoring {
             var results = (0..<resultsCount).compactMap({ result(at: $0) })
@@ -399,6 +401,7 @@ open class MetadataQuery: NSObject {
         queryAttributes += sortedBy.compactMap(\.key)
         queryAttributes = queryAttributes.uniqued()
         state = .isGatheringItems
+        needsResultsUpdate = false
     }
 
     @objc func queryGatheringFinished(_ notification: Notification) {
@@ -410,10 +413,12 @@ open class MetadataQuery: NSObject {
         }
         updateResults()
         postResults(difference: .added(results))
+        needsResultsUpdate = false
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count)
+        needsResultsUpdate = !notification.added.isEmpty || !notification.changed.isEmpty || !notification.removed.isEmpty
     }
 
     @objc func queryUpdated(_ notification: Notification) {
