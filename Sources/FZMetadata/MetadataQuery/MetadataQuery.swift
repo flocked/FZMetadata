@@ -85,7 +85,6 @@ open class MetadataQuery: NSObject {
     var _results: SynchronizedArray<MetadataItem> = []
     var _filteredResults: SynchronizedArray<MetadataItem> = []
     var queryAttributes: [String] = []
-    var needsResultsUpdate = false
     var resultsCount: Int { query.resultCount }
     
     /// The state of the query.
@@ -317,9 +316,8 @@ open class MetadataQuery: NSObject {
      The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        if state == .isGatheringItems, needsResultsUpdate {
+        if state == .isGatheringItems, _results.count != resultsCount {
             updateResults()
-            needsResultsUpdate = false
         }
         return _results.synchronized
     }
@@ -401,7 +399,6 @@ open class MetadataQuery: NSObject {
         queryAttributes += sortedBy.compactMap(\.key)
         queryAttributes = queryAttributes.uniqued()
         state = .isGatheringItems
-        needsResultsUpdate = false
     }
 
     @objc func queryGatheringFinished(_ notification: Notification) {
@@ -413,12 +410,10 @@ open class MetadataQuery: NSObject {
         }
         updateResults()
         postResults(difference: .added(results))
-        needsResultsUpdate = false
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count)
-        needsResultsUpdate = !notification.added.isEmpty || !notification.changed.isEmpty || !notification.removed.isEmpty
     }
 
     @objc func queryUpdated(_ notification: Notification) {
