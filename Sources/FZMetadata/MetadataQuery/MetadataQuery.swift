@@ -451,6 +451,14 @@ open class MetadataQuery: NSObject {
     }
 }
 
+extension MetadataQuery {
+    class Delegate: NSObject, NSMetadataQueryDelegate {
+        func metadataQuery(_ query: NSMetadataQuery, replacementObjectForResultObject result: NSMetadataItem) -> Any {
+            MetadataItem(item: result)
+        }
+    }
+}
+
 fileprivate extension Notification {
     var added: [MetadataItem] { userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [] }
     var removed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [] }

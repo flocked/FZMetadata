@@ -10,13 +10,13 @@ import FZSwiftUtils
 
 public extension MetadataItem {
     /// The attribute of metadata item.
-    enum Attribute: String, Hashable, CustomStringConvertible {
+    enum Attribute: String, Hashable, CustomStringConvertible, CaseIterable {
         public var description: String {
             rawValue.replacingOccurrences(of: "kMDItem", with: "").lowercasedFirst()
         }
         
         // MARK: - Common
-
+        
         /// The url of the file.
         case url = "kMDItemURL"
         /// The full path of the file.
@@ -115,9 +115,9 @@ public extension MetadataItem {
         case appstoreCategory = "kMDItemAppStoreCategory"
         /// The AppStore category type of this item if it's an application from the AppStore.
         case appstoreCategoryType = "kMDItemAppStoreCategoryType"
-
+        
         // MARK: - Document
-
+        
         /// A text representation of the content of the document.
         case textContent = "kMDItemTextContent"
         /// The subject of the this item
@@ -168,9 +168,9 @@ public extension MetadataItem {
         case contributors = "kMDItemContributors"
         /// The security or encryption method used for the document.
         case securityMethod = "kMDItemSecurityMethod"
-
+        
         // MARK: - Places
-
+        
         /// The full, publishable name of the country or region where the intellectual property of this item was created, according to guidelines of the provider.
         case country = "kMDItemCountry"
         /// The city.of this document.
@@ -215,9 +215,9 @@ public extension MetadataItem {
         case gpsDateStamp = "kMDItemGPSDateStamp"
         /// The gps differental of this item.
         case gpsDifferental = "kMDItemGPSDifferental"
-
+        
         // MARK: - Audio
-
+        
         /// The sample rate of the audio data contained in the file. The sample rate representing `audio_frames/second`. For example: `44100.0`, `22254.54`.
         case audioSampleRate = "kMDItemAudioSampleRate"
         /// The number of channels in the audio data contained in the file.
@@ -256,9 +256,9 @@ public extension MetadataItem {
         case musicalInstrumentCategory = "kMDItemMusicalInstrumentCategory"
         /// The name of the instrument relative to the instrument category.
         case musicalInstrumentName = "kMDItemMusicalInstrumentName"
-
+        
         // MARK: - Media
-
+        
         /// The duration of the content of file. Usually for videos and audio.
         case duration = "kMDItemDurationSeconds"
         /// The media types (video, sound) present in the content.
@@ -289,9 +289,9 @@ public extension MetadataItem {
         case performers = "kMDItemPerformers"
         /// The people that are visible in an image or movie or are written about in a document.
         case participants = "kMDItemParticipants"
-
+        
         // MARK: - Image
-
+        
         /// The pixel height of the contents. For example, the height of a image or video.
         case pixelHeight = "kMDItemPixelHeight"
         /// The pixel width of the contents. For example, the width of a image or video.
@@ -364,9 +364,9 @@ public extension MetadataItem {
         case screenCaptureType = "kMDItemScreenCaptureType"
         /// The white balance setting of the camera when the picture was taken.
         case whiteBalance = "kMDItemWhiteBalance"
-
+        
         // MARK: - Messages / Mail
-
+        
         /// The email addresses for the authors of this item.
         case authorEmailAddresses = "kMDItemAuthorEmailAddresses"
         /// The addresses for the authors of this item.
@@ -432,14 +432,14 @@ public extension MetadataItem {
         case ubiquitousSharedItemOwnerNameComponents = "NSMetadataUbiquitousSharedItemOwnerNameComponentsKey"
         
         // MARK: - Query Content Relevance
-
+        
         /**
          The relevance of the item's content, if it's part of a metadata query results that is sorted by this attribute.
          
          The value is a value between `0.0` and `1.0`.
          */
         case queryContentRelevance = "kMDQueryResultContentRelevance"
-                
+        
         static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap { Self(rawValue: $0) }
             if attriutes.contains(all: [.pixelWidth, .pixelHeight]) {
@@ -452,7 +452,7 @@ public extension MetadataItem {
             }
             return attriutes
         }
-
+        
         var mdKeys: [String] {
             if rawValue.contains("_") {
                 let value = rawValue.replacingOccurrences(of: "_", with: "")
@@ -464,84 +464,243 @@ public extension MetadataItem {
             }
             return [rawValue]
         }
-    }
-}
-
-#if os(macOS)
-import AppKit
-
-// Currently unused
-extension MetadataItem {
-    class PredicateEditorRowTemplate: NSPredicateEditorRowTemplate {
-        let attribute: MetadataItem.Attribute
-        init(attribute: MetadataItem.Attribute) {
-            self.attribute = attribute
-            super.init()
-        }
+        
+        var keyPath: PartialKeyPath<MetadataItem> {
+            switch self {
+                // MARK: - Common
+            case .url: return \.url
+            case .path: return \.path
+            case .fileName: return \.fileName
+            case .displayName: return \.displayName
+            case .alternateNames: return \.alternateNames
+            case .fileExtension: return \.fileExtension
+            case .fileSize: return \.fileSize
+            case .fileIsInvisible: return \.fileIsInvisible
+            case .fileExtensionIsHidden: return \.fileExtensionIsHidden
+            case .fileType: return \.fileType
+            case .contentType:
+                if  #available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *) {
+                    return \.contentType
+                } else {
+                    return \.fileName
+                }
+            case .contentTypeTree:
+                if  #available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *) {
+                    return \.contentTypeTree
+                } else {
+                    return \.fileName
+                }
+            case .creationDate: return \.creationDate
+            case .lastUsedDate: return \.lastUsedDate
+            case .lastUsageDates: return \.lastUsageDates
+            case .attributeModificationDate: return \.attributeModificationDate
+            case .contentCreationDate: return \.contentCreationDate
+            case .contentChangeDate: return \.contentChangeDate
+            case .contentModificationDate: return \.contentModificationDate
+            case .addedDate: return \.addedDate
+            case .downloadedDate: return \.downloadedDate
+            case .purchaseDate: return \.purchaseDate
+            case .dueDate: return \.dueDate
+            case .directoryFilesCount: return \.directoryFilesCount
+            case .description: return \.description
+            case .kind: return \.kind
+            case .information: return \.information
+            case .identifier: return \.identifier
+            case .keywords: return \.keywords
+            case .title: return \.title
+            case .album: return \.album
+            case .authors: return \.authors
+            case .version: return \.version
+            case .comment: return \.comment
+            case .starRating: return \.starRating
+            case .whereFroms: return \.whereFroms
+            case .finderComment: return \.finderComment
+            case .finderTags: return \.finderTags
+            case .finderTagPrimaryColor: return \.finderTagPrimaryColor
+            case .hasCustomIcon: return \.hasCustomIcon
+            case .usageCount: return \.usageCount
+            case .bundleIdentifier: return \.bundleIdentifier
+            case .executableArchitectures: return \.executableArchitectures
+            case .executablePlatform: return \.executablePlatform
+            case .encodingApplications: return \.encodingApplications
+            case .applicationCategories: return \.applicationCategories
+            case .isApplicationManaged: return \.isApplicationManaged
+            case .appstoreCategory: return \.appstoreCategory
+            case .appstoreCategoryType: return \.appstoreCategoryType
                 
-        required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
+                // MARK: - Document
+            case .textContent: return \.textContent
+            case .subject: return \.subject
+            case .theme: return \.theme
+            case .headline: return \.headline
+            case .creator: return \.creator
+            case .instructions: return \.instructions
+            case .editors: return \.editors
+            case .audiences: return \.audiences
+            case .coverage: return \.coverage
+            case .projects: return \.projects
+            case .numberOfPages: return \.numberOfPages
+            case .pageWidth: return \.pageWidth
+            case .pageHeight: return \.pageHeight
+            case .copyright: return \.copyright
+            case .fonts: return \.fonts
+            case .fontFamilyName: return \.fontFamilyName
+            case .contactKeywords: return \.contactKeywords
+            case .languages: return \.languages
+            case .rights: return \.rights
+            case .organizations: return \.organizations
+            case .publishers: return \.publishers
+            case .emailAddresses: return \.emailAddresses
+            case .phoneNumbers: return \.phoneNumbers
+            case .contributors: return \.contributors
+            case .securityMethod: return \.securityMethod
+                
+                // MARK: - Places
+            case .country: return \.country
+            case .city: return \.city
+            case .stateOrProvince: return \.stateOrProvince
+            case .areaInformation: return \.areaInformation
+            case .namedLocation: return \.namedLocation
+            case .altitude: return \.altitude
+            case .latitude: return \.latitude
+            case .longitude: return \.longitude
+            case .speed: return \.speed
+            case .timestamp: return \.timestamp
+            case .gpsTrack: return \.gpsTrack
+            case .gpsStatus: return \.gpsStatus
+            case .gpsMeasureMode: return \.gpsMeasureMode
+            case .gpsDop: return \.gpsDop
+            case .gpsMapDatum: return \.gpsMapDatum
+            case .gpsDestLatitude: return \.gpsDestLatitude
+            case .gpsDestLongitude: return \.gpsDestLongitude
+            case .gpsDestBearing: return \.gpsDestBearing
+            case .gpsDestDistance: return \.gpsDestDistance
+            case .gpsProcessingMethod: return \.gpsProcessingMethod
+            case .gpsDateStamp: return \.gpsDateStamp
+            case .gpsDifferental: return \.gpsDifferental
+                
+                // MARK: - Audio
+            case .audioSampleRate: return \.audioSampleRate
+            case .audioChannelCount: return \.audioChannelCount
+            case .tempo: return \.tempo
+            case .keySignature: return \.keySignature
+            case .timeSignature: return \.timeSignature
+            case .audioEncodingApplication: return \.audioEncodingApplication
+            case .trackNumber: return \.trackNumber
+            case .composer: return \.composer
+            case .lyricist: return \.lyricist
+            case .recordingDate: return \.recordingDate
+            case .recordingYear: return \.recordingYear
+            case .musicalGenre: return \.musicalGenre
+            case .isGeneralMidiSequence: return \.isGeneralMidiSequence
+            case .appleLoopsRootKey: return \.appleLoopsRootKey
+            case .appleLoopsKeyFilterType: return \.appleLoopsKeyFilterType
+            case .appleLoopsLoopMode: return \.appleLoopsLoopMode
+            case .appleLoopDescriptors: return \.appleLoopDescriptors
+            case .musicalInstrumentCategory: return \.musicalInstrumentCategory
+            case .musicalInstrumentName: return \.musicalInstrumentName
+                
+                // MARK: - Media
+            case .duration: return \.duration
+            case .mediaTypes: return \.mediaTypes
+            case .codecs: return \.codecs
+            case .totalBitRate: return \.totalBitRate
+            case .videoBitRate: return \.videoBitRate
+            case .audioBitRate: return \.audioBitRate
+            case .streamable: return \.streamable
+            case .mediaDeliveryType: return \.mediaDeliveryType
+            case .originalFormat: return \.originalFormat
+            case .originalSource: return \.originalSource
+            case .director: return \.director
+            case .producer: return \.producer
+            case .genre: return \.genre
+            case .performers: return \.performers
+            case .participants: return \.participants
+                
+                // MARK: - Image
+            case .pixelHeight: return \.pixelHeight
+            case .pixelWidth: return \.pixelWidth
+            case .pixelSize: return \.pixelSize
+            case .pixelCount: return \.pixelCount
+            case .colorSpace: return \.colorSpace
+            case .bitsPerSample: return \.bitsPerSample
+            case .flashOnOff: return \.flashOnOff
+            case .focalLength: return \.focalLength
+            case .deviceManufacturer: return \.deviceManufacturer
+            case .deviceModel: return \.deviceModel
+            case .isoSpeed: return \.isoSpeed
+            case .orientation: return \.orientation
+            case .layerNames: return \.layerNames
+            case .aperture: return \.aperture
+            case .colorProfile: return \.colorProfile
+            case .dpiResolutionWidth: return \.dpiResolutionWidth
+            case .dpiResolutionHeight: return \.dpiResolutionHeight
+            case .dpiResolution: return \.dpiResolution
+            case .exposureMode: return \.exposureMode
+            case .exposureTimeSeconds: return \.exposureTimeSeconds
+            case .exifVersion: return \.exifVersion
+            case .cameraOwner: return \.cameraOwner
+            case .focalLength35Mm: return \.focalLength35Mm
+            case .lensModel: return \.lensModel
+            case .imageDirection: return \.imageDirection
+            case .hasAlphaChannel: return \.hasAlphaChannel
+            case .redEyeOnOff: return \.redEyeOnOff
+            case .meteringMode: return \.meteringMode
+            case .maxAperture: return \.maxAperture
+            case .fNumber: return \.fNumber
+            case .exposureProgram: return \.exposureProgram
+            case .exposureTimeString: return \.exposureTimeString
+            case .isScreenCapture: return \.isScreenCapture
+            case .screenCaptureRect: return \.screenCaptureRect
+            case .screenCaptureType: return \.screenCaptureType
+            case .whiteBalance: return \.whiteBalance
+                
+                // MARK: - Messages / Mail
+            case .authorEmailAddresses: return \.authorEmailAddresses
+            case .authorAddresses: return \.authorAddresses
+            case .recipients: return \.recipients
+            case .recipientEmailAddresses: return \.recipientEmailAddresses
+            case .recipientAddresses: return \.recipientAddresses
+            case .instantMessageAddresses: return \.instantMessageAddresses
+            case .receivedDates: return \.receivedDates
+            case .receivedRecipients: return \.receivedRecipients
+            case .receivedRecipientHandles: return \.receivedRecipientHandles
+            case .receivedSenders: return \.receivedSenders
+            case .receivedSenderHandles: return \.receivedSenderHandles
+            case .receivedTypes: return \.receivedTypes
+            case .isLikelyJunk: return \.isLikelyJunk
+                
+                // MARK: - iCloud
+            case .isUbiquitousItem: return \.isUbiquitousItem
+            case .ubiquitousItemContainerDisplayName: return \.ubiquitousItemContainerDisplayName
+            case .ubiquitousItemDownloadRequested: return \.ubiquitousItemDownloadRequested
+            case .ubiquitousItemIsExternalDocument: return \.ubiquitousItemIsExternalDocument
+            case .ubiquitousItemURLInLocalContainer: return \.ubiquitousItemURLInLocalContainer
+            case .ubiquitousItemHasUnresolvedConflicts: return \.ubiquitousItemHasUnresolvedConflicts
+            case .ubiquitousItemIsDownloaded: return \.ubiquitousItemIsDownloaded
+            case .ubiquitousItemIsDownloading: return \.ubiquitousItemIsDownloading
+            case .ubiquitousItemIsUploaded: return \.ubiquitousItemIsUploaded
+            case .ubiquitousItemIsUploading: return \.ubiquitousItemIsUploading
+            case .ubiquitousItemPercentDownloaded: return \.ubiquitousItemPercentDownloaded
+            case .ubiquitousItemPercentUploaded: return \.ubiquitousItemPercentUploaded
+            case .ubiquitousItemDownloadingStatus: return \.ubiquitousItemDownloadingStatus
+            case .ubiquitousItemDownloadingError: return \.ubiquitousItemDownloadingError
+            case .ubiquitousItemUploadingError: return \.ubiquitousItemUploadingError
+            case .ubiquitousItemIsShared: return \.ubiquitousItemIsShared
+            case .ubiquitousSharedItemCurrentUserPermissions: return \.ubiquitousSharedItemCurrentUserPermissions
+            case .ubiquitousSharedItemCurrentUserRole: return \.ubiquitousSharedItemCurrentUserRole
+            case .ubiquitousSharedItemMostRecentEditorNameComponents: return \.ubiquitousSharedItemMostRecentEditorNameComponents
+            case .ubiquitousSharedItemOwnerNameComponents: return \.ubiquitousSharedItemOwnerNameComponents
+                
+                // MARK: - Query Content Relevance
+                case .queryContentRelevance: return \.queryContentRelevance }
         }
     }
 }
 
-extension MetadataItem.Attribute {
-    var rowTemplate: NSPredicateEditorRowTemplate {
-        switch self {
-        default:
-            return NSPredicateEditorRowTemplate(constant: "Template", values: ["Value"])
-        }
-    }
-    
-    var valueType: ValueType {
-        switch self {
-        case .dueDate, .addedDate, .creationDate, .purchaseDate, .receivedDates, .recordingDate, .downloadedDate, .lastUsedDate, .lastUsageDates, .contentChangeDate, .contentCreationDate, .contentModificationDate, .attributeModificationDate, .timestamp, .gpsDateStamp:
-            return .date
-        case .isLikelyJunk, .isScreenCapture, .isApplicationManaged, .isGeneralMidiSequence, .fileIsInvisible, .fileExtensionIsHidden, .hasCustomIcon, .hasAlphaChannel, .streamable, .flashOnOff, .redEyeOnOff:
-            return .bool
-        case .usageCount, .audioChannelCount, .fileSize, .directoryFilesCount, .finderTagPrimaryColor, .trackNumber:
-            return .integer
-        case .starRating, .numberOfPages, .pageWidth, .pageHeight, .pixelSize, .pixelWidth, .pixelHeight, .dpiResolutionWidth, .dpiResolutionHeight, .dpiResolution, .securityMethod, .altitude, .latitude, .longitude, .gpsDestLatitude, .gpsDestLongitude, .speed, .gpsTrack, .gpsDop, .gpsDestBearing, .gpsDestDistance, .gpsDifferental, .audioSampleRate, .tempo, .recordingYear, .duration, .totalBitRate, .videoBitRate, .audioBitRate, .pixelCount, .bitsPerSample, .focalLength, .isoSpeed, .aperture, .exposureMode, .exposureTimeSeconds, .focalLength35Mm, .imageDirection, .maxAperture, .fNumber, .screenCaptureRect, .queryContentRelevance:
-            return .double
-        case .orientation:
-            return .value(["Horizontal", "Vertical"])
-        case .whiteBalance:
-            return .value(["Auto", "Off"])
-        case .screenCaptureType:
-            return .value(["Display", "Window", "Selection"])
-        case .fileType:
-            let fileTypes: [FileType] = [.archive, .executable, .image, .document, .video, .audio, .folder, .pdf, .presentation, .application, .text]
-          let values = ["Any"] + fileTypes.compactMap({$0.description}) + ["Other"]
-            return .value(values)
-        default: return .string
-        }
-    }
-    
-    enum ValueType {
-        case string
-        case double
-        case integer
-        case bool
-        case date
-        case value([String])
-        
-        var operators: [NSComparisonPredicate.Operator] {
-            switch self {
-            case .string:
-                return [.matches, .contains, .beginsWith, .endsWith, .equalTo, .notEqualTo]
-            case .double, .integer, .date:
-                return [.equalTo, .lessThan, .greaterThan, .notEqualTo]
-            case .bool, .value:
-                return [.equalTo, .notEqualTo]
-            }
-        }
-        
-        var options: NSComparisonPredicate.Options {
-            switch self {
-            case .string: return [.caseInsensitive, .diacriticInsensitive]
-            default: return []
-            }
-        }
+extension PartialKeyPath where Root == MetadataItem {
+    /// The metadata query key for the attribute at the key path.
+    var mdItemKey: String {
+        MetadataItem.Attribute.allCases.first(where: {$0.keyPath == self})?.rawValue ?? MetadataItem.Attribute.fileName.rawValue
     }
 }
-#endif
