@@ -9,7 +9,7 @@ import Foundation
 import FZSwiftUtils
 
 /**
- An object that can search files and fetch metadata attributes for large batches of files.
+ An object that can search file system items and fetch metadata attributes for large batches of items.
 
  With `MetadataQuery`, you can perform complex queries on the file system using various search parameters, such as search loction and metadata attributes like file name, type, creation date, modification date, and more.
 
@@ -31,7 +31,7 @@ import FZSwiftUtils
  
  ## Fetching Attributes
 
- It can also fetch metadata attributes for large batches of files via ``attributes``:
+ It can also fetch metadata attributes for large batches of items via ``attributes``:
  
  ```swift
  query.urls = videoFileURLs
@@ -59,7 +59,7 @@ import FZSwiftUtils
  query.start()
  ```
 
- Using the query to search files and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger` or `NSMetadataItem`.
+ Using the query to search items and to fetch metadata attributes is much faster compared to manually search them e.g. via `FileMananger` or `NSMetadataItem`.
  */
 open class MetadataQuery: NSObject {
 
@@ -70,13 +70,18 @@ open class MetadataQuery: NSObject {
     var isGathering: Bool { query.isGathering }
     var isStopped: Bool { query.isStopped }
     
+    var _results: SynchronizedArray<MetadataItem> = []
+    var _filteredResults: SynchronizedArray<MetadataItem> = []
+    var queryAttributes: [String] = []
+    var resultsCount: Int { query.resultCount }
+    
     /// The state of the query.
     open var state: State = .isStopped
     
     /// The state of the query.
     public enum State: Int {
         /// The query is in it's initial phase of gathering matching items.
-        case isGatheringFiles
+        case isGatheringItems
 
         /// The query is monitoring for updates to the results.
         case isMonitoring
@@ -93,7 +98,7 @@ open class MetadataQuery: NSObject {
 
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
 
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
@@ -105,7 +110,7 @@ open class MetadataQuery: NSObject {
      
      If ``monitorResults`` is enabled, any changes to those attributes updates the results and calls the results handler.
 
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
@@ -127,10 +132,10 @@ open class MetadataQuery: NSObject {
         $0.creationDate.isBefore(otherDate)
      }
      ```
-
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      
      **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
+     
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
@@ -146,25 +151,53 @@ open class MetadataQuery: NSObject {
     /**
      An array of file-system directory URLs.
 
-     The query searches for files at these search locations. An empty array indicates that there is no limitation on where the query searches.
+     The query searches for items at these search locations. An empty array indicates that there is no limitation on where the query searches.
      
      The query can alternativly also search at specific scopes via ``searchScopes``.
 
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
         set { query.searchScopes = newValue }
     }
+    
+    /**
+     The maximum depth of items at the search locations.
+     
+     A value of `0` returns only items from the specified search locations and skips any sub directories, while a value of `nil` returns all items.
+     */
+    var maxSearchLocationsDepth: Int? = nil {
+        didSet {
+            guard oldValue != maxSearchLocationsDepth else { return }
+            updateFilteredResults()
+        }
+    }
+    
+    func updateFilteredResults() {
+        if !searchLocations.isEmpty, let depth = maxSearchLocationsDepth {
+            var results = _results.synchronized
+            results = results.sorted(by: \.path)
+            let searchLocations = searchLocations.sorted(by: \.path)
+            _filteredResults.synchronized = results.filter({
+                if let url = $0.url {
+                    return self.searchLocations.contains(where: { url.childDepth(in: $0) <= depth })
+                }
+                return false
+            })
+        } else {
+            _filteredResults.removeAll()
+        }
+    }
 
     /**
      An array containing the seatch scopes.
 
-     The query searches for files at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
+     The query searches for items at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
           
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
 
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
@@ -186,7 +219,7 @@ open class MetadataQuery: NSObject {
      query.sortedBy = [.ascending(.queryRelevance)]
      ```
 
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var sortedBy: [SortDescriptor] {
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
@@ -200,20 +233,22 @@ open class MetadataQuery: NSObject {
      the items of the results are grouped by unique content types (e.g. video, image…). Each group contains the matching items and sub groups where it's matching items are grouped by unique finder tags:
      
      ```
-     query.groupingAttributes = [.contentType, .finderTags]
+     query.groupingAttributes = [.contentType, .extension]
      
      // ... later
      for group in query.groupedResults {
      
-        group.items // items with same content type
+        // items with matching contentType.
+        let items = group.items
   
         for subGroup in group.subGroups! {
-            subGroup.items // items with same finder tags
+     // items with matching finder tags.
+            let items = subGroup.items
         }
      }
      ```
 
-     Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
@@ -281,16 +316,10 @@ open class MetadataQuery: NSObject {
      The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        if state == .isGatheringFiles, resultsCount != _results.count {
+        if state == .isGatheringItems, resultsCount != _results.count {
             updateResults()
         }
         return _results.synchronized
-    }
-    
-    var _results: SynchronizedArray<MetadataItem> = []
-
-    var resultsCount: Int {
-        query.resultCount
     }
         
     func updateResults() {
@@ -308,7 +337,7 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    ///  Sorts results to order of ``urls``-
+    ///  Sorts results in order of the provided ``urls``.
     var sortURLResults: Bool = false
     
     func updateResults(added: [MetadataItem], removed: [MetadataItem], changed: [MetadataItem]) {
@@ -332,10 +361,10 @@ open class MetadataQuery: NSObject {
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
             if added.isEmpty, removed.isEmpty, !changed.isEmpty {
                 if changed.contains(where: { !$0.updatedAttributes.isEmpty }) {
-                    postResults(results, difference: diff)
+                    postResults(difference: diff)
                 }
             } else {
-                postResults(results, difference: diff)
+                postResults(difference: diff)
             }
         }
     }
@@ -352,9 +381,6 @@ open class MetadataQuery: NSObject {
         item.previousValues = inital ? nil : item.values
         item.values = values
     }
-    
-    /// All attributes of the query.
-    var queryAttributes: [String] = []
 
     /**
      An array containing hierarchical groups of query results.
@@ -372,7 +398,7 @@ open class MetadataQuery: NSObject {
         queryAttributes += query.groupingAttributes ?? []
         queryAttributes += sortedBy.compactMap(\.key)
         queryAttributes = queryAttributes.uniqued()
-        state = .isGatheringFiles
+        state = .isGatheringItems
     }
 
     @objc func queryGatheringFinished(_ notification: Notification) {
@@ -383,8 +409,7 @@ open class MetadataQuery: NSObject {
             stop()
         }
         updateResults()
-        let results = _results.synchronized
-        postResults(results, difference: .added(results))
+        postResults(difference: .added(results))
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
@@ -396,9 +421,10 @@ open class MetadataQuery: NSObject {
         updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
     }
         
-    func postResults(_ items: [MetadataItem], difference: ResultsDifference) {
+    func postResults(difference: ResultsDifference? = nil) {
+        let results = _results.synchronized
         runWithOperationQueue {
-            self.resultsHandler?(items, difference)
+            self.resultsHandler?(results, difference ?? .added(results))
         }
     }
     
@@ -465,16 +491,17 @@ fileprivate extension Notification {
     var changed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [] }
 }
 
-/*
+
 #if os(macOS)
 import AppKit
+// Not working
 extension MetadataQuery {
     /// Displays a Spotlight search results window in Finder for the ``predicate-swift.property``.
-    public func showSearchResultsInFinder() {
+    func showSearchResultsInFinder() {
         if let format = query.predicate?.predicateFormat {
             NSWorkspace.shared.showSearchResults(forQueryString: format)
         }
     }
 }
 #endif
-*/
+
