@@ -295,9 +295,21 @@ open class MetadataQuery: NSObject {
         
     func updateResults() {
         runWithPausedMonitoring {
-            _results.synchronized = (0..<resultsCount).compactMap({ result(at: $0) })
+            var results = (0..<resultsCount).compactMap({ result(at: $0) })
+            var prependResults: [MetadataItem] = []
+            if sortURLResults, sortedBy.isEmpty, !urls.isEmpty {
+                for url in urls {
+                    if let index = results.firstIndex(where: {$0.url == url }) {
+                        prependResults.append(results.remove(at: index))
+                    }
+                }
+            }
+            _results.synchronized = prependResults + results
         }
     }
+    
+    ///  Sorts results to order of ``urls``-
+    var sortURLResults: Bool = false
     
     func updateResults(added: [MetadataItem], removed: [MetadataItem], changed: [MetadataItem]) {
         runWithPausedMonitoring {
