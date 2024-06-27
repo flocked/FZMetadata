@@ -193,7 +193,16 @@ open class MetadataItem: Identifiable {
     }
 
     /// A Boolean value that indicates whether the file is invisible.
-    open var fileIsInvisible: Bool? { value(for: .fileIsInvisible) }
+    open var fileIsInvisible: Bool? {
+        get { value(for: .fileIsInvisible) }
+        set {
+            if let resources = url?.resources {
+                resources.isHidden = newValue ?? resources.isHidden
+            } else {
+                setExplicity(\.fileIsInvisible, to: newValue)
+            }
+        }
+    }
 
     /// A Boolean value that indicates whether the file extension is hidden.
     open var fileExtensionIsHidden: Bool? { value(for: .fileExtensionIsHidden) }
@@ -227,13 +236,13 @@ open class MetadataItem: Identifiable {
     /// The date that the file was created.
     open var creationDate: Date? {
         get { value(for: .creationDate) }
-        set { setExplicity(\.creationDate, to: newValue) }
+        set { setExplicity(\.creationDate, urlResources: \.creationDate, to: newValue) }
     }
 
     /// The last date that the file was used.
     open var lastUsedDate: Date? {
         get { value(for: .lastUsedDate) }
-        set { setExplicity(\.lastUsedDate, to: newValue) }
+        set { setExplicity(\.lastUsedDate, urlResources: \.contentAccessDate, to: newValue) }
     }
 
     /// The dates the file was last used.
@@ -263,7 +272,7 @@ open class MetadataItem: Identifiable {
     /// The last date that the content of the file was modified.
     open var contentModificationDate: Date? {
         get { value(for: .contentModificationDate) }
-        set { setExplicity(\.contentModificationDate, to: newValue) }
+        set { setExplicity(\.contentModificationDate, urlResources: \.contentModificationDate, to: newValue) }
     }
 
     /// The date the file was created, or renamed into or within its parent directory.
@@ -362,8 +371,9 @@ open class MetadataItem: Identifiable {
     open var hasCustomIcon: Bool? { value(for: .hasCustomIcon) }
 
     /// The number of usages of the file.
-    open var usageCount: Int? { if let useCount: Int = value(for: .usageCount) {
-        return useCount - 2
+    open var usageCount: Int? { 
+        if let useCount: Int = value(for: .usageCount) {
+            return useCount - 2
         }
         return nil
     }
@@ -1008,12 +1018,16 @@ extension MetadataItem {
         self["com.apple.metadata:" + keyPath.mdItemKey]
     }
 
-    func setExplicity<V, K: KeyPath<MetadataItem, V?>>(_ keyPath: K, to value: V?) {
-        if keyPath == \.pixelSize, let value = value as? CGSize {
-            setExplicity(\.pixelWidth, to: Double(value.width))
-            setExplicity(\.pixelHeight, to: Double(value.height))
-        } else {
-            self["com.apple.metadata:" + keyPath.mdItemKey] = value
+    func setExplicity<V, K: KeyPath<MetadataItem, V?>, U: WritableKeyPath<URLResources, V?>>(_ keyPath: K? = nil, urlResources: U? = nil, to value: V?) {
+        if let keyPath = urlResources, var resources = url?.resources {
+            resources[keyPath: keyPath] = value
+        } else if let keyPath = keyPath {
+            if keyPath == \.pixelSize, let value = value as? CGSize {
+                setExplicity(\.pixelWidth, to: Double(value.width))
+                setExplicity(\.pixelHeight, to: Double(value.height))
+            } else {
+                self["com.apple.metadata:" + keyPath.mdItemKey] = value
+            }
         }
     }
 
