@@ -354,7 +354,7 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func queryGatheringDidStart(_: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringDidStart")
+        // Swift.debugPrint("MetadataQuery gatheringDidStart")
         _results.removeAll()
         queryAttributes = query.valueListAttributes
         queryAttributes += query.groupingAttributes ?? []
@@ -364,7 +364,7 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func queryGatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished")
+        // Swift.debugPrint("MetadataQuery gatheringFinished")
         if monitorResults {
             state = .isMonitoring
         } else {
@@ -376,11 +376,11 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
-            Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count)
+        // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count)
     }
 
     @objc func queryUpdated(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)")
+        // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)")
         updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
     }
     
@@ -431,7 +431,6 @@ open class MetadataQuery: NSObject {
     override public init() {
         super.init()
         query.delegate = delegate
-        
         reset()
         
         NotificationCenter.default.addObserver(self, selector: #selector(queryGatheringDidStart(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
