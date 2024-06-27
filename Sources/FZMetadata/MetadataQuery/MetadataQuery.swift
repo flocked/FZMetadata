@@ -264,6 +264,7 @@ open class MetadataQuery: NSObject {
 
     /// Starts the query and discards the previous results.
     open func start() {
+        Swift.print("start")
         runWithOperationQueue {
             self.query.start()
         }
