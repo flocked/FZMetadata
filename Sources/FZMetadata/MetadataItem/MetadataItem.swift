@@ -996,7 +996,9 @@ open class MetadataItem: Identifiable {
     /**
      The relevance of the item's content, if it's part of a metadata query results that is sorted by this attribute.
      
-     The value is a value between `0.0` and `1.0`.
+     The relevance value is a value between `0.0` and `1.0`.
+     
+     It may not be computed if the item matches the query through evaluation of other attributes
      */
     open var queryContentRelevance: Double? { value(for: .queryContentRelevance) }
 }

@@ -438,7 +438,7 @@ public extension MetadataItem {
          
          The value is a value between `0.0` and `1.0`.
          */
-        case queryContentRelevance = "kMDQueryResultContentRelevance"
+        case queryContentRelevance = "NSMetadataQueryResultContentRelevanceAttribute"
         
         static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap { Self(rawValue: $0) }

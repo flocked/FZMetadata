@@ -28,5 +28,7 @@ public extension MetadataQuery {
         static func added(_ items: [MetadataItem]) -> ResultsDifference {
             ResultsDifference(added: items)
         }
+        
+        static var empty = ResultsDifference()
     }
 }
