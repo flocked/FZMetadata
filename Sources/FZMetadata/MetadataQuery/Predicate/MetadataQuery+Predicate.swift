@@ -781,6 +781,9 @@ extension MetadataQuery.Predicate {
         }
 
         static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
+            // comparison("kMDItemContentTypeTree", .equalTo, "public.item")
+            // comparison(mdKey, .equalTo, values)
+            
             let predicates = values.enumerated().compactMap { comparison(mdKey, type, $0.element, options[safe: $0.offset] ?? options.last ?? []) }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
         }
