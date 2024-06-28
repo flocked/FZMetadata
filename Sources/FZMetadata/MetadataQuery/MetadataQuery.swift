@@ -289,7 +289,7 @@ open class MetadataQuery: NSObject {
      query.start()
      ```
      
-     By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
+     By default, notification of updated results occurs at `1.0` seconds. Use ``updateNotificationInterval`` to change the internval.
      
      - Note: Enabling monitoring the results can have a significant performance impact. You should define a operation queue via ``operationQueue``.
      */
@@ -303,7 +303,7 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-    /// The interval (in seconds) at which notification of updated results occurs. The default value is `1.0` seconds.
+    /// The interval (in seconds) at which notifications of updated results occur. The default value is `1.0` seconds.
     open var updateNotificationInterval: TimeInterval {
         get { query.notificationBatchingInterval }
         set { query.notificationBatchingInterval = newValue }
@@ -312,7 +312,7 @@ open class MetadataQuery: NSObject {
     /**
      A Boolean value indicating whether changes to the results are posted while gathering the final results.
      
-     If `true` changes to the results while gathering are posted at the interval specified by ``updateNotificationInterval``.
+     If `true` changes to the results while gathering are posted.
      
      - Note: Enabling gathering updates can have a significant performance impact. You should define a operation queue via ``operationQueue``.
      */
