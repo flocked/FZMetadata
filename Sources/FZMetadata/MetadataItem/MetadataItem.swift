@@ -60,6 +60,8 @@ open class MetadataItem: Identifiable {
         
     /// Previous metadata attribute values fetched by a query., or `nil` if there aren't any previous values.
     var previousValues: [String: Any]? = nil
+    
+    var queryIndex = 0
         
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
