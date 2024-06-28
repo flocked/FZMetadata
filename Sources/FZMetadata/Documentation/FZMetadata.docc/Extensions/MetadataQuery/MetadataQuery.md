@@ -35,6 +35,7 @@
 - ``resultsHandler``
 - ``ResultGroup``
 - ``ResultsDifference``
+- ``postGatheringUpdates``
 
 ### Sorting query results
 

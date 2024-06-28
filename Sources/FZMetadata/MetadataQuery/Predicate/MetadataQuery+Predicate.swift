@@ -781,9 +781,6 @@ extension MetadataQuery.Predicate {
         }
 
         static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ options: [MetadataQuery.PredicateStringOptions] = []) -> NSPredicate {
-            // comparison("kMDItemContentTypeTree", .equalTo, "public.item")
-            // comparison(mdKey, .equalTo, values)
-            
             let predicates = values.enumerated().compactMap { comparison(mdKey, type, $0.element, options[safe: $0.offset] ?? options.last ?? []) }
             return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
         }
@@ -793,6 +790,32 @@ extension MetadataQuery.Predicate {
             let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
             let predicates = [comparison(widthMDKey, type, [value.width]), comparison(heightMDKey, type, [value.height])]
             return NSCompoundPredicate(and: predicates)
+        }
+        
+        static func comparionString(for string: String, mdKey: String, _ type: ComparisonOperator, _ options: MetadataQuery.PredicateStringOptions? = []) -> String {
+            var mdKey = mdKey
+            var value = string
+            var options = options ?? []
+            options.insert(MetadataQuery.PredicateStringOptions.extract(&value))
+            let predicateString: String
+            if mdKey == "kMDItemFSExtension" {
+                mdKey = "kMDItemFSName"
+                predicateString = "\(mdKey) = '*.\(value)'\(options.string)"
+            } else {
+                switch type {
+                case .contains:
+                    predicateString = "\(mdKey) = '*\(value)*'\(options.string)"
+                case .beginsWith:
+                    predicateString = "\(mdKey) = '\(value)*'\(options.string)"
+                case .endsWith:
+                    predicateString = "\(mdKey) = '*\(value)'\(options.string)"
+                case .notEqualTo:
+                    predicateString = "\(mdKey) != '\(value)'\(options.string)"
+                default:
+                    predicateString = "\(mdKey) = '\(value)'\(options.string)"
+                }
+            }
+            return predicateString
         }
         
         static func comparisonString(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions? = []) -> NSPredicate {

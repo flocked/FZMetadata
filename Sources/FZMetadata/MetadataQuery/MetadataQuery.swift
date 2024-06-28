@@ -86,14 +86,15 @@ open class MetadataQuery: NSObject {
     var _filteredResults: SynchronizedArray<MetadataItem> = []
     var queryAttributes: [String] = []
     var resultsCount: Int { query.resultCount }
-    var resultsUpdate = ResultsUpdate()
+    var pendingResultsUpdate = ResultsUpdate()
     
     struct ResultsUpdate: Hashable {
         var added: [MetadataItem] = []
         var removed: [MetadataItem] = []
         var changed: [MetadataItem] = []
         var isEmpty: Bool { self == ResultsUpdate() }
-        mutating func reset() { self = ResultsUpdate() }
+        var count: Int { added.count - removed.count }
+        mutating func empty() { self = ResultsUpdate() }
     }
     
     
@@ -170,34 +171,6 @@ open class MetadataQuery: NSObject {
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
         set { query.searchScopes = newValue }
-    }
-    
-    /**
-     The maximum depth of items at the search locations.
-     
-     A value of `0` returns only items from the specified search locations and skips any sub directories, while a value of `nil` returns all items.
-     */
-    var maxSearchLocationsDepth: Int? = nil {
-        didSet {
-            guard oldValue != maxSearchLocationsDepth else { return }
-            updateFilteredResults()
-        }
-    }
-    
-    func updateFilteredResults() {
-        if !searchLocations.isEmpty, let depth = maxSearchLocationsDepth {
-            var results = _results.synchronized
-            results = results.sorted(by: \.path)
-            let searchLocations = searchLocations.sorted(by: \.path)
-            _filteredResults.synchronized = results.filter({
-                if let url = $0.url {
-                    return self.searchLocations.contains(where: { url.childDepth(in: $0) <= depth })
-                }
-                return false
-            })
-        } else {
-            _filteredResults.removeAll()
-        }
     }
 
     /**
@@ -337,31 +310,19 @@ open class MetadataQuery: NSObject {
      The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
-        if state == .isGatheringItems, !resultsUpdate.isEmpty {
-            updateResults(changes: resultsUpdate)
-            resultsUpdate.reset()
+        if state == .isGatheringItems, !pendingResultsUpdate.isEmpty {
+            updateResults(changes: pendingResultsUpdate)
+            pendingResultsUpdate.empty()
         }
         return _results.synchronized
     }
             
     func updateResults() {
         runWithPausedMonitoring {
-            var results = (0..<resultsCount).compactMap({ result(at: $0) })
-            var prependResults: [MetadataItem] = []
-            if sortURLResults, sortedBy.isEmpty, !urls.isEmpty {
-                for url in urls {
-                    if let index = results.firstIndex(where: {$0.url == url }) {
-                        prependResults.append(results.remove(at: index))
-                    }
-                }
-            }
-            _results.synchronized = prependResults + results
+            _results.synchronized = (0..<resultsCount).compactMap({ result(at: $0) })
         }
     }
-    
-    ///  Sorts results in order of the provided ``urls``.
-    var sortURLResults: Bool = false
-    
+        
     func updateResults(changes: ResultsUpdate, post: Bool = true) {
         let added = changes.added, removed = changes.removed, changed = changes.changed
         guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
@@ -403,7 +364,7 @@ open class MetadataQuery: NSObject {
         item.previousValues = inital ? nil : item.values
         item.values = query.values(of: queryAttributes, forResultsAt: index)
     }
-
+    
     /**
      An array containing hierarchical groups of query results.
 
@@ -413,39 +374,88 @@ open class MetadataQuery: NSObject {
         query.groupedResults.compactMap { ResultGroup($0) }
     }
     
+    ///  Returns the results sorted to the order of the provided ``urls``.
+    func sortedResultsByURLs() -> [MetadataItem] {
+        guard !urls.isEmpty else { return _results.synchronized }
+        var results = _results.synchronized
+        var sorted: [MetadataItem] = []
+        for url in urls {
+            if let index = results.firstIndex(where: {$0.url == url }) {
+                sorted.append(results.remove(at: index))
+            }
+        }
+        return sorted + results
+    }
+    
+    /**
+     Returns the results filtered to the specified maximum depth at the search locations.
+     
+     - Parameter maxSearchLocationsDepth: The maximum depth of items at the search locations. A value of `0` returns only items from the specified search locations.
+     */
+    func filteredResults(maxSearchLocationsDepth: Int) -> [MetadataItem] {
+        guard !searchLocations.isEmpty else { return _results.synchronized }
+        return _results.synchronized.filter({
+            if let url = $0.url {
+                return self.searchLocations.contains(where: { url.childDepth(in: $0) <= maxSearchLocationsDepth })
+            }
+            return false
+        })
+    }
+    
+    /**
+     The maximum depth of items at the search locations.
+     
+     A value of `0` returns only items from the specified search locations and skips any sub directories, while a value of `nil` returns all items.
+     */
+    var maxSearchLocationsDepth: Int? = nil {
+        didSet {
+            guard oldValue != maxSearchLocationsDepth else { return }
+            updateFilteredResults()
+        }
+    }
+    
+    func updateFilteredResults() {
+        if !searchLocations.isEmpty, let depth = maxSearchLocationsDepth {
+            _filteredResults.synchronized = filteredResults(maxSearchLocationsDepth: depth)
+        } else {
+            _filteredResults.removeAll()
+        }
+    }
+    
     @objc func queryGatheringDidStart(_: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringDidStart")
+        Swift.debugPrint("MetadataQuery gatheringDidStart")
         _results.removeAll()
+        pendingResultsUpdate.empty()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
         state = .isGatheringItems
     }
 
     @objc func queryGatheringFinished(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringFinished")
+        Swift.debugPrint("MetadataQuery gatheringFinished")
         if monitorResults {
             state = .isMonitoring
         } else {
             stop()
         }
-        if !postGatheringUpdates {
+
+        if _results.isEmpty {
             updateResults()
             postResults(difference: .added(results))
-            resultsUpdate.reset()
+        } else if !pendingResultsUpdate.isEmpty {
+            updateResults(changes: pendingResultsUpdate)
         }
+        pendingResultsUpdate.empty()
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count, _results.count)
+        Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count, _results.count)
+        
+        pendingResultsUpdate.added += notification.added
+        pendingResultsUpdate.removed += notification.removed
+        pendingResultsUpdate.changed += notification.changed
         if postGatheringUpdates {
-            if !resultsUpdate.isEmpty {
-                updateResults(changes: resultsUpdate)
-                resultsUpdate.reset()
-            }
-            updateResults(changes: notification.resultsUpdate)
-        } else {
-            resultsUpdate.added += notification.added
-            resultsUpdate.removed += notification.removed
-            resultsUpdate.changed += notification.changed
+            updateResults(changes: pendingResultsUpdate)
+            pendingResultsUpdate.empty()
         }
         
         if state != .isGatheringItems {
