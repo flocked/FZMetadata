@@ -95,6 +95,7 @@ open class MetadataQuery: NSObject {
         var removed: [MetadataItem] = []
         var changed: [MetadataItem] = []
         var isEmpty: Bool { self == .init() }
+        mutating func reset() { self = .init() }
     }
     
     
@@ -358,7 +359,7 @@ open class MetadataQuery: NSObject {
     ///  Sorts results in order of the provided ``urls``.
     var sortURLResults: Bool = false
     
-    func updateResults(added: [MetadataItem], removed: [MetadataItem], changed: [MetadataItem]) {
+    func updateResults(added: [MetadataItem], removed: [MetadataItem], changed: [MetadataItem], post: Bool = true) {
         runWithPausedMonitoring {
             guard !added.isEmpty || !removed.isEmpty || !changed.isEmpty else { return }
             var results = _results.synchronized
@@ -378,6 +379,7 @@ open class MetadataQuery: NSObject {
             })
             results = results.sorted(by: \.queryIndex)
             _results.synchronized = results
+            guard post else { return }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
             if added.isEmpty, removed.isEmpty, !changed.isEmpty {
                 if changed.contains(where: { !$0.updatedAttributes.isEmpty }) {
@@ -424,44 +426,50 @@ open class MetadataQuery: NSObject {
     @objc func queryGatheringDidStart(_: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringDidStart")
         _results.removeAll()
-        queryAttributes = query.valueListAttributes
-        queryAttributes += query.groupingAttributes ?? []
-        queryAttributes += sortedBy.compactMap(\.key)
-        queryAttributes = queryAttributes.uniqued()
+        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
         state = .isGatheringItems
         cancelAllResultsUpdates()
     }
 
     @objc func queryGatheringFinished(_ notification: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringFinished")
-        cancelAllResultsUpdates()
+      //  cancelAllResultsUpdates()
         if monitorResults {
             state = .isMonitoring
         } else {
             stop()
         }
-        updateResults()
-        postResults(difference: .added(results))
+        if !postGatheringUpdates {
+            updateResults()
+            postResults(difference: .added(results))
+            resultsUpdates.reset()
+        }
     }
 
     @objc func queryGatheringProgress(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count)
-        updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
-    }
-
-    @objc func queryUpdated(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)")
+        // Swift.debugPrint("MetadataQuery gatheringProgress", notification.added.count, notification.removed.count, notification.changed.count, _results.count)
         if postGatheringUpdates {
             if !resultsUpdates.isEmpty {
-                updateResultsAsync(added: resultsUpdates.added, removed: resultsUpdates.removed, changed: resultsUpdates.changed)
-                resultsUpdates = .init()
+                updateResults(added: resultsUpdates.added, removed: resultsUpdates.removed, changed: resultsUpdates.changed)
+                resultsUpdates.reset()
             }
-            updateResultsAsync(added: notification.added, removed: notification.removed, changed: notification.changed)
+            updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
         } else {
             resultsUpdates.added += notification.added
             resultsUpdates.removed += notification.removed
             resultsUpdates.changed += notification.changed
         }
+        
+        if state != .isGatheringItems {
+            let results = results.sorted(by: \.queryIndex)
+            updateResults()
+            Swift.print("Funushed", self._results.synchronized == results, self._results.synchronized.count, results.count)
+        }
+    }
+
+    @objc func queryUpdated(_ notification: Notification) {
+        // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)", _results.count)
+        updateResults(added: notification.added, removed: notification.removed, changed: notification.changed)
     }
         
     func postResults(difference: ResultsDifference? = nil) {

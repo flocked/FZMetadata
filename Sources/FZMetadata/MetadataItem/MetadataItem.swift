@@ -148,7 +148,8 @@ open class MetadataItem: Identifiable {
      */
     open var updatedAttributes: [Attribute] {
         if let previous = previousValues {
-            _updatedAttributes = values.keyDifference(to: previous).compactMap({ Attribute(rawValue: $0) })
+            let difference = values.difference(to: previous)
+            _updatedAttributes = (difference.added + difference.removed + difference.changed).compactMap({ Attribute(rawValue: $0) })
             previousValues = nil
         }
         return _updatedAttributes
