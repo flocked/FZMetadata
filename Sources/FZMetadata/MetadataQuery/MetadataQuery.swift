@@ -94,8 +94,8 @@ open class MetadataQuery: NSObject {
         var added: [MetadataItem] = []
         var removed: [MetadataItem] = []
         var changed: [MetadataItem] = []
-        var isEmpty: Bool { self == .init() }
-        mutating func reset() { self = .init() }
+        var isEmpty: Bool { self == ResultsUpdate() }
+        mutating func reset() { self = ResultsUpdate() }
     }
     
     
@@ -292,6 +292,8 @@ open class MetadataQuery: NSObject {
      ```
      
      By default, notification of updated results occurs at 1.0 seconds. Use ``updateNotificationInterval`` to change the internval.
+     
+     - Note: Enabling monitoring the results can have significant performance costs. You should define a operation queue via ``operationQueue``.
      */
     open var monitorResults = false {
         didSet {
@@ -313,6 +315,8 @@ open class MetadataQuery: NSObject {
      A Boolean value indicating whether changes to the results are posted during gathering the final results.
      
      If `true` changes to the results while gathering are posted at the interval specified by ``updateNotificationInterval``.
+     
+     - Note: Enabling gathering updates can have significant performance costs. You should define a operation queue via ``operationQueue``.
      */
     open var postGatheringUpdates: Bool = false
 
@@ -474,9 +478,7 @@ open class MetadataQuery: NSObject {
         
     func postResults(difference: ResultsDifference? = nil) {
         let results = _results.synchronized
-        runWithOperationQueue {
-            self.resultsHandler?(results, difference ?? .added(results))
-        }
+        self.resultsHandler?(results, difference ?? .added(results))
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
