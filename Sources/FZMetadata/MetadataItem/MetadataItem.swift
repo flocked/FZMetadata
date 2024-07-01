@@ -21,7 +21,7 @@ import FZSwiftUtils
 #if os(macOS)
     public extension URL {
         /**
-         The metadata for the file at url.
+         The metadata for the file at this url.
 
          - Returns: The metadata, or `nil` if the file isn't available or can't be accessed.
          */
@@ -34,7 +34,7 @@ import FZSwiftUtils
 /**
  The metadata associated with a file.
 
- You either obtain the metadata by using a file url's ``Foundation/URL/metadata`` property or create it using ``init(url:)``.
+ You either access the metadata by using a file url's ``Foundation/URL/metadata`` property or create it using ``init(url:)``.
 
  ```swift
  if let metadata = fileURL.metadata {
@@ -53,22 +53,23 @@ open class MetadataItem: Identifiable {
     /// The identifier of the item.
     public let id = UUID()
     
-    let item: NSMetadataItem
+    public let item: NSMetadataItem
     
-    /// Metadata attribute values fetched by a query.
+    /// Attribute values fetched by a query.
     var values: [String: Any] = [:]
+    
+    public var disableValues = false
         
-    /// Previous metadata attribute values fetched by a query., or `nil` if there aren't any previous values.
+    /// Previous attribute values fetched by a query.
     var previousValues: [String: Any]? = nil
     
+    /// Index of the item in a query results.
     var queryIndex = 0
         
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
 
-     - Parameters:
-        - item: The `NSMetadataItem`.
-
+     - Parameter item: The `NSMetadataItem`.
      - Returns: A metadata item.
      */
     public init(item: NSMetadataItem) {
@@ -89,9 +90,7 @@ open class MetadataItem: Identifiable {
          }
          ```
 
-         - Parameters:
-            - url: The URL for the metadata
-
+         - Parameter url: The URL for the metadata
          - Returns: A metadata item for the file at the url, or `nil` if the file isn't available or can't be accessed.
          */
         public init?(url: URL) {
@@ -123,25 +122,25 @@ open class MetadataItem: Identifiable {
     /**
      The updated attributes, if the item is part of a metadata query results.
 
-     The array contains all attributes of values that changed since the last query results.
+     The array contains all attributes of values that changed since the last query results update.
      
      In the following example the query is gathering files and some attributes. The results handler is called with the inital results. Because monitoring is enabled, the handler is called subsequently whenever the available files or their attributes change.
+     
+     In the following example the query is gathering some attributes and monitors their changes. In the results handler that gets called on attribute changes, the files are filtered by the attributes that have changed.
           
      ```swift
-     /// Gather finder tags and last usage dates
+     query,urls = someFileURLs
      query.attributes = [.finderTags, .lastUsedDate]
-     query.predicate = { $0.isFile }
      query.monitorResults = true
      query.resultsHandler = { items, _ in
-        // Is called whenever the available files
-        // or finder tags and last usage date change.
+        // The handler called with the inital results and
+        // whenever finder tags and last usage dates change.
      
-        // Items with changed finder tags.
-        let finderTagItems = items.filter({$0.updatedAttributes.contains(.finderTags)})
-          filesTagUpdated
+        // Files with changed finder tags.
+        let finderTagFiles = items.filter({$0.updatedAttributes.contains(.finderTags)})
 
-        // Items with changed last usage date.
-        let updatedLastUsedFiles = items.filter({$0.updatedAttributes.contains(.lastUsedDate)})
+        // Files with changed last usage date.
+        let lastUsedFiles = items.filter({$0.updatedAttributes.contains(.lastUsedDate)})
      }
      query.start()
      ```
@@ -1005,11 +1004,14 @@ open class MetadataItem: Identifiable {
 
 extension MetadataItem {
     func value<T>(for attribute: String) -> T? {
-        values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
+        if disableValues {
+            return item.value(forAttribute: attribute) as? T
+        }
+        return values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
     }
     
     func value<T>(for attribute: Attribute) -> T? {
-        value(for: attribute.rawValue)
+        return value(for: attribute.rawValue)
     }
     
     func value<T: RawRepresentable>(for attribute: Attribute) -> T? {
