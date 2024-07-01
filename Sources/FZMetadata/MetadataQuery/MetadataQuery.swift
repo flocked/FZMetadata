@@ -427,6 +427,7 @@ open class MetadataQuery: NSObject {
     }
         
     func postResults(difference: ResultsDifference? = nil) {
+        Swift.print("postResults", _results.synchronized.count, resultsHandler != nil)
         let results = _results.synchronized
         resultsHandler?(results, difference ?? .added(results))
     }
