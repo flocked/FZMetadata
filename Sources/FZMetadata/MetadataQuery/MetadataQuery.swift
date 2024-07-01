@@ -385,18 +385,22 @@ open class MetadataQuery: NSObject {
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
         state = .isGatheringItems
+        isFinished = false
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count)
         pendingResultsUpdate += notification.resultsUpdate
-        if postGatheringUpdates {
+        if postGatheringUpdates || isFinished {
             updateResults(postUpdate: true)
         }
     }
     
+    var isFinished: Bool = false
+    
     @objc func gatheringFinished(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery gatheringFinished")
+        isFinished = true
         if _results.isEmpty {
             createResults()
             postResults(difference: .added(results))
