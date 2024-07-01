@@ -409,6 +409,7 @@ open class MetadataQuery: NSObject {
             Swift.debugPrint("!pendingResultsUpdate.isEmpty")
             updateResults(postUpdate: true)
         } else {
+            
             Swift.debugPrint("postResults(difference: .empty)")
             postResults(difference: .empty)
         }
@@ -423,7 +424,8 @@ open class MetadataQuery: NSObject {
         
     func postResults(difference: ResultsDifference? = nil) {
         let results = _results.synchronized
-        self.resultsHandler?(results, difference ?? .added(results))
+        Swift.debugPrint("postResults", results.count, self.resultsHandler != nil)
+        resultsHandler?(results, difference ?? .added(results))
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
