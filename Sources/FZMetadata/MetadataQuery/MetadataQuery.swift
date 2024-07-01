@@ -330,6 +330,7 @@ open class MetadataQuery: NSObject {
     }
         
     func updateResults(postUpdate: Bool = false) {
+        Swift.print("updateResults", postUpdate)
         guard !pendingResultsUpdate.isEmpty else { return }
         
         runWithPausedMonitoring {
@@ -392,6 +393,9 @@ open class MetadataQuery: NSObject {
         Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count, postGatheringUpdates, isFinished)
         pendingResultsUpdate += notification.resultsUpdate
         if postGatheringUpdates || isFinished {
+            if isFinished {
+                isFinished = false
+            }
             updateResults(postUpdate: true)
         }
     }
@@ -410,7 +414,7 @@ open class MetadataQuery: NSObject {
             updateResults(postUpdate: true)
         } else {
             
-            Swift.debugPrint("postResults(difference: .empty)")
+            Swift.debugPrint("postResults(difference: .empty)", _results.count, pendingResultsUpdate.added.count)
             postResults(difference: .empty)
         }
         pendingResultsUpdate = .init()
@@ -424,7 +428,6 @@ open class MetadataQuery: NSObject {
         
     func postResults(difference: ResultsDifference? = nil) {
         let results = _results.synchronized
-        Swift.debugPrint("postResults", results.count, self.resultsHandler != nil)
         resultsHandler?(results, difference ?? .added(results))
     }
     
