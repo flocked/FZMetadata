@@ -389,7 +389,7 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count)
+        Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count, postGatheringUpdates, isFinished)
         pendingResultsUpdate += notification.resultsUpdate
         if postGatheringUpdates || isFinished {
             updateResults(postUpdate: true)
@@ -402,11 +402,14 @@ open class MetadataQuery: NSObject {
         Swift.debugPrint("MetadataQuery gatheringFinished")
         isFinished = true
         if _results.isEmpty {
+            Swift.debugPrint("_results.isEmpty")
             createResults()
             postResults(difference: .added(results))
         } else if !pendingResultsUpdate.isEmpty {
+            Swift.debugPrint("!pendingResultsUpdate.isEmpty")
             updateResults(postUpdate: true)
         } else {
+            Swift.debugPrint("postResults(difference: .empty)")
             postResults(difference: .empty)
         }
         pendingResultsUpdate = .init()
