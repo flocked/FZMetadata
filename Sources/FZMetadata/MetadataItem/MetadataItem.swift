@@ -57,9 +57,7 @@ open class MetadataItem: Identifiable {
     
     /// Attribute values fetched by a query.
     var values: [String: Any] = [:]
-    
-    public var disableValues = false
-        
+            
     /// Previous attribute values fetched by a query.
     var previousValues: [String: Any]? = nil
     
@@ -1004,9 +1002,6 @@ open class MetadataItem: Identifiable {
 
 extension MetadataItem {
     func value<T>(for attribute: String) -> T? {
-        if disableValues {
-            return item.value(forAttribute: attribute) as? T
-        }
         return values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
     }
     
