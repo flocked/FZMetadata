@@ -264,16 +264,23 @@ open class MetadataQuery: NSObject {
           
      - Note: Enabling monitoring can have a significant performance impact. You should define a operation queue via ``operationQueue`` as otherwise any updates can cause a log on the main thread.
      */
-    open var monitorResults = true {
+    open var monitorResults = false {
         didSet {
             guard oldValue != monitorResults else { return }
-            if monitorResults {
-                query.enableUpdates()
-            } else {
-                query.disableUpdates()
-            }
+            updateMonitoring()
         }
     }
+    
+    func updateMonitoring() {
+        guard isFinished else { return }
+        if monitorResults {
+            query.enableUpdates()
+        } else {
+            query.disableUpdates()
+        }
+    }
+    
+    
     /// The interval (in seconds) at which notifications of updated results occur. The default value is `1.0` seconds.
     open var updateNotificationInterval: TimeInterval {
         get { query.notificationBatchingInterval }
@@ -330,7 +337,7 @@ open class MetadataQuery: NSObject {
     }
         
     func updateResults(postUpdate: Bool = false) {
-        Swift.print("updateResults", postUpdate)
+        // Swift.print("updateResults", postUpdate)
         guard !pendingResultsUpdate.isEmpty else { return }
         
         runWithPausedMonitoring {
@@ -381,7 +388,7 @@ open class MetadataQuery: NSObject {
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringStarted")
+        // Swift.debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
@@ -390,12 +397,9 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count, postGatheringUpdates, isFinished)
+        // Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count, postGatheringUpdates, isFinished)
         pendingResultsUpdate += notification.resultsUpdate
-        if postGatheringUpdates || isFinished {
-            if isFinished {
-                isFinished = false
-            }
+        if postGatheringUpdates && !isFinished {
             updateResults(postUpdate: true)
         }
     }
@@ -403,31 +407,31 @@ open class MetadataQuery: NSObject {
     var isFinished: Bool = false
     
     @objc func gatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished")
+        // Swift.debugPrint("MetadataQuery gatheringFinished")
         isFinished = true
+        updateMonitoring()
         if _results.isEmpty {
-            Swift.debugPrint("_results.isEmpty")
+            // Swift.debugPrint("_results.isEmpty")
             createResults()
             postResults(difference: .added(results))
         } else if !pendingResultsUpdate.isEmpty {
-            Swift.debugPrint("!pendingResultsUpdate.isEmpty")
+            // Swift.debugPrint("!pendingResultsUpdate.isEmpty")
             updateResults(postUpdate: true)
         } else {
-            
-            Swift.debugPrint("postResults(difference: .empty)", _results.count, pendingResultsUpdate.added.count)
+            // Swift.debugPrint("postResults(difference: .empty)", _results.count, pendingResultsUpdate.added.count)
             postResults(difference: .empty)
         }
         pendingResultsUpdate = .init()
     }
 
     @objc func queryUpdated(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)", _results.count)
+        // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)", _results.count)
         pendingResultsUpdate += notification.resultsUpdate
         updateResults(postUpdate: true)
     }
         
     func postResults(difference: ResultsDifference? = nil) {
-        Swift.print("postResults", _results.synchronized.count, resultsHandler != nil)
+        // Swift.print("postResults", _results.synchronized.count, resultsHandler != nil)
         let results = _results.synchronized
         resultsHandler?(results, difference ?? .added(results))
     }
