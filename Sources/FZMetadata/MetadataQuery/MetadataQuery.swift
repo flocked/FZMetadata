@@ -275,8 +275,10 @@ open class MetadataQuery: NSObject {
         guard isFinished else { return }
         if monitorResults {
             query.enableUpdates()
+            state = .isMonitoring
         } else {
             query.disableUpdates()
+            state = .isStopped
         }
     }
     
@@ -407,13 +409,13 @@ open class MetadataQuery: NSObject {
     var isFinished: Bool = false
     
     @objc func gatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished", resultsCount)
+        // Swift.debugPrint("MetadataQuery gatheringFinished", resultsCount)
         isFinished = true
         updateMonitoring()
         if _results.isEmpty {
             // Swift.debugPrint("_results.isEmpty")
             createResults()
-            postResults(difference: .added(results))
+            postResults(difference: .added(_results.synchronized))
         } else if !pendingResultsUpdate.isEmpty {
             // Swift.debugPrint("!pendingResultsUpdate.isEmpty")
             updateResults(postUpdate: true)
