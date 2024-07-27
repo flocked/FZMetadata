@@ -407,7 +407,7 @@ open class MetadataQuery: NSObject {
     var isFinished: Bool = false
     
     @objc func gatheringFinished(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringFinished")
+        Swift.debugPrint("MetadataQuery gatheringFinished", resultsCount)
         isFinished = true
         updateMonitoring()
         if _results.isEmpty {
