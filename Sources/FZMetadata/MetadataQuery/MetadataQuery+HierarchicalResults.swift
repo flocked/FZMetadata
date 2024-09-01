@@ -15,7 +15,7 @@ extension MetadataQuery {
      The items of the query’s results are mapped hierarchically to their file system path.
      */
     public class HierarchicalResults: CustomStringConvertible, Hashable {
-        let items: [MetadataItem]
+        var items: [MetadataItem]
         
         /// The files of the results.
         public var files: [File] {
@@ -80,9 +80,27 @@ extension MetadataQuery {
             folders + folders.flatMap({$0.allSubfolders})
         }
         
-        /// Returns all folders including the subfolders of all folders.
+        /// Returns all items including the items of all files and foldes.
         public var allItems: [MetadataItem] {
             files.compactMap({$0.item}) + folders.flatMap({$0.allItems}) + folders.compactMap({$0.item})
+        }
+        
+        /// Returns all files up to the maximum depth including the files of all files and foldes.
+        public func allFiles(maxDepth: Int) -> [File] {
+            guard maxDepth > 0 else { return files }
+            return files + folders.flatMap({$0.allFiles(maxDepth: level + maxDepth)})
+        }
+        
+        /// Returns all folders up to the maximum depth including the subfolders of all folders.
+        public func allFolders(maxDepth: Int) -> [Folder] {
+            guard maxDepth > 0 else { return folders }
+            return folders + folders.flatMap({$0.allSubfolders(maxDepth: level + maxDepth)})
+        }
+        
+        /// Returns all items up to the maximum depth including the items of all files and foldes.
+        public func allItems(maxDepth: Int) -> [MetadataItem] {
+            guard maxDepth > 0 else { return files.compactMap({$0.item}) + folders.compactMap({$0.item}) }
+            return files.compactMap({$0.item}) + folders.flatMap({$0.allItems(maxDepth: level + maxDepth)}) + folders.compactMap({$0.item})
         }
               
         init(_ items: [MetadataItem]) {
@@ -131,6 +149,7 @@ extension MetadataQuery {
             self._folders = main.subfolders
             self.level = main.level
             self._topLevelURL = main.url ?? URL(fileURLWithPath: "/")
+            items = []
         }
     }
 }
@@ -171,7 +190,7 @@ extension MetadataQuery.HierarchicalResults {
     /// Folder of a hierarchical query results.
     public class Folder: Hashable, CustomStringConvertible {
         
-        let items: [(item: MetadataItem, url: URL)]
+        var items: [(item: MetadataItem, url: URL)]
         let level: Int
         
         /// The url of the folder.
@@ -215,6 +234,30 @@ extension MetadataQuery.HierarchicalResults {
         /// All metadata items including the items of all subfolders.
         public var allItems: [MetadataItem] {
             files.compactMap({$0.item}) + subfolders.compactMap({$0.item}) + subfolders.flatMap({$0.allItems})
+        }
+        
+        func allFiles(maxDepth: Int) -> [File] {
+            var files = files
+            if level < maxDepth {
+                files += subfolders.flatMap({$0.allFiles(maxDepth: maxDepth)})
+            }
+            return files
+        }
+        
+        func allSubfolders(maxDepth: Int) -> [Folder] {
+            var subfolders = subfolders
+            if level < maxDepth {
+                subfolders += subfolders.flatMap({$0.allSubfolders(maxDepth: maxDepth)})
+            }
+            return subfolders
+        }
+        
+        func allItems(maxDepth: Int) -> [MetadataItem] {
+            var items = files.compactMap({$0.item})
+            if level < maxDepth {
+                items += subfolders.compactMap({$0.item}) + subfolders.flatMap({$0.allItems(maxDepth: maxDepth)})
+            }
+            return items
         }
         
         func file(at url: URL) -> File? {
@@ -295,6 +338,7 @@ extension MetadataQuery.HierarchicalResults {
             self._subfolders = folders
             self._url = url ?? items.first!.url.parent ?? items.first!.url
             self._item = item
+            items = []
         }
         
         init(files: [File], subfolders: [Folder]) {
