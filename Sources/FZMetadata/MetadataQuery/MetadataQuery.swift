@@ -387,13 +387,14 @@ open class MetadataQuery: NSObject {
     func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: result.queryIndex)
+        print(result.values)
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
         // Swift.debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
         pendingResultsUpdate = .init()
-        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
+        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGatheringItems
         isFinished = false
     }

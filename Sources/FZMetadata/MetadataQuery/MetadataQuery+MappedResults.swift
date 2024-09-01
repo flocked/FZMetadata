@@ -16,6 +16,44 @@ extension MetadataQuery {
         public let folders: [Folder]
         /// The items of the results.
         public let items: [MetadataItem]
+        /// The url to the top level folder.
+        public let topLevelURL: URL
+        
+        let level: Int
+                
+        public func file(at url: URL) -> File? {
+            let pathComponents = url.pathComponents
+            if pathComponents.count == level {
+                return files.first(where: {$0.url == url })
+            } else if pathComponents.count > level {
+                return folders.filter({ $0.url?.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.file(at: url ) }).first
+            }
+            return nil
+        }
+        
+        public subscript(url: URL) -> MetadataItem? {
+            item(at: url)
+        }
+        
+        public func folder(at url: URL) -> Folder? {
+            let pathComponents = url.pathComponents
+            if pathComponents.count == level {
+                return folders.first(where: {$0.url == url })
+            } else if pathComponents.count > level {
+                return folders.filter({ $0.url?.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.folder(at: url ) }).first
+            }
+            return nil
+        }
+        
+        func item(at url: URL) -> MetadataItem? {
+            let pathComponents = url.pathComponents
+            if pathComponents.count == level {
+                return files.first(where: {$0.url == url })?.item
+            } else if pathComponents.count > level {
+                return folders.filter({ $0.url?.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.item(at: url ) }).first
+            }
+            return nil
+        }
         
         /// All files including the files of all folders.
         public var allFiles: [File] {
@@ -26,15 +64,14 @@ extension MetadataQuery {
         public var allFolders: [Folder] {
             folders + folders.flatMap({$0.allSubfolders})
         }
-        
-        // let url: URL
-        
+                
         init(_ items: [MetadataItem]) {
             let main = Folder(items)
             self.files = main.files
             self.folders = main.subfolders
             self.items = items
-            // self.url = main.url ?? URL(fileURLWithPath: "/")
+            self.level = main.level
+            self.topLevelURL = main.url ?? URL(fileURLWithPath: "/")
         }
         
         public var description: String {
@@ -75,6 +112,7 @@ extension MetadataQuery.MappedResults {
         public let url: URL?
         /// The metadata item of the folder.
         public let item: MetadataItem?
+        let level: Int
         
         /// All subfolders.
         public var allSubfolders: [Folder] {
@@ -91,11 +129,46 @@ extension MetadataQuery.MappedResults {
             files.compactMap({$0.item}) + subfolders.compactMap({$0.item}) + subfolders.flatMap({$0.allItems})
         }
         
+        func file(at url: URL) -> File? {
+            let pathComponents = url.pathComponents
+            print(level, pathComponents.count, self.url ?? "nil", self.files.compactMap({$0.url}))
+            if pathComponents.count-1 == level {
+                return files.first(where: {$0.url == url })
+            } else if pathComponents.count > level {
+                return subfolders.filter({ $0.url?.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.file(at: url ) }).first
+            }
+            return nil
+        }
+        
+        func folder(at url: URL) -> Folder? {
+            let pathComponents = url.pathComponents
+            print(level, pathComponents.count, self.url ?? "nil", self.files.compactMap({$0.url}))
+            if pathComponents.count == level {
+                return self.url == url ? self : nil
+            } else if pathComponents.count > level {
+                return subfolders.filter({ $0.url?.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.folder(at: url ) }).first
+            }
+            return nil
+        }
+        
+        func item(at url: URL) -> MetadataItem? {
+            let pathComponents = url.pathComponents
+            if pathComponents.count-1 == level, let file = files.first(where: {$0.url == url }) {
+                return file.item
+            } else if pathComponents.count == level {
+                return self.url == url ? self.item : nil
+            } else if pathComponents.count > level {
+                return subfolders.filter({ $0.url?.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.item(at: url ) }).first
+            }
+            return nil
+        }
+        
         init(files: [File], subfolders: [Folder]) {
             self.files = files
             self.subfolders = subfolders
             self.item = nil
             self.url = nil
+            self.level = .max
         }
                     
         init(_ items: [MetadataItem]) {
@@ -105,6 +178,7 @@ extension MetadataQuery.MappedResults {
                 self.subfolders = []
                 self.url = nil
                 self.item = nil
+                self.level = .max
             } else {
                 let firstChangedIndex = items.compactMap({$0.1.pathComponents}).firstChangedIndex ?? 0
                 let main = Folder(items, index: firstChangedIndex)
@@ -118,6 +192,7 @@ extension MetadataQuery.MappedResults {
                 } else {
                     self.url = nil
                 }
+                self.level = self.url?.pathComponents.count ?? .max
             }
         }
         
@@ -144,18 +219,7 @@ extension MetadataQuery.MappedResults {
             self.subfolders = folders
             self.url = url
             self.item = item
-        }
-        
-        func file(for url: URL) -> File? {
-            if let file = files.first(where: {$0.url == url}) {
-                return file
-            }
-            for subfolder in subfolders {
-                if let file = subfolder.file(for: url) {
-                    return file
-                }
-            }
-            return nil
+            self.level = self.url?.pathComponents.count ?? .max
         }
         
         func strings(index: Int = 0) -> [String] {
