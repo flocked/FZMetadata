@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  HierarchicalResults.swift
 //  
 //
 //  Created by Florian Zand on 31.08.24.
@@ -103,7 +103,7 @@ extension MetadataQuery {
             return files.compactMap({$0.item}) + folders.flatMap({$0.allItems(maxDepth: level + maxDepth)}) + folders.compactMap({$0.item})
         }
               
-        init(_ items: [MetadataItem]) {
+        public init(_ items: [MetadataItem]) {
             self.items = items
         }
         
@@ -166,8 +166,8 @@ extension MetadataQuery.HierarchicalResults {
         /// The parent folder of the file.
         public var parent: Folder? = nil
         
-        init(_ item: MetadataItem, _ url: URL, parent: Folder? = nil) {
-            self.url = url
+        init(_ item: MetadataItem, parent: Folder? = nil) {
+            self.url = item.url!
             self.item = item
             self.parent = parent
         }
@@ -190,7 +190,7 @@ extension MetadataQuery.HierarchicalResults {
     /// Folder of a hierarchical query results.
     public class Folder: Hashable, CustomStringConvertible {
         
-        var items: [(item: MetadataItem, url: URL)]
+        var items: [MetadataItem]
         let level: Int
         
         /// The url of the folder.
@@ -200,7 +200,7 @@ extension MetadataQuery.HierarchicalResults {
         
         /// The name of the folder.
         public var name: String {
-            _name
+            url.lastPathComponent
         }
         
         /// The metadata item of the folder.
@@ -265,7 +265,11 @@ extension MetadataQuery.HierarchicalResults {
             if pathComponents.count-1 == level {
                 return files.first(where: {$0.url == url })
             } else if pathComponents.count > level {
-                return subfolders.filter({ $0.url.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.file(at: url ) }).first
+                return subfolders.lazy.compactMap({
+                    if $0.url.pathComponents[safe: self.level] == pathComponents[self.level] {
+                        return $0.file(at: url)
+                    } else { return nil }
+                }).first
             }
             return nil
         }
@@ -274,70 +278,69 @@ extension MetadataQuery.HierarchicalResults {
             let pathComponents = url.pathComponents
             if pathComponents.count == level {
                 return self.url == url ? self : nil
-            } else if pathComponents.count > level {
-                return subfolders.filter({ $0.url.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.folder(at: url ) }).first
+            } else if pathComponents.count - 1 > level {
+                return subfolders.lazy.compactMap({
+                    if $0.url.pathComponents[safe: self.level] == pathComponents[self.level] {
+                        return $0.folder(at: url)
+                    } else { return nil }
+                }).first
             }
             return nil
         }
         
         func item(at url: URL) -> MetadataItem? {
             let pathComponents = url.pathComponents
-            if pathComponents.count-1 == level, let file = files.first(where: {$0.url == url }) {
-                return file.item
+            if pathComponents.count-1 == level {
+                return files.first(where: {$0.url == url })?.item
             } else if pathComponents.count == level {
-                return self.url == url ? self.item : nil
+                return self.url == url ? item : nil
             } else if pathComponents.count > level {
-                return subfolders.filter({ $0.url.pathComponents[safe: level] == pathComponents[level] }).compactMap({ $0.item(at: url ) }).first
+                return subfolders.lazy.compactMap({
+                    if $0.url.pathComponents[safe: self.level] == pathComponents[self.level] {
+                        return $0.item(at: url)
+                    } else { return nil }
+                }).first
             }
             return nil
         }
         
         private lazy var _url: URL = {
             setupValues()
-            return url
+            return _url
         }()
-        
-        private var _name: String {
-            url.lastPathComponent
-        }
         
         private lazy var _item: MetadataItem? = {
             setupValues()
-            return item
+            return _item
         }()
         
         private lazy var _files: [File] = {
             setupValues()
-            return files
+            return _files
         }()
         
         private lazy var _subfolders: [Folder] = {
             setupValues()
-            return subfolders
+            return _subfolders
         }()
         
         func setupValues() {
-            let dic = Dictionary(grouping: items, by: \.url.pathComponents[safe: level])
+            let dic = Dictionary(grouping: items, by: \.url?.pathComponents[safe: level])
             var files: [File] = []
             var folders: [Folder] = []
-            var url: URL?
-            var item: MetadataItem?
             for val in dic {
-                if val.key == nil, val.value.count == 1, let val = val.value.first, val.url.isDirectory {
-                    url = val.url
-                    item = val.item
+                if val.key == nil, val.value.count == 1, let item = val.value.first, item.url!.isDirectory {
+                    self._item = item
                 }
-                guard val.key != nil else { continue }
-                if val.value.count == 1, let val = val.value.first, val.url.isFile {
-                    files.append(File(val.item, val.url))
+                guard let key = val.key else { continue }
+                if val.value.count == 1, let item = val.value.first, item.url?.isFile == true {
+                    files.append(File(item))
                 } else {
-                    folders.append(Folder(val.value, index: level+1, parent: self))
+                    folders.append(Folder(val.value, url: _url.appendingPathComponent(key), index: level+1, parent: self))
                 }
             }
-            self._files = files
-            self._subfolders = folders
-            self._url = url ?? items.first!.url.parent ?? items.first!.url
-            self._item = item
+            _files = files
+            _subfolders = folders
             items = []
         }
         
@@ -351,7 +354,6 @@ extension MetadataQuery.HierarchicalResults {
         }
                     
         init(_ items: [MetadataItem]) {
-            let items: [(item: MetadataItem, url: URL)] = items.compactMap({ if let path = $0.path { return ($0, URL(fileURLWithPath: path)) } else { return nil } }).sorted(by: \.url.path)
             if items.isEmpty {
                 self.items = []
                 self.level = .max
@@ -360,18 +362,19 @@ extension MetadataQuery.HierarchicalResults {
                 self._url = URL(fileURLWithPath: "/")
                 self._item = nil
             } else {
-                let index = items.compactMap({$0.1.pathComponents}).firstChangedIndex ?? 1
-                let main = Folder(items, index: index-1)
+                let index = items.compactMap({$0.url?.pathComponents}).firstChangedIndex ?? 1
                 self.level = index-1
                 self.items = items
+                self._url = items.first!.url!.dropPathComponents(to: index-1)
             }
         }
         
-        init(_ items: [(item: MetadataItem, url: URL)], index: Int, parent: Folder? = nil) {
+        init(_ items: [MetadataItem], url: URL, index: Int, parent: Folder? = nil) {
             self.items = items
             self.level = index
-            self._url = items.first!.url.parent ?? URL(fileURLWithPath: "/")
+            self._url = url
             self.parent = parent
+            
         }
         
         func strings(index: Int = 0) -> [String] {
@@ -389,9 +392,9 @@ extension MetadataQuery.HierarchicalResults {
         
         public var description: String {
             var values: [String] = []
-            values.append("Folder(")
-            values.append(contentsOf: strings(index: 1))
-            values.append(")")
+            values += "Folder("
+            values += strings(index: 1)
+            values += ")"
             return values.joined(separator: "\n")
         }
         
@@ -402,6 +405,17 @@ extension MetadataQuery.HierarchicalResults {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(items.compactMap({$0.item}))
         }
+    }
+}
+
+extension URL {
+    func dropPathComponents(to amount: Int) -> URL {
+        if pathComponents.count <= amount { return self }
+        var url = self
+        while url.pathComponents.count != amount {
+            url = url.deletingLastPathComponent()
+        }
+        return url
     }
 }
 
