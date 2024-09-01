@@ -331,6 +331,15 @@ open class MetadataQuery: NSObject {
     open var groupedResults: [ResultGroup] {
         query.groupedResults.compactMap { ResultGroup($0) }
     }
+    
+    /**
+     The hierarchical query results.
+     
+     The items of the query’s results are mapped hierarchically to their file system path.
+     */
+    open var hierarchicalResults: HierarchicalResults {
+        HierarchicalResults(results)
+    }
             
     func createResults() {
         runWithPausedMonitoring {

@@ -163,7 +163,7 @@ open class MetadataItem: Identifiable {
 
     /// The url of the file.
     open var url: URL? {
-        if let path: String = values[Attribute.path.rawValue] as? String {
+        if let path: String = value(for: .path) {
             return URL(fileURLWithPath: path)
         }
         return value(for: .url)
