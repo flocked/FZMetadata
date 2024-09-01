@@ -120,7 +120,7 @@ open class MetadataItem: Identifiable {
     /**
      The updated attributes, if the item is part of a metadata query results.
 
-     The array contains all attributes of values that changed since the last query results update.
+     The array contains all monitored attributes that changed since the last query results update.
      
      In the following example the query is gathering files and some attributes. The results handler is called with the inital results. Because monitoring is enabled, the handler is called subsequently whenever the available files or their attributes change.
      
@@ -158,7 +158,7 @@ open class MetadataItem: Identifiable {
 
     /// The url of the file.
     open var url: URL? {
-        if let path = values[Attribute.path.rawValue] as? String {
+        if let path: String = values[Attribute.path.rawValue] as? String {
             return URL(fileURLWithPath: path)
         }
         return value(for: .url)
@@ -169,10 +169,10 @@ open class MetadataItem: Identifiable {
 
     /// The name of the file including the extension.
     open var fileName: String? {
-        if let path = values[Attribute.path.rawValue ] as? String {
+        if let path = values[Attribute.path.rawValue] as? String {
             return URL(fileURLWithPath: path).lastPathComponent
         }
-        return value(for: .fileName) ?? url?.lastPathComponent
+        return (values[Attribute.url.rawValue] as? URL)?.lastPathComponent ?? value(for: .fileName)
     }
 
     /// The display name of the file, which may be different then the file system name.
@@ -222,7 +222,9 @@ open class MetadataItem: Identifiable {
 
     /// The content type tree of the file.
     @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-    open var contentTypeTree: [UTType]? { contentTypeTreeIdentifiers?.compactMap { UTType($0) } }
+    open var contentTypeTree: [UTType]? {
+        contentTypeTreeIdentifiers?.compactMap { UTType($0) }
+    }
 
     /// The content type of the file.
     @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)

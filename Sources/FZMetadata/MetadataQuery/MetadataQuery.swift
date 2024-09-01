@@ -353,9 +353,9 @@ open class MetadataQuery: NSObject {
                 item.previousValues = nil
             })
             results = results + added
-            changed.forEach({updateResult($0, index: query.index(ofResult: $0), inital: false)})
-            added.forEach({updateResult($0, index: query.index(ofResult: $0), inital: true)})
             results.forEach({ $0.queryIndex = query.index(ofResult: $0) })
+            changed.forEach({updateResult($0, inital: false)})
+            added.forEach({updateResult($0, inital: true)})
             results = results.sorted(by: \.queryIndex)
             _results.synchronized = results
             
@@ -380,13 +380,13 @@ open class MetadataQuery: NSObject {
     func result(at index: Int) -> MetadataItem? {
         guard let result = query.result(at: index) as? MetadataItem else { return nil }
         result.queryIndex = index
-        updateResult(result, index: index, inital: true)
+        updateResult(result, inital: true)
         return result
     }
         
-    func updateResult(_ result: MetadataItem, index: Int, inital: Bool) {
+    func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
-        result.values = query.values(of: queryAttributes, forResultsAt: index)
+        result.values = query.values(of: queryAttributes, forResultsAt: result.queryIndex)
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
