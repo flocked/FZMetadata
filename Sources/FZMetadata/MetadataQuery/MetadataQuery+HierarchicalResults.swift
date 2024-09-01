@@ -419,10 +419,24 @@ extension URL {
     }
 }
 
-extension Array where Element: RandomAccessCollection, Element.Index == Int {
+extension Array where Element: RandomAccessCollection, Element.Element: Comparable, Element.Index == Int {
     var firstChangedIndex: Int? {
         guard !isEmpty else { return nil }
         let maxIndex = (compactMap({$0.count}).max() ?? 0)
-        return (0..<maxIndex).first(where: { index in compactMap({$0[safe: index]}).count != count })
+        for index in 0..<maxIndex {
+            let values = compactMap({$0[safe: index]})
+            guard values.count == count else { return index }
+            var compare = values.first
+            for value in values {
+                if compare != value {
+                    return index
+                }
+                compare = value
+            }
+            }
+        return nil
+        }
+        
+      //  return (0..<maxIndex).first(where: { index in compactMap({$0[safe: index]}).count != count })
     }
-}
+
