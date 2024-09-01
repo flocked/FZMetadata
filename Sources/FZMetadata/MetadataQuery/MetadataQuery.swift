@@ -387,7 +387,7 @@ open class MetadataQuery: NSObject {
     func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: result.queryIndex)
-        print(result.values)
+        result.updatePath()
     }
         
     @objc func gatheringStarted(_ notification: Notification) {

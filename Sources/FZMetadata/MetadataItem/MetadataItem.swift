@@ -153,6 +153,11 @@ open class MetadataItem: Identifiable {
     }
     
     var _updatedAttributes: [Attribute] = []
+    
+    func updatePath() {
+        guard values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = value(for: .path) else { return }
+        values[MetadataItem.Attribute.path.rawValue] = path
+    }
 
     // MARK: - File
 
