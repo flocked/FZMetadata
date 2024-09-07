@@ -148,7 +148,7 @@ extension MetadataQuery {
             self._files = main.files
             self._folders = main.subfolders
             self.level = main.level
-            self._topLevelURL = main.url ?? URL(fileURLWithPath: "/")
+            self._topLevelURL = main.url
             items = []
         }
     }
@@ -379,13 +379,13 @@ extension MetadataQuery.HierarchicalResults {
         
         func strings(index: Int = 0) -> [String] {
             let tab = Array(repeating: "\t", count: index).joined(separator: "")
-            var values = subfolders.flatMap({ (tab + ($0.url.lastPathComponent ?? "_Folder")) + $0.strings(index: index+1) })
+            var values = subfolders.compactMap({ (tab + ($0.url.lastPathComponent)) + $0.strings(index: index+1) }).flattened()
             values += files.compactMap({ tab + $0.description })
             return values
         }
         
         func indexedStrings(index: Int = 0) -> [(index: Int, string: String)] {
-            var values = subfolders.flatMap({ (index, $0.url.lastPathComponent ?? "Folder") + $0.indexedStrings(index: index+1) })
+            var values = subfolders.compactMap({ (index, $0.url.lastPathComponent) + $0.indexedStrings(index: index+1) }).flattened()
             values += files.compactMap({ (index, $0.description) })
             return values
         }
