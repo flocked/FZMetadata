@@ -21,9 +21,10 @@ public extension MetadataQuery {
         public static let d = Self(rawValue: 1 << 1)
         /// Case and diacritical-sensitive string comparison.
         public static let cd: Self = [.c, .d]
-
-        static let wordBased = Self(rawValue: 1 << 2)
-        static let w = Self(rawValue: 1 << 2)
+        /// Matches words.
+        public static let wordBased = Self(rawValue: 1 << 2)
+        /// Matches words.
+        public static let w = Self(rawValue: 1 << 2)
         static let cdw: Self = [.c, .d, .w]
         static let cw: Self = [.c, .w]
         static let dw: Self = [.d, .w]

@@ -29,11 +29,11 @@ public extension MetadataQuery {
      Depending on the property type there are different operators and functions available:
 
      ## General
-     - ``Predicate-swift.struct/isFile``
-     - ``Predicate-swift.struct/isDirectory``
-     - ``Predicate-swift.struct/isAlias``
-     - ``Predicate-swift.struct/isVolume``
-     - ``Predicate-swift.struct/any``  (either file, directory, alias or volume)
+     - ``isFile``
+     - ``isFolder``
+     - ``isAlias``
+     - ``isVolume``
+     - ``any``  (either file, directory, alias or volume)
 
      ```swift
      // is a file
@@ -54,8 +54,6 @@ public extension MetadataQuery {
      - `&&`
      - `||`
      - `!(_)`
-     - ``Predicate-swift.struct/isNil``
-     - ``Predicate-swift.struct/isNotNil``
 
      ```swift
      // fileName is "MyFile.doc" and creator isn't "Florian"
@@ -66,9 +64,6 @@ public extension MetadataQuery {
 
      // fileExtension isn't "mp3", "wav" and aiff
      query.predicate = { $0.fileExtension != ["mp3", "wav", "aiff"] }
-
-     // downloadedDate is not nil
-     query.predicate = { $0.downloadedDate.isNotNil }
      ```
 
      ## Comparable
@@ -88,9 +83,9 @@ public extension MetadataQuery {
      ```
 
      ## String
-     - ``Predicate-swift.struct/begins(with:_:)`` OR  `*== String`
-     - ``Predicate-swift.struct/ends(with:_:)`` OR  `==* String`
-     - ``Predicate-swift.struct/contains(_:_:)`` OR `*=* String`
+     - ``begins(with:_:)`` OR  `*== String`
+     - ``ends(with:_:)`` OR  `==* String`
+     - ``contains(_:_:)`` OR `*=* String`
 
      ```swift
      // fileName ends with ".doc"
@@ -115,32 +110,34 @@ public extension MetadataQuery {
      ```
 
      ## Date
-     - ``Predicate-swift.struct/isNow``
-     - ``Predicate-swift.struct/isToday``
-     - ``Predicate-swift.struct/isYesterday``
-     - ``Predicate-swift.struct/isSameDay(as:)``
-     - ``Predicate-swift.struct/isThisWeek``
-     - ``Predicate-swift.struct/isLastWeek``
-     - ``Predicate-swift.struct/isSameWeek(as:)``
-     - ``Predicate-swift.struct/isThisMonth``
-     - ``Predicate-swift.struct/isLastMonth``
-     - ``Predicate-swift.struct/isSameMonth(as:)``
-     - ``Predicate-swift.struct/isThisYear``
-     - ``Predicate-swift.struct/isLastYear``
-     - ``Predicate-swift.struct/isSameYear(as:)``
-     - ``Predicate-swift.struct/isBefore(_:)``
-     - ``Predicate-swift.struct/isAfter(_:)``
-     - ``Predicate-swift.struct/within(_:_:)``
+    
+     You can either compare a date to another date, or use ``DateValue``.
+     
+     - ``DateValue/now``.
+     - ``DateValue/today``
+     - ``DateValue/yesterday``
+     - ``DateValue/sameDay(_:)``
+     - ``DateValue/thisWeek``
+     - ``DateValue/lastWeek``
+     - ``DateValue/sameWeek(_:)``
+     - ``DateValue/thisMonth``
+     - ``DateValue/lastMonth``
+     - ``DateValue/sameMonth(_:)``
+     - ``DateValue/thisYear``
+     - ``DateValue/lastYear``
+     - ``DateValue/sameYear(_:)``
+     - ``DateValue/within(_:_:)``
+     - ``DateValue/this(_:)``
 
      ```swift
      // is today
-     { $0.creationDate.isToday }
+     { $0.creationDate == .today }
 
      // is same week as otherDate
-     { $0.creationDate.isSameWeek(as: otherDate) }
+     { $0.creationDate == sameWeek(otherDate) }
 
      // is within 4 weeks
-     { $0.creationDate.within(4, .week) }
+     { $0.creationDate == .within(4, .week) }
      ```
 
      ## Collection
@@ -243,7 +240,7 @@ public extension MetadataQuery {
             .or(values.compactMap({ between(mdKey, value1: $0.0, value2: $0.1) }))
         }
         
-        static func date(_ mdKey: String, _ queryDate: QueryDateRange) -> MetadataQuery.Predicate<Bool> {
+        static func date(_ mdKey: String, _ queryDate: DateValue) -> MetadataQuery.Predicate<Bool> {
             let values = queryDate.values
             return .between(mdKey, value1: values[0], value2: values[1])
         }
@@ -253,33 +250,33 @@ public extension MetadataQuery {
 // MARK: MetadataItem
 
 public extension MetadataQuery.Predicate where T == MetadataItem {
-    /// The item is either a file, directory, volume or alias file.
+    /// The item is either a file, directory, volume mount point or alias file.
     var any: MetadataQuery.Predicate<String> {
         .init("*")
     }
 
-    /// Checks if an item is a file.
+    /// The item is a file.
     var isFile: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.data")
     }
 
-    /// Checks if an item is a directory.
-    var isDirectory: MetadataQuery.Predicate<Bool> {
+    /// The item is a folder.
+    var isFolder: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.folder")
     }
 
-    internal var isItem: MetadataQuery.Predicate<Bool> {
-        .comparison("kMDItemContentTypeTree", .equalTo, "public.item")
-    }
-
-    /// Checks if an item is a volume.
+    /// The item is a volume.
     var isVolume: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "public.volume")
     }
 
-    /// Checks if an item is a alias file.
+    /// The item is an alias file.
     var isAlias: MetadataQuery.Predicate<Bool> {
         .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
+    }
+    
+    internal var isItem: MetadataQuery.Predicate<Bool> {
+        .comparison("kMDItemContentTypeTree", .equalTo, "public.item")
     }
 }
 
@@ -302,15 +299,6 @@ public extension MetadataQuery.Predicate where T == Bool {
 // MARK: Equatable
 
 public extension MetadataQuery.Predicate where T: QueryEquatable {
-    /// Checks if an element isn't nil.
-    var isNotNil: MetadataQuery.Predicate<Bool> {
-        .comparison(mdKey, .like, "*")
-    }
-
-    /// Checks if an element is nil.
-    var isNil: MetadataQuery.Predicate<Bool> {
-        .not(isNotNil)
-    }
 
     /// Checks if an element equals a given value.
     static func == (_ lhs: Self, _ rhs: T.Wrapped?) -> MetadataQuery.Predicate<Bool> where T: OptionalProtocol {
@@ -413,117 +401,192 @@ public extension MetadataQuery.Predicate where T: QueryComparable {
 
 // MARK: Date
 
+extension MetadataQuery {
+    /// Predicate value f
+    public enum DateValue: Hashable {
+        /// Now.
+        case now
+        /// This hour.
+        case thisHour
+        /// Last hour.
+        case lastHour
+        
+        /// Today.
+        case today
+        /// Yesterday.
+        case yesterday
+        /// Tomorrow.
+        case tomorrow
+        /// Same day as the specified date.
+        case sameDay(Date)
+        
+        /// This week.
+        case thisWeek
+        /// Last week.
+        case lastWeek
+        /// Same week as the specified date.
+        case sameWeek(Date)
+        
+        /// This month.
+        case thisMonth
+        /// Last month.
+        case lastMonth
+        /// Same month as the specified date.
+        case sameMonth(Date)
+        
+        /// This year.
+        case thisYear
+        /// Last year.
+        case lastYear
+        /// Same year as the specified date.
+        case sameYear(Date)
+        
+        /// Within the last `amout` of  calendar units.
+        /**
+         Within the last `amout` of  calendar units.
+         
+         Example:
+         ```swift
+         // creationDate is within the last 8 weeks.
+         { $0.creationDate.within(8, .week) }
+         
+         // creationDate is within the last 2 years.
+         { $0.creationDate.within(2, .year) }
+         ```
+         */
+        case within(_ amout: Int, _ unit: Calendar.Component)
+        /**
+         Checks if a date is at the same calendar unit as today.
+
+         Example:
+         ```swift
+         // creationDate was this week.
+         { $0.creationDate.this(.week) }
+
+         // creationDate was this year.
+         { $0.creationDate.this(.year) }
+         ```
+         */
+        case this(Calendar.Component)
+                
+        var values: [String] {
+            switch self {
+            case .within(let value, let unit):
+                return Self.last(value, unit)
+            case .now:
+                return ["$time.now", "$time.now(+10)"]
+            case .today:
+                return ["$time.today", "$time.today(+1)"]
+            case .yesterday:
+                return ["$time.today(-1)", "$time.today"]
+            case .tomorrow:
+                return ["$time.today(+1)", "$time.today(+2)"]
+            case .thisHour:
+                return Self.this(.hour).values
+            case .lastHour:
+                return Self.last(1, .hour)
+            case .thisWeek:
+                return Self.this(.weekOfYear).values
+            case .thisMonth:
+                return Self.this(.month).values
+            case .thisYear:
+                return Self.this(.year).values
+            case .sameDay(let day):
+                return ["\(day.beginning(of: .day) ?? day)", "\(day.end(of: .day) ?? day)"]
+            case .sameWeek(let date):
+                return Self.same(.weekOfYear, date)
+            case .sameMonth(let date):
+                return Self.same(.month, date)
+            case .sameYear(let date):
+                return Self.same(.year, date)
+            case .lastMonth:
+                return Self.last(1, .month)
+            case .lastWeek:
+                return Self.last(1, .weekOfYear)
+            case .lastYear:
+                return Self.last(1, .year)
+            case .this(let unit):
+                if let values = Self.values(for: unit) {
+                    return ["\(values.0)", "\(values.0)(+\(values.1 * 1))"]
+                }
+            }
+            return ["$time.today(-1)", "$time.today"]
+        }
+        
+        static func last(_ value: Int, _ unit: Calendar.Component) -> [String] {
+            if let values = values(for: unit) {
+                return ["\(values.0)", "\(values.0)(\(values.1 * value)"]
+            }
+            return ["$time.today(-1)", "$time.today"]
+        }
+        
+        static func same(_ unit: Calendar.Component, _ date: Date) -> [String] {
+            return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
+        }
+        
+        public enum CalenderUnit {
+            /// Second.
+            case second
+            /// Minute.
+            case minute
+            /// Hour.
+            case hour
+            /// Day.
+            case day
+            /// Week.
+            case week
+            /// Month.
+            case month
+            /// Quarter.
+            case quarter
+            /// Year.
+            case year
+            
+            var values: (String, Int) {
+                switch self {
+                case .second: return ("$time.now", 1)
+                case .minute: return ("$time.now", 60)
+                case .hour: return ("$time.now", 3600)
+                case .day: return ("$time.today", 1)
+                case .week: return ("$time.this_week", 1)
+                case .month: return ("$time.this_month", 1)
+                case .quarter: return ("$time.this_month", 3)
+                case .year: return ("$time.this_year", 1)
+                }
+            }
+        }
+        
+        static func values(for unit: Calendar.Component) -> (String, Int)? {
+            switch unit {
+            case .second: return ("$time.now", 1)
+            case .minute: return ("$time.now", 60)
+            case .hour: return ("$time.now", 3600)
+            case .day, .weekday: return ("$time.today", 1)
+            case .weekOfMonth, .weekOfYear: return ("$time.this_week", 1)
+            case .month: return ("$time.this_month", 1)
+            case .quarter: return ("$time.this_month", 3)
+            case .year: return ("$time.this_year", 1)
+            default: return nil
+            }
+        }
+    }
+}
+
 public extension MetadataQuery.Predicate where T: QueryDate {
-    /// Checks if a date is now.
-    var isNow: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .now)
+    
+    /// Checks if a date matches the specified date value.
+    static func == (lhs: Self, rhs: MetadataQuery.DateValue) -> MetadataQuery.Predicate<Bool> {
+        .date(lhs.mdKey, rhs)
     }
-
-    /// Checks if a date is this hour.
-    var isThisHour: MetadataQuery.Predicate<Bool> {
-         .date(mdKey, .this(.hour))
-    }
-
-    /// Checks if a date is today.
-    var isToday: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .today)
-    }
-
-    /// Checks if a date was yesterday.
-    var isYesterday: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .yesterday)
-    }
-
-    /// Checks if a date is the same day as a given date.
-    func isSameDay(as date: Date) -> MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .same(.day, date))
-    }
-
-    /// Checks if a date is this week.
-    var isThisWeek: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .this(.weekOfYear))
-    }
-
-    /// Checks if a date is last week.
-    var isLastWeek: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .last(1, .weekOfYear))
-    }
-
-    /// Checks if a date is the same week as a given date.
-    func isSameWeek(as date: Date) -> MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .same(.weekOfYear, date))
-    }
-
-    /// Checks if a date is this month.
-    var isThisMonth: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .this(.month))
-    }
-
-    /// Checks if a date is last month.
-    var isLastMonth: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .last(1, .month))
-    }
-
-    /// Checks if a date is the same month as a given date.
-    func isSameMonth(as date: Date) -> MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .same(.month, date))
-    }
-
-    /// Checks if a date is this year.
-    var isThisYear: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .this(.year))
-    }
-
-    /// Checks if a date is last year.
-    var isLastYear: MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .last(1, .year))
-    }
-
-    /// Checks if a date is the same year as a given date.
-    func isSameYear(as date: Date) -> MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .same(.year, date))
-    }
-
-    /// Checks if a date is before a given date .
+    
+    /// Checks if a date is before the specified date.
     func isBefore(_ date: Date) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .lessThan, date)
     }
 
-    /// Checks if a date is after a given date .
+    /// Checks if a date is after the specified date.
     func isAfter(_ date: Date) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .greaterThan, date)
-    }
-
-    /**
-     Checks if a date is at the same calendar unit as today.
-
-     Example:
-     ```swift
-     // creationDate was this week.
-     { $0.creationDate.this(.week) }
-
-     // creationDate was this year.
-     { $0.creationDate.this(.year) }
-     ```
-     */
-    func this(_ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .this(unit))
-    }
-
-    /**
-     Checks if a date is within the last `amout` of  calendar units.
-
-     Example:
-     ```swift
-     // creationDate was within the last 8 weeks.
-     { $0.creationDate.within(8, .week) }
-
-     // creationDate was within the last 2 years.
-     { $0.creationDate.within(2, .year) }
-     ```
-     */
-    func within(_ amout: Int, _ unit: Calendar.Component) -> MetadataQuery.Predicate<Bool> {
-        .date(mdKey, .last(amout, unit))
     }
 
     /// Checks if a date is between the specified date interval.
@@ -553,7 +616,7 @@ public extension MetadataQuery.Predicate where T: QueryUTType {
         .comparison("kMDItemContentTypeTree", .equalTo, type.identifier)
     }
 
-    /// Checks iif the content type is a subtype of any given type.
+    /// Checks if the content type is a subtype of any given type.
     func subtype<C: Collection<UTType>>(of anyTypes: C) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr("kMDItemContentTypeTree", .equalTo, Array(anyTypes))
     }
@@ -572,15 +635,36 @@ public extension MetadataQuery.Predicate where T: QueryUTType {
 // MARK: String
 
 public extension MetadataQuery.Predicate where T: QueryString {
+    var caseSensitve: Self {
+        return self
+    }
+    
+    var deSensitve: Self {
+        return self
+    }
+    
+    var wordBased: Self {
+        return self
+    }
+    
+    func options(_ options: MetadataQuery.PredicateStringOptions) -> Self {
+        return self
+    }
+    
+    
     /**
      Checks if a string contains a given string.
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func contains(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .contains, value, options)
+    }
+    
+    func containsAlt(_ value: String, _ options: MetadataQuery.PredicateStringOptions...) -> MetadataQuery.Predicate<Bool> {
+        .comparison(mdKey, .contains, value, [])
     }
 
     /**
@@ -588,7 +672,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func contains<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .contains, Array(values), [options])
@@ -599,9 +683,9 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
-    func begins(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
+    func starts(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .beginsWith, value, options)
     }
 
@@ -610,9 +694,9 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
-    func begins<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
+    func starts<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .beginsWith, Array(values), [options])
     }
 
@@ -621,7 +705,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func ends(with value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .endsWith, value, options)
@@ -632,7 +716,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func ends<C: Collection<String>>(withAny values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .endsWith, Array(values), [options])
@@ -643,7 +727,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func equals(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .equalTo, value, options)
@@ -654,7 +738,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func equals<C: Collection<String>>(any values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .equalTo, Array(values), [options])
@@ -665,7 +749,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - value: The string to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func equalsNot(_ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparison(mdKey, .notEqualTo, value, options)
@@ -676,7 +760,7 @@ public extension MetadataQuery.Predicate where T: QueryString {
 
      - Parameters:
         - values: The strings to check.
-        - options: String options used to evaluate the search query (e.g. `caseSensitive` or `diacriticSensitive`).
+        - options: String options used to evaluate the search query (`caseSensitive`, `diacriticSensitive` and `wordBased`).
      */
     func equalsNot<C: Collection<String>>(_ values: C, _ options: MetadataQuery.PredicateStringOptions = []) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(mdKey, .notEqualTo, Array(values), [options])
@@ -947,68 +1031,6 @@ extension ClosedRange: AnyRange {}
 extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
 extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
 
-// MARK: QueryDateRange
-
-enum QueryDateRange {
-    case now
-    case today
-    case yesterday
-    case tomorrow
-    case this(Calendar.Component)
-    case previous(Calendar.Component)
-    case next(Calendar.Component)
-    case last(Int, Calendar.Component)
-    case sameDay(Date)
-    case same(Calendar.Component, Date)
-    
-    var values: [String] {
-        switch self {
-        case .now:
-            return ["$time.now", "$time.now(+10)"]
-        case .today:
-            return ["$time.today", "$time.today(+1)"]
-        case .yesterday:
-            return ["$time.today(-1)", "$time.today"]
-        case .tomorrow:
-            return ["$time.today(+1)", "$time.today(+2)"]
-        case let .this(unit):
-            if let values = values(for: unit) {
-                return ["\(values.0)", "\(values.0)(+\(values.1 * 1))"]
-            }
-        case let .next(unit):
-            if let values = values(for: unit) {
-                return ["\(values.0)(+\(values.1 * 1))", "\(values.0)(+\(values.1 * 2))"]
-            }
-        case let .previous(unit):
-            if let values = values(for: unit) {
-                return ["\(values.0)(-\(values.1 * 2))", "\(values.0)(-\(values.1 * 1))"]
-            }
-        case let .last(value, unit):
-            if let values = values(for: unit) {
-                return ["\(values.0)", "\(values.0)(\(values.1 * value)"]
-            }
-        case let .sameDay(day):
-            return ["\(day.beginning(of: .day) ?? day)", "\(day.end(of: .day) ?? day)"]
-        case let .same(unit, date):
-            return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
-        }
-        return ["$time.today(-1)", "$time.today"]
-    }
-    
-    func values(for unit: Calendar.Component) -> (String, Int)? {
-        switch unit {
-        case .second: return ("$time.now", 1)
-        case .minute: return ("$time.now", 60)
-        case .hour: return ("$time.now", 3600)
-        case .day, .weekday: return ("$time.today", 1)
-        case .weekOfMonth, .weekOfYear: return ("$time.this_week", 1)
-        case .month: return ("$time.this_month", 1)
-        case .quarter: return ("$time.this_month", 3)
-        case .year: return ("$time.this_year", 1)
-        default: return nil
-        }
-    }
-}
 
 // MARK: FileType + Predicate
 
@@ -1020,7 +1042,7 @@ extension FileType {
         case .executable, .folder, .image, .video, .audio, .pdf, .presentation:
             key = NSExpression(forKeyPath: "_kMDItemGroupId")
             type = .equalTo
-        case .aliasFile, .application, .archive, .diskImage, .text, .gif, .document, .symbolicLink, .other:
+        case .aliasFile, .application, .archive, .diskImage, .text, .gif, .document, .symbolicLink, .other, .calender, .contact, .font:
             key = NSExpression(forKeyPath: "kMDItemContentTypeTree")
             type = .like
         }
@@ -1041,6 +1063,9 @@ extension FileType {
         case .text: value = NSExpression(format: "%@", "public.text")
         case .aliasFile: value = NSExpression(format: "%@", "com.apple.alias-file")
         case .symbolicLink: value = NSExpression(format: "%@", "public.symlink")
+        case .calender: value = NSExpression(format: "%@", "public.calendar-event")
+        case .contact:  value = NSExpression(format: "%@", "public.contact")
+        case .font:  value = NSExpression(format: "%@", "public.font")
         case let .other(oValue): value = NSExpression(format: "%@", oValue)
         }
 

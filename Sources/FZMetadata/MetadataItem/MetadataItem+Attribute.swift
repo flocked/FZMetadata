@@ -708,3 +708,12 @@ extension PartialKeyPath where Root == MetadataItem {
         return key
     }
 }
+
+/*
+ "**"                        = "Any Text";
+ "kHSMDItemContentKind"        = "Content Kind";
+ "kHSMDItemDisplayNames"        = "Name";
+ "kHSMDItemFSFileExtension"    = "File Extension";
+ "kHSMDItemKeywordsAndTags"    = "Keywords & Tags";
+ "kHSMDItemHasAttachment"    = "Has Attachment";x
+ */

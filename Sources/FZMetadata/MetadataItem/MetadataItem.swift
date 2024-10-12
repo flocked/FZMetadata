@@ -145,8 +145,10 @@ open class MetadataItem: Identifiable {
      */
     open var updatedAttributes: [Attribute] {
         if let previous = previousValues {
+            /*
             let difference = values.difference(to: previous)
             _updatedAttributes = (difference.added + difference.removed + difference.changed).compactMap({ Attribute(rawValue: $0) })
+             */
             previousValues = nil
         }
         return _updatedAttributes
@@ -1053,5 +1055,25 @@ extension MetadataItem: Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+}
+
+extension MetadataItem {
+    struct Value: Comparable {
+        static func < (lhs: Self, rhs: Self) -> Bool {
+            guard let lhs = lhs as? any Comparable, let rhs = rhs as? any Comparable else { return false }
+            return lhs.isLessThan(rhs)
+        }
+        
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            guard let lhs = lhs as? any Equatable, let rhs = rhs as? any Equatable else { return false }
+            return lhs.isEqual(rhs)
+        }
+        
+        init(_ value: Any) {
+            self.value = value
+        }
+        
+        let value: Any
     }
 }

@@ -20,7 +20,7 @@ import FZSwiftUtils
  query.searchLocations = [.downloadsDirectory]
  query.predicate = {
      $0.fileType == .video &&
-     $0.addedDate.isThisWeek &&
+     $0.addedDate == .thisWeek &&
      $0.fileSize.megabytes >= 10
  }
  query.resultsHandler = { files, _ in
@@ -28,6 +28,8 @@ import FZSwiftUtils
  }
  query.start()
  ```
+ 
+ The handler is called when all matching files are found. By enabling ``postGatheringUpdates``
  
  By enabling ``monitorResults``, the query can monitor for updates to the results and posts the updated results also to the results handler.
  
@@ -75,13 +77,15 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
-    public let query = NSMetadataQuery()
+    let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var resultsCount: Int { query.resultCount }
     var pendingResultsUpdate = ResultsUpdate()
     var queryAttributes: [String] = []
-    
+    var debug = true
+    var isFinished: Bool = false
+
     struct ResultsUpdate: Hashable {
         var added: [MetadataItem] = []
         var removed: [MetadataItem] = []
@@ -142,6 +146,8 @@ open class MetadataQuery: NSObject {
      
      **For more details about how to construct the predicate and a list of all operators and functions, take a look at ``Predicate-swift.struct``.**
      
+     If ``monitorResults`` is enabled, any changes to conforming items updates the results and calls the results handler.
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
@@ -150,7 +156,7 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    /// The format string of the predicate.
+    /// The predicate format string.
     open var predicateFormat: String {
         query.predicate?.predicateFormat ?? ""
     }
@@ -356,6 +362,8 @@ open class MetadataQuery: NSObject {
             pendingResultsUpdate = .init()
             
             var results = _results.synchronized
+            let oldResults = results
+            
             results.remove(removed)
             results.forEach({ item in
                 item._updatedAttributes = []
@@ -367,6 +375,9 @@ open class MetadataQuery: NSObject {
             added.forEach({updateResult($0, inital: true)})
             results = results.sorted(by: \.queryIndex)
             _results.synchronized = results
+            
+            let diff1 = oldResults.difference(from: results)
+            diff1
             
             guard postUpdate else { return }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
@@ -400,7 +411,7 @@ open class MetadataQuery: NSObject {
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringStarted")
+        debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
@@ -409,50 +420,47 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringProgressed", notification.added.count, notification.removed.count, notification.changed.count, _results.count, postGatheringUpdates, isFinished)
+        debugPrint("MetadataQuery gatheringProgressed, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count), postGathering: \(postGatheringUpdates), isFinished: \(isFinished)")
         pendingResultsUpdate += notification.resultsUpdate
         if postGatheringUpdates && !isFinished {
             updateResults(postUpdate: true)
         }
     }
-    
-    var isFinished: Bool = false
-    
+        
     @objc func gatheringFinished(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery gatheringFinished", resultsCount)
+        debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)")
         isFinished = true
         updateMonitoring()
         if _results.isEmpty {
             // Swift.debugPrint("_results.isEmpty")
             createResults()
-            postResults(difference: .added(_results.synchronized))
+            postResults(difference: .init(added: _results.synchronized))
         } else if !pendingResultsUpdate.isEmpty {
             // Swift.debugPrint("!pendingResultsUpdate.isEmpty")
             updateResults(postUpdate: true)
         } else {
             // Swift.debugPrint("postResults(difference: .empty)", _results.count, pendingResultsUpdate.added.count)
-            postResults(difference: .empty)
+            postResults(difference: .init())
         }
         pendingResultsUpdate = .init()
     }
 
     @objc func queryUpdated(_ notification: Notification) {
-        // Swift.debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count)", _results.count)
+        debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count)")
         pendingResultsUpdate += notification.resultsUpdate
         updateResults(postUpdate: true)
     }
         
     func postResults(difference: ResultsDifference? = nil) {
-        // Swift.print("postResults", _results.synchronized.count, resultsHandler != nil)
+        debugPrint("postResults \(_results.synchronized.count)")
         let results = _results.synchronized
-        resultsHandler?(results, difference ?? .added(results))
+        resultsHandler?(results, difference ?? .init(added: results))
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
-        let monitors = monitorResults
-        monitorResults = false
+        query.disableUpdates()
         block()
-        monitorResults = monitors
+        query.enableUpdates()
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
@@ -463,6 +471,11 @@ open class MetadataQuery: NSObject {
         } else {
             block()
         }
+    }
+    
+    func debugPrint(_ string: String) {
+        guard debug else { return }
+        Swift.print(string)
     }
         
     /**
@@ -508,7 +521,7 @@ extension Notification {
 
 #if os(macOS)
 import AppKit
-// Not working
+/// Not working
 extension MetadataQuery {
     /// Displays a Spotlight search results window in Finder for the ``predicate-swift.property``.
     func showSearchResultsInFinder() {

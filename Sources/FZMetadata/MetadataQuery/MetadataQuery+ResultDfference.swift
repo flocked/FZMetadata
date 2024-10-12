@@ -25,15 +25,10 @@ public extension MetadataQuery {
             self.removed = removed
             self.changed = changed
         }
-
-        static func added(_ items: [MetadataItem]) -> ResultsDifference {
-            ResultsDifference(added: items)
-        }
-        
-        static var empty = ResultsDifference()
     }
 }
 
+/*
 class ResultsDifferenceAlt {
     /// Added items compared to the previous results.
     public let added: [MetadataItem]
@@ -76,7 +71,7 @@ class ResultsDifferenceAlt {
     }
     
     static var empty = ResultsDifferenceAlt()
-    
+    /*
     struct ItemAttributeChanges {
         let item: MetadataItem
         let previousValues: [String:Any]?
@@ -94,4 +89,6 @@ class ResultsDifferenceAlt {
             return (difference.added + difference.removed + difference.changed).compactMap({MetadataItem.Attribute(rawValue: $0)})
         }
     }
+    */
 }
+*/

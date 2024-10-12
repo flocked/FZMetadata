@@ -12,7 +12,6 @@ import Foundation
         /// Search scopes for where the metadata query searches files.
         enum SearchScope: String, Hashable {
             /// Search the user’s home directory.
-            @available(OSX 10.11, *)
             case home
 
             /// Search all local mounted volumes, including the user home directory. The user’s home directory is searched even if it is a remote volume.
