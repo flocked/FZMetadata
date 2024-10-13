@@ -83,7 +83,7 @@ open class MetadataQuery: NSObject {
     var resultsCount: Int { query.resultCount }
     var pendingResultsUpdate = ResultsUpdate()
     var queryAttributes: [String] = []
-    var debug = true
+    var debug = false
     var isFinished: Bool = false
 
     struct ResultsUpdate: Hashable {
