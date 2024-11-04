@@ -321,7 +321,10 @@ open class MetadataItem: Identifiable {
     open var identifier: String? { value(for: .identifier) }
 
     /// The keywords associated with the file. For example: `Birthday` or `Important`.
-    open var keywords: [String]? { value(for: .keywords) }
+    open var keywords: [String]? { 
+        get { value(for: .keywords) }
+        set { setExplicity(\.keywords, to: newValue) }
+    }
 
     /// The title of the file. For example, this could be the title of a document, the name of a song, or the subject of an email message.
     open var title: String? { value(for: .title) }

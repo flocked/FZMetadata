@@ -74,7 +74,7 @@ public extension MetadataItem {
         /// The formal identifier used to reference the item within a given context.
         case identifier = "kMDItemIdentifier"
         /// The keywords associated with the file. For example: `Birthday` or `Important`.
-        case keywords = "kMDItemwords"
+        case keywords = "kMDItemKeywords"
         /// The title of the file. For example, this could be the title of a document, the name of a song, or the subject of an email message.
         case title = "kMDItemTitle"
         /// The title for a collection of media. This is analagous to a record album, or photo album.
