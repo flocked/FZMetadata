@@ -130,7 +130,7 @@
 - ``timestamp``
 - ``colorSpace``
 - ``bitsPerSample``
-- ``flashOnOff``
+- ``isFlashOn``
 - ``focalLength``
 - ``deviceManufacturer``
 - ``deviceModel``

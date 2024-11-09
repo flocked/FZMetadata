@@ -362,7 +362,6 @@ open class MetadataQuery: NSObject {
             pendingResultsUpdate = .init()
             
             var results = _results.synchronized
-            let oldResults = results
             
             results.remove(removed)
             results.forEach({ item in
@@ -375,9 +374,6 @@ open class MetadataQuery: NSObject {
             added.forEach({updateResult($0, inital: true)})
             results = results.sorted(by: \.queryIndex)
             _results.synchronized = results
-            
-            let diff1 = oldResults.difference(from: results)
-            diff1
             
             guard postUpdate else { return }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
@@ -408,6 +404,8 @@ open class MetadataQuery: NSObject {
         result.previousValues = inital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: result.queryIndex)
         result.updatePath()
+        guard result.values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = result.value(for: .path) else { return }
+        result.values[MetadataItem.Attribute.path.rawValue] = path
     }
         
     @objc func gatheringStarted(_ notification: Notification) {

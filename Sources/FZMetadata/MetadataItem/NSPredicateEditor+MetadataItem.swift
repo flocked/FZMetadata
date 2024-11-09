@@ -37,7 +37,7 @@ extension MetadataItem.Attribute {
         switch self {
         case .dueDate, .addedDate, .creationDate, .purchaseDate, .receivedDates, .recordingDate, .downloadedDate, .lastUsedDate, .lastUsageDates, .contentChangeDate, .contentCreationDate, .contentModificationDate, .attributeModificationDate, .timestamp, .gpsDateStamp:
             return .date
-        case .isLikelyJunk, .isScreenCapture, .isApplicationManaged, .isGeneralMidiSequence, .fileIsInvisible, .fileExtensionIsHidden, .hasCustomIcon, .hasAlphaChannel, .streamable, .flashOnOff, .redEyeOnOff:
+        case .isLikelyJunk, .isScreenCapture, .isApplicationManaged, .isGeneralMidiSequence, .fileIsInvisible, .fileExtensionIsHidden, .hasCustomIcon, .hasAlphaChannel, .streamable, .isFlashOn, .redEyeOnOff:
             return .bool
         case .usageCount, .audioChannelCount, .fileSize, .directoryFilesCount, .finderTagPrimaryColor, .trackNumber:
             return .integer

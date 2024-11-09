@@ -305,7 +305,7 @@ public extension MetadataItem {
         /// The number of bits per sample. For example, the bit depth of an image (8-bit, 16-bit etc...) or the bit depth per audio sample of uncompressed audio data (8, 16, 24, 32, 64, etc..).
         case bitsPerSample = "kMDItemBitsPerSample"
         /// A Boolean value that indicates whether a camera flash was used.
-        case flashOnOff = "kMDItemFlashOnOff"
+        case isFlashOn = "kMDItemFlashOnOff"
         /// The actual focal length of the lens, in millimeters.
         case focalLength = "kMDItemFocalLength"
         /// The manufacturer of the device used for the contents. For example: `Apple`, `Canon`.
@@ -624,7 +624,7 @@ public extension MetadataItem {
             case .pixelCount: return \.pixelCount
             case .colorSpace: return \.colorSpace
             case .bitsPerSample: return \.bitsPerSample
-            case .flashOnOff: return \.flashOnOff
+            case .isFlashOn: return \.isFlashOn
             case .focalLength: return \.focalLength
             case .deviceManufacturer: return \.deviceManufacturer
             case .deviceModel: return \.deviceModel

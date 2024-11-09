@@ -107,33 +107,32 @@ open class MetadataItem: Identifiable {
      For a list of possible attributes, see ``Attribute``.
      */
     open var availableAttributes: [Attribute] {
-        var attributes = (values.keys + item.attributes).uniqued()
-        if attributes.contains(all: [Attribute.pixelWidth.rawValue, Attribute.pixelHeight.rawValue]) {
-            attributes.append(Attribute.pixelSize.rawValue)
+        var attributes = (values.keys + item.attributes).uniqued().sorted().compactMap { Attribute(rawValue: $0) }
+        if attributes.contains(all: [.pixelWidth, .pixelHeight]) {
+            attributes.append(.pixelSize)
+        }        
+        if attributes.contains(all: [.dpiResolutionWidth, .dpiResolutionHeight]) {
+            attributes.append(.dpiResolution)
         }
-        if attributes.contains(all: [Attribute.dpiResolutionWidth.rawValue, Attribute.dpiResolutionHeight.rawValue]) {
-            attributes.append(Attribute.dpiResolution.rawValue)
-        }
-        return attributes.sorted().compactMap { Attribute(rawValue: $0) }
+        return attributes
     }
     
     /**
-     The updated attributes, if the item is part of a metadata query results.
+     Attributes that updated as part of a metadata query results.
 
-     The array contains all monitored attributes that changed since the last query results update.
+     The array contains attributes that are part of a metadata query and that have changed since the last query results update.
      
-     In the following example the query is gathering files and some attributes. The results handler is called with the inital results. Because monitoring is enabled, the handler is called subsequently whenever the available files or their attributes change.
+     It lists updates to the ones used by `MetadataQuery`'s ``MetadataQuery/attributes``, ``MetadataQuery/groupingAttributes`` and ``MetadataQuery/sortedBy``.
      
-     In the following example the query is gathering some attributes and monitors their changes. In the results handler that gets called on attribute changes, the files are filtered by the attributes that have changed.
+     In the following example the query is gathering files and attributes. Because `monitorResults` is enabled, the handler is called subsequently whenever the available files or their attributes change. 
+     
+     `updatedAttributes` is  used to filter the files by the attributes that have changed:
           
      ```swift
-     query,urls = someFileURLs
+     query,searchLocations = [folder]
      query.attributes = [.finderTags, .lastUsedDate]
      query.monitorResults = true
      query.resultsHandler = { items, _ in
-        // The handler called with the inital results and
-        // whenever finder tags and last usage dates change.
-     
         // Files with changed finder tags.
         let finderTagFiles = items.filter({$0.updatedAttributes.contains(.finderTags)})
 
@@ -145,10 +144,14 @@ open class MetadataItem: Identifiable {
      */
     open var updatedAttributes: [Attribute] {
         if let previous = previousValues {
-            /*
-            let difference = values.difference(to: previous)
-            _updatedAttributes = (difference.added + difference.removed + difference.changed).compactMap({ Attribute(rawValue: $0) })
-             */
+            let diff = values.keys.difference(to: previous.keys)
+            var updated = diff.removed + diff.added
+            for key in diff.unchanged {
+                if let val1 = values[key] as? (any Comparable), let val2 = previous[key] as? (any Comparable), !val1.isEqual(val2) {
+                    updated.append(key)
+                }
+            }
+            _updatedAttributes = updated.compactMap({ Attribute(rawValue: $0) })
             previousValues = nil
         }
         return _updatedAttributes
@@ -206,7 +209,7 @@ open class MetadataItem: Identifiable {
             if let resources = url?.resources {
                 resources.isHidden = newValue ?? resources.isHidden
             } else {
-                setExplicity(\.fileIsInvisible, to: newValue)
+                setExplicity(.fileIsInvisible, to: newValue)
             }
         }
     }
@@ -245,55 +248,55 @@ open class MetadataItem: Identifiable {
     /// The date that the file was created.
     open var creationDate: Date? {
         get { value(for: .creationDate) }
-        set { setExplicity(\.creationDate, urlResources: \.creationDate, to: newValue) }
+        set { setExplicity(.creationDate, urlResources: \.creationDate, to: newValue) }
     }
 
     /// The last date that the file was used.
     open var lastUsedDate: Date? {
         get { value(for: .lastUsedDate) }
-        set { setExplicity(\.lastUsedDate, urlResources: \.contentAccessDate, to: newValue) }
+        set { setExplicity(.lastUsedDate, urlResources: \.contentAccessDate, to: newValue) }
     }
 
     /// The dates the file was last used.
     open var lastUsageDates: [Date]? {
         get { value(for: .lastUsageDates) }
-        set { setExplicity(\.lastUsageDates, to: newValue) }
+        set { setExplicity(.lastUsageDates, to: newValue) }
     }
 
     /// The last date that the attributes of the file were changed.
     open var attributeModificationDate: Date? {
         get { value(for: .attributeModificationDate) }
-        set { setExplicity(\.attributeModificationDate, to: newValue) }
+        set { setExplicity(.attributeModificationDate, to: newValue) }
     }
 
     /// The date that the content of the file was created.
     open var contentCreationDate: Date? {
         get { value(for: .contentCreationDate) }
-        set { setExplicity(\.contentCreationDate, to: newValue) }
+        set { setExplicity(.contentCreationDate, to: newValue) }
     }
 
     /// The last date that the content of the file was changed.
     open var contentChangeDate: Date? {
         get { value(for: .contentChangeDate) }
-        set { setExplicity(\.contentChangeDate, to: newValue) }
+        set { setExplicity(.contentChangeDate, to: newValue) }
     }
 
     /// The last date that the content of the file was modified.
     open var contentModificationDate: Date? {
         get { value(for: .contentModificationDate) }
-        set { setExplicity(\.contentModificationDate, urlResources: \.contentModificationDate, to: newValue) }
+        set { setExplicity(.contentModificationDate, urlResources: \.contentModificationDate, to: newValue) }
     }
 
     /// The date the file was created, or renamed into or within its parent directory.
     open var addedDate: Date? {
         get { value(for: .addedDate) }
-        set { setExplicity(\.addedDate, to: newValue) }
+        set { setExplicity(.addedDate, to: newValue) }
     }
 
     /// The date that the file was downloaded.
     open var downloadedDate: Date? {
         get { value(for: .downloadedDate) }
-        set { setExplicity(\.downloadedDate, to: newValue) }
+        set { setExplicity(.downloadedDate, to: newValue) }
     }
 
     /// The date that the file was purchased.
@@ -302,7 +305,7 @@ open class MetadataItem: Identifiable {
     /// The date that this item is due (e.g. for a calendar event file).
     open var dueDate: Date? {
         get { value(for: .dueDate) }
-        set { setExplicity(\.dueDate, to: newValue) }
+        set { setExplicity(.dueDate, to: newValue) }
     }
 
     /// The number of files in a directory.
@@ -315,7 +318,10 @@ open class MetadataItem: Identifiable {
     open var kind: [String]? { value(for: .kind) }
 
     /// Information of this item.
-    open var information: String? { value(for: .information) }
+    open var information: String? { 
+        get { value(for: .information) }
+        set { setExplicity(.information, to: newValue) }
+    }
 
     /// The formal identifier used to reference the item within a given context.
     open var identifier: String? { value(for: .identifier) }
@@ -323,11 +329,14 @@ open class MetadataItem: Identifiable {
     /// The keywords associated with the file. For example: `Birthday` or `Important`.
     open var keywords: [String]? { 
         get { value(for: .keywords) }
-        set { setExplicity(\.keywords, to: newValue) }
+        set { setExplicity(.keywords, to: newValue) }
     }
 
     /// The title of the file. For example, this could be the title of a document, the name of a song, or the subject of an email message.
-    open var title: String? { value(for: .title) }
+    open var title: String? { 
+        get { value(for: .title) }
+        set { setExplicity(.title, to: newValue) }
+    }
 
     /// The title for a collection of media. This is analagous to a record album, or photo album.
     open var album: String? { value(for: .album) }
@@ -339,15 +348,21 @@ open class MetadataItem: Identifiable {
     open var version: String? { value(for: .version) }
 
     /// A comment related to the file. This differs from ``finderComment``.
-    open var comment: String? { value(for: .comment) }
+    open var comment: String? { 
+        get { value(for: .comment) }
+        set { setExplicity(.comment, to: newValue) }
+    }
 
     /// The user rating of the file. For example, the stars rating of an iTunes track.
-    open var starRating: Double? { value(for: .starRating) }
+    open var starRating: Double? { 
+        get { value(for: .starRating) }
+        set { setExplicity(.starRating, to: newValue) }
+    }
 
     /// A describes where the file was obtained from. For example download urls.
     open var whereFroms: [String]? {
         get { value(for: .whereFroms) }
-        set { setExplicity(\.whereFroms, to: newValue) }
+        set { setExplicity(.whereFroms, to: newValue) }
     }
 
     /// The finder comment of the file. This differs from the ``comment``.
@@ -366,10 +381,10 @@ open class MetadataItem: Identifiable {
                 if let url = url {
                     url.resources.finderTags = newValue ?? []
                 } else {
-                    setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
+                    setExplicity(.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
                 }
             #else
-                setExplicity(\.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
+                setExplicity(.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
             #endif
         }
     }
@@ -498,19 +513,19 @@ open class MetadataItem: Identifiable {
     /// The full, publishable name of the country or region where the intellectual property of this item was created, according to guidelines of the provider.
     open var country: String? {
         get { value(for: .country) }
-        set { setExplicity(\.country, to: newValue) }
+        set { setExplicity(.country, to: newValue) }
     }
 
     /// The city.of this document.
     open var city: String? {
         get { value(for: .city) }
-        set { setExplicity(\.city, to: newValue) }
+        set { setExplicity(.city, to: newValue) }
     }
 
     /// The province or state of origin according to guidelines established by the provider. For example: `CA`, `Ontario` or `Sussex`.
     open var stateOrProvince: String? {
         get { value(for: .stateOrProvince) }
-        set { setExplicity(\.stateOrProvince, to: newValue) }
+        set { setExplicity(.stateOrProvince, to: newValue) }
     }
 
     /// The area information of the file.
@@ -691,10 +706,8 @@ open class MetadataItem: Identifiable {
 
     /// The pixel size of the contents. For example, the image size or the video frame size.
     open var pixelSize: CGSize? {
-        if let height = pixelHeight, let width = pixelWidth {
-            return CGSize(width: width, height: height)
-        }
-        return nil
+        guard let width = pixelWidth, let height = pixelHeight else { return nil }
+        return CGSize(width: width, height: height)
     }
 
     /// The total number of pixels in the contents. Same as `pixelHeight x pixelWidth`.
@@ -707,7 +720,7 @@ open class MetadataItem: Identifiable {
     open var bitsPerSample: Double? { value(for: .bitsPerSample) }
 
     /// A Boolean value that indicates whether a camera flash was used.
-    open var flashOnOff: Bool? { value(for: .flashOnOff) }
+    open var isFlashOn: Bool? { value(for: .isFlashOn) }
 
     /// The actual focal length of the lens, in millimeters.
     open var focalLength: Double? { value(for: .focalLength) }
@@ -776,10 +789,8 @@ open class MetadataItem: Identifiable {
 
     /// The resolution size, in DPI, of the contents.
     open var dpiResolution: CGSize? {
-        if let height = dpiResolutionHeight, let width = dpiResolutionWidth {
-            return CGSize(width: width, height: height)
-        }
-        return nil
+        guard let width = dpiResolutionWidth, let height = dpiResolutionHeight else { return nil }
+        return CGSize(width: width, height: height)
     }
 
     /// The exposure mode used to acquire the contents.
@@ -1028,26 +1039,19 @@ extension MetadataItem {
         return nil
     }
     
-    func getExplicity<V: Any, K: KeyPath<MetadataItem, V?>>(_ keyPath: K) -> V? {
-        self["com.apple.metadata:" + keyPath.mdItemKey]
+    func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? {
+        url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"]
     }
-
-    func setExplicity<V, K: KeyPath<MetadataItem, V?>, U: WritableKeyPath<URLResources, V?>>(_ keyPath: K? = nil, urlResources: U? = nil, to value: V?) {
-        if let keyPath = urlResources, var resources = url?.resources {
+    
+    func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) {
+        if attribute == .pixelSize, let value = value as? CGSize {
+            setExplicity(.pixelWidth, to: Double(value.width))
+            setExplicity(.pixelHeight, to: Double(value.height))
+        } else if let keyPath = urlResources, var resources = url?.resources {
             resources[keyPath: keyPath] = value
-        } else if let keyPath = keyPath {
-            if keyPath == \.pixelSize, let value = value as? CGSize {
-                setExplicity(\.pixelWidth, to: Double(value.width))
-                setExplicity(\.pixelHeight, to: Double(value.height))
-            } else {
-                self["com.apple.metadata:" + keyPath.mdItemKey] = value
-            }
+        } else {
+            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = value
         }
-    }
-
-    subscript<T>(key: String, _: T? = nil) -> T? {
-        get { url?.extendedAttributes[key] }
-        set { url?.extendedAttributes[key] = newValue }
     }
 }
 
@@ -1058,25 +1062,5 @@ extension MetadataItem: Hashable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
-    }
-}
-
-extension MetadataItem {
-    struct Value: Comparable {
-        static func < (lhs: Self, rhs: Self) -> Bool {
-            guard let lhs = lhs as? any Comparable, let rhs = rhs as? any Comparable else { return false }
-            return lhs.isLessThan(rhs)
-        }
-        
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            guard let lhs = lhs as? any Equatable, let rhs = rhs as? any Equatable else { return false }
-            return lhs.isEqual(rhs)
-        }
-        
-        init(_ value: Any) {
-            self.value = value
-        }
-        
-        let value: Any
     }
 }
