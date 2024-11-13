@@ -83,8 +83,9 @@ open class MetadataQuery: NSObject {
     var resultsCount: Int { query.resultCount }
     var pendingResultsUpdate = ResultsUpdate()
     var queryAttributes: [String] = []
-    var debug = false
+    var debug = true
     var isFinished: Bool = false
+    let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
 
     struct ResultsUpdate: Hashable {
         var added: [MetadataItem] = []
@@ -355,6 +356,7 @@ open class MetadataQuery: NSObject {
         
     func updateResults(postUpdate: Bool = false) {
         // Swift.print("updateResults", postUpdate)
+
         guard !pendingResultsUpdate.isEmpty else { return }
         
         runWithPausedMonitoring {
@@ -403,9 +405,9 @@ open class MetadataQuery: NSObject {
     func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: result.queryIndex)
-        result.updatePath()
-        guard result.values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = result.value(for: .path) else { return }
-        result.values[MetadataItem.Attribute.path.rawValue] = path
+      //  result.updatePath()
+      //  guard result.values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = result.value(for: .path) else { return }
+      //  result.values[MetadataItem.Attribute.path.rawValue] = path
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
@@ -429,6 +431,12 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)")
         isFinished = true
         updateMonitoring()
+        
+        createResults()
+        postResults(difference: .init(added: _results.synchronized))
+
+        /*
+        
         if _results.isEmpty {
             // Swift.debugPrint("_results.isEmpty")
             createResults()
@@ -440,6 +448,7 @@ open class MetadataQuery: NSObject {
             // Swift.debugPrint("postResults(difference: .empty)", _results.count, pendingResultsUpdate.added.count)
             postResults(difference: .init())
         }
+         */
         pendingResultsUpdate = .init()
     }
 
@@ -467,6 +476,12 @@ open class MetadataQuery: NSObject {
                 block()
             }
         } else {
+            block()
+        }
+    }
+    
+    func runWithQueue(_ block: @escaping () -> Void) {
+        queue.async(flags: .barrier) {
             block()
         }
     }
