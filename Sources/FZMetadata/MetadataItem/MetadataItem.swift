@@ -168,21 +168,24 @@ open class MetadataItem: Identifiable {
 
     /// The url of the file.
     open var url: URL? {
-        if let path: String = value(for: .path) {
-            return URL(fileURLWithPath: path)
-        }
-        return value(for: .url)
+        _url ?? value(for: .url)
+    }
+    
+    var _url: URL? {
+        guard let path = path else { return nil }
+        return URL(fileURLWithPath: path)
     }
 
-    /// The full path of the file.
+    /**
+     The full path of the file.
+     
+     - Note: The attribute can't be used in a metadata query predicate or to sort query results.
+     */
     open var path: String? { value(for: .path) }
 
     /// The name of the file including the extension.
     open var fileName: String? {
-        if let path = values[Attribute.path.rawValue] as? String {
-            return URL(fileURLWithPath: path).lastPathComponent
-        }
-        return (values[Attribute.url.rawValue] as? URL)?.lastPathComponent ?? value(for: .fileName)
+        return _url?.lastPathComponent ?? (values[Attribute.url.rawValue] as? URL)?.lastPathComponent ?? value(for: .fileName)
     }
 
     /// The display name of the file, which may be different then the file system name.
@@ -196,10 +199,8 @@ open class MetadataItem: Identifiable {
 
     /// The size of the file.
     open var fileSize: DataSize? {
-        if let bytes: Int = value(for: .fileSize) {
-            return DataSize(bytes)
-        }
-        return nil
+        guard let bytes: Int = value(for: .fileSize) else { return nil }
+        return DataSize(bytes)
     }
 
     /// A Boolean value that indicates whether the file is invisible.
@@ -218,8 +219,9 @@ open class MetadataItem: Identifiable {
     open var fileExtensionIsHidden: Bool? { value(for: .fileExtensionIsHidden) }
 
     /// The file type. For example: `video`, `document` or `directory`
-    open var fileType: FileType? { if let contentTypeTree: [String] = value(for: .contentTypeTree) {
-        return FileType(contentTypeTree: contentTypeTree)
+    open var fileType: FileType? { 
+        if let contentTypeTree: [String] = value(for: .contentTypeTree) {
+            return FileType(contentTypeTree: contentTypeTree)
         }
         return nil
     }
@@ -370,21 +372,12 @@ open class MetadataItem: Identifiable {
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
-        get {
-            if let tags: [String] = value(for: .finderTags) {
-                return tags.compactMap { $0.replacingOccurrences(of: "\n6", with: "") }
-            }
-            return url?.resources.finderTags
-        }
+        get { value(for: .finderTags) ?? url?.resources.finderTags }
         set {
             #if os(macOS)
-                if let url = url {
-                    url.resources.finderTags = newValue ?? []
-                } else {
-                    setExplicity(.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
-                }
+            url?.resources.finderTags = newValue ?? []
             #else
-                setExplicity(.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
+            setExplicity(.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
             #endif
         }
     }
