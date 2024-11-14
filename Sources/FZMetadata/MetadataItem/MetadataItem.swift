@@ -69,6 +69,8 @@ open class MetadataItem: Identifiable {
     
     /// Index of the item in a query results.
     var queryIndex = 0
+    
+    var filePath: String?
         
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
@@ -182,7 +184,13 @@ open class MetadataItem: Identifiable {
      
      - Note: The attribute can't be used in a metadata query predicate or to sort query results.
      */
-    open var path: String? { value(for: .path, save: true) }
+    open var path: String? { 
+        if let path = filePath {
+            return filePath
+        }
+        filePath = value(for: .path)
+        return fileName
+    }
 
     /// The name of the file including the extension.
     open var fileName: String? {

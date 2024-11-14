@@ -82,10 +82,13 @@ open class MetadataQuery: NSObject {
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultsUpdate()
     var queryAttributes: [String] = []
-    var isFinished: Bool = false
-    var didPostFinishResults: Bool = false
+    var isFinished = false
+    var didPostFinishResults = false
     var delayedFinishResults: DispatchWorkItem?
+    var fetchItemPathsInBackground = false
+    let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var debug = true
+    let queue = DispatchQueue(label: "ThumbnailGenerator", attributes: .concurrent)
 
     struct ResultsUpdate: Hashable, CustomStringConvertible {
         var added: [MetadataItem] = []
@@ -122,7 +125,7 @@ open class MetadataQuery: NSObject {
      */
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
-        set { query.searchItems = newValue.isEmpty ? nil : (newValue as [NSURL]) }
+        set { runWithQueue { self.query.searchItems = newValue.isEmpty ? nil : (newValue as [NSURL]) } }
     }
 
     /**
@@ -134,7 +137,7 @@ open class MetadataQuery: NSObject {
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
-        set { query.valueListAttributes = (newValue + [.path]).flatMap(\.mdKeys).uniqued() }
+        set { runWithQueue { self.query.valueListAttributes = (newValue + [.path]).flatMap(\.mdKeys).uniqued() } }
     }
 
     /**
@@ -161,7 +164,9 @@ open class MetadataQuery: NSObject {
      */
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
-            query.predicate = predicate?(.init()).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
+            runWithQueue {
+                self.query.predicate = self.predicate?(.init()).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
+            }
         }
     }
     
@@ -181,7 +186,7 @@ open class MetadataQuery: NSObject {
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
-        set { query.searchScopes = newValue }
+        set { runWithQueue { self.query.searchScopes = newValue } }
     }
 
     /**
@@ -195,7 +200,7 @@ open class MetadataQuery: NSObject {
      */
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
-        set { query.searchScopes = newValue.compactMap(\.rawValue) }
+        set { runWithQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue) } }
     }
 
     /**
@@ -218,7 +223,7 @@ open class MetadataQuery: NSObject {
      */
     open var sortedBy: [SortDescriptor] {
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
-        set { query.sortDescriptors = newValue }
+        set { runWithQueue{ self.query.sortDescriptors = newValue } }
     }
     
     /**
@@ -247,7 +252,7 @@ open class MetadataQuery: NSObject {
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
-        set { query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() }
+        set { runWithQueue{ self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() } }
     }
 
     /**
@@ -257,7 +262,7 @@ open class MetadataQuery: NSObject {
      */
     open var operationQueue: OperationQueue? {
         get { query.operationQueue }
-        set { query.operationQueue = newValue }
+        set { runWithQueue{ self.query.operationQueue = newValue } }
     }
     
     /**
@@ -314,17 +319,21 @@ open class MetadataQuery: NSObject {
 
     /// Starts the query and discards the previous results.
     open func start() {
-        guard state == .isStopped else { return }
-        runWithOperationQueue {
-            self.query.enableUpdates()
-            self.query.start()
+        self.runWithQueue {
+            guard self.state == .isStopped else { return }
+            self.runWithOperationQueue {
+                self.query.enableUpdates()
+                self.query.start()
+            }
         }
     }
     
     /// Stops the query from gathering any further results.
     open func stop() {
-        state = .isStopped
-        query.stop()
+        runWithQueue {
+            self.state = .isStopped
+            self.query.stop()
+        }
     }
 
     /**
@@ -357,33 +366,19 @@ open class MetadataQuery: NSObject {
         HierarchicalResults(results)
     }
     
-    let fetchPathOperationQueue = OperationQueue(maxConcurrentOperationCount: 80).qualityOfService(.userInitiated)
-    public var fetchCount = 0
     func updateResults(postUpdate: Bool = false) {
-        MeasureTime.printTimeElapsed(title: "_updateResults") {
-            runWithPausedMonitoring {
-                let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
-                var added = pendingResultsUpdate.added, changed = pendingResultsUpdate.changed, removed = pendingResultsUpdate.removed
-                pendingResultsUpdate = .init()
-                added.forEach({ 
-                    updateResult($0, inital: true)
-                    let operation = FetchPathOperation($0).completion { [weak self] in
-                        guard let self = self else { return }
-                        self.fetchCount += 1
-                    }
-                    fetchPathOperationQueue.addOperation(operation)
-                })
-                changed.forEach({ updateResult($0, inital: false) })
-                /*
-                MeasureTime.printTimeElapsed(title: "Update Paths") {
-                    added.forEach({ updatePath($0) })
-                    changed.forEach({ updatePath($0) })
+        runWithQueue {
+            MeasureTime.printTimeElapsed(title: "_updateResults") {
+                self.runWithPausedMonitoring {
+                    let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
+                    var added = self.pendingResultsUpdate.added, changed = self.pendingResultsUpdate.changed, removed = self.pendingResultsUpdate.removed
+                    self.pendingResultsUpdate = .init()
+                    added.forEach({ self.updateResult($0, inital: true) })
+                    changed.forEach({ self.updateResult($0, inital: false) })
+                    self._results.synchronized = results
+                    guard postUpdate else { return }
+                    self.resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
                 }
-                 */
-                
-                _results.synchronized = results
-                guard postUpdate else { return }
-                resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
             }
         }
     }
@@ -391,20 +386,15 @@ open class MetadataQuery: NSObject {
     func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
-        // guard result.values[MetadataItem.Attribute.path.rawValue] == nil else { return }
-        // result.values[MetadataItem.Attribute.path.rawValue] = result.path
-    }
-    
-    func updatePath(_ result: MetadataItem) {
-        guard result.values[MetadataItem.Attribute.path.rawValue] == nil else { return }
-        result.values[MetadataItem.Attribute.path.rawValue] = result.path
+        if fetchItemPathsInBackground, inital, result.filePath == nil {
+            itemPathFetchOperationQueue.addOperation(ItemPathFetchOperation(result))
+        }
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
-        fetchCount = 0
-        fetchPathOperationQueue.cancelAllOperations()
+        itemPathFetchOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGatheringItems
@@ -456,6 +446,12 @@ open class MetadataQuery: NSObject {
         query.disableUpdates()
         block()
         query.enableUpdates()
+    }
+    
+    func runWithQueue(_ block: @escaping () -> Void) {
+        queue.async(flags: .barrier) {
+            block()
+        }
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
@@ -527,7 +523,7 @@ extension MetadataQuery {
 }
 #endif
 
-class FetchPathOperation: AsyncOperation {
+class ItemPathFetchOperation: AsyncOperation {
     let item: MetadataItem
     
     init(_ item: MetadataItem) {
@@ -535,12 +531,19 @@ class FetchPathOperation: AsyncOperation {
     }
     
     override func start() {
-        guard self.isCancelled == false || self.isExecuting == false else { return }
+        guard !isCancelled || !isExecuting else { return }
         state = .executing
-        if item.values[MetadataItem.Attribute.path.rawValue] == nil {
-            item.values[MetadataItem.Attribute.path.rawValue] = item.path
+        if item.filePath == nil {
+            item.filePath = item.path
         }
+        guard !isCancelled else { return }
         finish()
+    }
+    
+    override func cancel() {
+        guard isExecuting else { return }
+        completionBlock = nil
+        state = .cancelled
     }
 }
 
