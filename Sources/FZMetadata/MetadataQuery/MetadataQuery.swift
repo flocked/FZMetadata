@@ -400,20 +400,29 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        debugPrint("MetadataQuery gatheringProgressed, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count), postGathering: \(postGatheringUpdates), isFinished: \(isFinished)")
+        debugPrint("MetadataQuery gatheringProgressed, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count), postGathering: \(postGatheringUpdates), isFinished: \(isFinished), didPostFinish: \(didPostFinishResults)")
         pendingResultsUpdate += notification.resultsUpdate
         if postGatheringUpdates {
             updateResults(postUpdate: true)
         } else if isFinished && !didPostFinishResults {
-            Swift.print("YRD")
+            self.printTime("gatheringFinish")
             delayedFinishResults?.cancel()
             didPostFinishResults = true
             updateResults(postUpdate: true)
         }
     }
+    
+    func printTime(_ title: String) {
+        let date = Date()
+        let minutes = Calendar.current.component(.minute, from: date)
+        let seconds = Calendar.current.component(.second, from: date)
+        let nano = Calendar.current.component(.nanosecond, from: date)
+        print("\(minutes):\(seconds):\(nano): \(title)")
+    }
+    
         
     @objc func gatheringFinished(_ notification: Notification) {
-        debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)")
+        Swift.debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)", "current", _results.count, "pending", !pendingResultsUpdate.isEmpty)
         isFinished = true
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty {
@@ -422,6 +431,7 @@ open class MetadataQuery: NSObject {
             delayedFinishResults = .init { [weak self] in
                 guard let self = self else { return }
                 if !self.didPostFinishResults {
+                    self.printTime("delayedFinish")
                     self.didPostFinishResults = true
                     if self.query.resultCount > self._results.count {
                         self.pendingResultsUpdate.added += (self._results.count..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
