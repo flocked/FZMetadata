@@ -56,7 +56,13 @@ open class MetadataItem: Identifiable {
     public let item: NSMetadataItem
     
     /// Attribute values fetched by a query.
-    var values: [String: Any] = [:]
+    var values: [String: Any] = [:] {
+        didSet {
+            if let path = oldValue[Attribute.path.rawValue], values[Attribute.path.rawValue] == nil {
+                values[Attribute.path.rawValue] = path
+            }
+        }
+    }
             
     /// Previous attribute values fetched by a query.
     var previousValues: [String: Any]? = nil
@@ -176,7 +182,7 @@ open class MetadataItem: Identifiable {
      
      - Note: The attribute can't be used in a metadata query predicate or to sort query results.
      */
-    open var path: String? { value(for: .path) }
+    open var path: String? { value(for: .path, save: true) }
 
     /// The name of the file including the extension.
     open var fileName: String? {
@@ -1006,11 +1012,15 @@ open class MetadataItem: Identifiable {
 }
 
 extension MetadataItem {
-    func value<T>(for attribute: String) -> T? {
-        return values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
+    func value<T>(for attribute: String, save: Bool = false) -> T? {
+        let value = values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
+        if save && values[attribute] == nil {
+            values[attribute] = value
+        }
+        return value
     }
     
-    func value<T>(for attribute: Attribute) -> T? {
+    func value<T>(for attribute: Attribute, save: Bool = false) -> T? {
         return value(for: attribute.rawValue)
     }
     

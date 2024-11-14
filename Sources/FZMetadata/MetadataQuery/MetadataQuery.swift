@@ -356,19 +356,30 @@ open class MetadataQuery: NSObject {
     open var hierarchicalResults: HierarchicalResults {
         HierarchicalResults(results)
     }
-
+    
+    let fetchPathOperationQueue = OperationQueue(maxConcurrentOperationCount: 40)
+    public var fetchCount = 0
     func updateResults(postUpdate: Bool = false) {
         MeasureTime.printTimeElapsed(title: "_updateResults") {
             runWithPausedMonitoring {
                 let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
                 var added = pendingResultsUpdate.added, changed = pendingResultsUpdate.changed, removed = pendingResultsUpdate.removed
                 pendingResultsUpdate = .init()
-                added.forEach({ updateResult($0, inital: true) })
+                added.forEach({ 
+                    updateResult($0, inital: true)
+                    let operation = FetchPathOperation($0).completion { [weak self] in
+                        guard let self = self else { return }
+                        self.fetchCount += 1
+                    }
+                    fetchPathOperationQueue.addOperation(FetchPathOperation($0))
+                })
                 changed.forEach({ updateResult($0, inital: false) })
+                /*
                 MeasureTime.printTimeElapsed(title: "Update Paths") {
                     added.forEach({ updatePath($0) })
                     changed.forEach({ updatePath($0) })
                 }
+                 */
                 
                 _results.synchronized = results
                 guard postUpdate else { return }
@@ -386,12 +397,14 @@ open class MetadataQuery: NSObject {
     
     func updatePath(_ result: MetadataItem) {
         guard result.values[MetadataItem.Attribute.path.rawValue] == nil else { return }
-        result.values[MetadataItem.Attribute.path.rawValue] = result.item.path
+        result.values[MetadataItem.Attribute.path.rawValue] = result.path
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
+        fetchCount = 0
+        fetchPathOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGatheringItems
@@ -513,6 +526,23 @@ extension MetadataQuery {
     }
 }
 #endif
+
+class FetchPathOperation: AsyncOperation {
+    let item: MetadataItem
+    
+    init(_ item: MetadataItem) {
+        self.item = item
+    }
+    
+    override func start() {
+        guard self.isCancelled == false || self.isExecuting == false else { return }
+        state = .executing
+        if item.values[MetadataItem.Attribute.RawValue] == nil {
+            item.values[MetadataItem.Attribute.RawValue] = item.path
+        }
+        finish()
+    }
+}
 
 extension NSMetadataItem {
     var path: String? {
