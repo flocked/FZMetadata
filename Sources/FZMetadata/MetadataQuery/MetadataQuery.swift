@@ -371,7 +371,7 @@ open class MetadataQuery: NSObject {
                         guard let self = self else { return }
                         self.fetchCount += 1
                     }
-                    fetchPathOperationQueue.addOperation(FetchPathOperation($0))
+                    fetchPathOperationQueue.addOperation(operation)
                 })
                 changed.forEach({ updateResult($0, inital: false) })
                 /*
