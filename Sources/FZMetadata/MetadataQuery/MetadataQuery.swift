@@ -80,15 +80,14 @@ open class MetadataQuery: NSObject {
     public let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
-    var resultsCount: Int { query.resultCount }
     var pendingResultsUpdate = ResultsUpdate()
     var queryAttributes: [String] = []
-    var debug = true
     var isFinished: Bool = false
     var didPostFinishResults: Bool = false
     var delayedFinishResults: DispatchWorkItem?
+    var debug = true
 
-    struct ResultsUpdate: Hashable {
+    struct ResultsUpdate: Hashable, CustomStringConvertible {
         var added: [MetadataItem] = []
         var removed: [MetadataItem] = []
         var changed: [MetadataItem] = []
@@ -97,6 +96,14 @@ open class MetadataQuery: NSObject {
             lhs.added += rhs.added
             lhs.removed += rhs.removed
             lhs.changed += rhs.changed
+        }
+        
+        var description: String {
+            var strings: [String] = []
+            if !added.isEmpty { strings.append("added: \(added.count)")}
+            if !removed.isEmpty { strings.append("removed: \(removed.count)")}
+            if !changed.isEmpty { strings.append("changed: \(changed.count)")}
+            return strings.joined(separator: ", ")
         }
     }
     
@@ -351,41 +358,34 @@ open class MetadataQuery: NSObject {
     }
 
     func updateResults(postUpdate: Bool = false) {
-        // guard !pendingResultsUpdate.isEmpty else { return }
         MeasureTime.printTimeElapsed(title: "_updateResults") {
             runWithPausedMonitoring {
-                let results = query.results as! [MetadataItem]
+                let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
                 var added = pendingResultsUpdate.added, changed = pendingResultsUpdate.changed, removed = pendingResultsUpdate.removed
-                self.pendingResultsUpdate = .init()
-                for item in added {
-                    item.queryIndex = query.index(ofResult: item)
-                    updateResult(item, inital: true)
-                }
-                for item in changed {
-                    item.queryIndex = query.index(ofResult: item)
-                    updateResult(item, inital: false)
+                pendingResultsUpdate = .init()
+                added.forEach({ updateResult($0, inital: true) })
+                changed.forEach({ updateResult($0, inital: false) })
+                MeasureTime.printTimeElapsed(title: "Update Paths") {
+                    added.forEach({ updatePath($0) })
+                    changed.forEach({ updatePath($0) })
                 }
                 _results.synchronized = results
                 guard postUpdate else { return }
-                let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-                postResults(difference: diff)
+                resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
             }
         }
-    }
-
-    func result(at index: Int) -> MetadataItem? {
-        guard let result = query.result(at: index) as? MetadataItem else { return nil }
-        result.queryIndex = index
-        updateResult(result, inital: true)
-        return result
     }
         
     func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
-        result.values = query.values(of: queryAttributes, forResultsAt: result.queryIndex)
-      //  result.updatePath()
-      //  guard result.values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = result.value(for: .path) else { return }
-      //  result.values[MetadataItem.Attribute.path.rawValue] = path
+        result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
+        // guard result.values[MetadataItem.Attribute.path.rawValue] == nil else { return }
+        // result.values[MetadataItem.Attribute.path.rawValue] = result.path
+    }
+    
+    func updatePath(_ result: MetadataItem) {
+        guard result.values[MetadataItem.Attribute.path.rawValue] == nil else { return }
+        result.values[MetadataItem.Attribute.path.rawValue] = result.path
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
@@ -404,49 +404,31 @@ open class MetadataQuery: NSObject {
         pendingResultsUpdate += notification.resultsUpdate
         
         if isFinished && !didPostFinishResults {
-            self.printTime("gatheringFinish")
-            print(TimeDuration(from: self.startDate, to: Date()).string(allowedUnits: [.second, .millisecond]))
-        //    delayedFinishResults?.cancel()
+            delayedFinishResults?.cancel()
             didPostFinishResults = true
             updateResults(postUpdate: true)
         } else if postGatheringUpdates {
             updateResults(postUpdate: true)
         }
     }
-    
-    func printTime(_ title: String) {
-        let date = Date()
-        let minutes = Calendar.current.component(.minute, from: date)
-        let seconds = Calendar.current.component(.second, from: date)
-        let nano = Calendar.current.component(.nanosecond, from: date)
-        print("\(minutes):\(seconds):\(nano): \(title)")
-    }
-    
-    var startDate = Date()
-        
+            
     @objc func gatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)", "current", _results.count, "pending", !pendingResultsUpdate.isEmpty)
+        Swift.debugPrint("MetadataQuery gatheringFinished, results: \(query.resultCount), monitors: \(monitorResults)", "current", _results.count, "pending", !pendingResultsUpdate.isEmpty)
         isFinished = true
-        startDate = Date()
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty {
             self.updateResults(postUpdate: true)
         } else if results.count != query.resultCount {
-            self.printTime("delayedStart")
             delayedFinishResults = .init { [weak self] in
                 guard let self = self else { return }
                 if !self.didPostFinishResults {
-                    self.printTime("delayedFinish")
-                    print(TimeDuration(from: self.startDate, to: Date()).string(allowedUnits: [.second, .millisecond]))
                     self.didPostFinishResults = true
                     if self.query.resultCount > self._results.count {
                         self.pendingResultsUpdate.added += (self._results.count..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
                     }
-                    self.updateResults(postUpdate: false)
+                    self.updateResults(postUpdate: true)
                 }
             }.perform(after: 0.2)
-        } else {
-            didPostFinishResults = true
         }
     }
 
@@ -454,12 +436,6 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count)")
         pendingResultsUpdate += notification.resultsUpdate
         updateResults(postUpdate: true)
-    }
-        
-    func postResults(difference: ResultsDifference? = nil) {
-        debugPrint("postResults \(_results.synchronized.count)")
-        let results = _results.synchronized
-        resultsHandler?(results, difference ?? .init(added: results))
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
