@@ -395,8 +395,8 @@ open class MetadataQuery: NSObject {
     func _updateResults(postUpdate: Bool = false) {
         guard !pendingResultsUpdate.isEmpty else { return }
         runWithPausedMonitoring {
-            let results = query.results
-            let added = pendingResultsUpdate.added, removed = pendingResultsUpdate.removed, changed = pendingResultsUpdate.changed
+            let results = query.results as! [MetadataItem]
+            let added = self.pendingResultsUpdate.added, removed = self.pendingResultsUpdate.removed, changed = self.pendingResultsUpdate.changed
             for add in added {
                 add.queryIndex = query.index(ofResult: add)
                 updateResult(add, inital: true)
