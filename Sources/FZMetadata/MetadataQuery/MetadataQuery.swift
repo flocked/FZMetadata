@@ -397,23 +397,24 @@ open class MetadataQuery: NSObject {
     
     func _updateResults(postUpdate: Bool = false) {
         // guard !pendingResultsUpdate.isEmpty else { return }
-        runWithPausedMonitoring {
-            let results = query.results as! [MetadataItem]
-            let added = self.pendingResultsUpdate.added, removed = self.pendingResultsUpdate.removed, changed = self.pendingResultsUpdate.changed
-            self.pendingResultsUpdate = .init()
-            for add in added {
-                add.queryIndex = query.index(ofResult: add)
-                updateResult(add, inital: true)
+        MeasureTime.printTimeElapsed(title: "_updateResults") {
+            runWithPausedMonitoring {
+                let results = query.results as! [MetadataItem]
+                let added = self.pendingResultsUpdate.added, removed = self.pendingResultsUpdate.removed, changed = self.pendingResultsUpdate.changed
+                self.pendingResultsUpdate = .init()
+                for add in added {
+                    add.queryIndex = query.index(ofResult: add)
+                    updateResult(add, inital: true)
+                }
+                for change in changed {
+                    change.queryIndex = query.index(ofResult: change)
+                    updateResult(change, inital: false)
+                }
+                _results.synchronized = results
+                guard postUpdate else { return }
+                let diff = ResultsDifference(added: added, removed: removed, changed: changed)
+                postResults(difference: diff)
             }
-            for change in changed {
-                change.queryIndex = query.index(ofResult: change)
-                updateResult(change, inital: false)
-            }
-            _results.synchronized = results
-            Swift.print("_updateResults", _results.count)
-            guard postUpdate else { return }
-            let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            postResults(difference: diff)
         }
     }
 
