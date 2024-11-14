@@ -537,8 +537,8 @@ class FetchPathOperation: AsyncOperation {
     override func start() {
         guard self.isCancelled == false || self.isExecuting == false else { return }
         state = .executing
-        if item.values[MetadataItem.Attribute.rawValue] == nil {
-            item.values[MetadataItem.Attribute.rawValue] = item.path
+        if item.values[MetadataItem.Attribute.path.rawValue] == nil {
+            item.values[MetadataItem.Attribute.path.rawValue] = item.path
         }
         finish()
     }
