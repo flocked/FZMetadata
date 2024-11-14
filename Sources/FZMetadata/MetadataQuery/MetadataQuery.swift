@@ -462,7 +462,7 @@ open class MetadataQuery: NSObject {
     @objc func queryUpdated(_ notification: Notification) {
         debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count)")
         pendingResultsUpdate += notification.resultsUpdate
-        updateResults(postUpdate: true)
+        _updateResults(postUpdate: true)
     }
         
     func postResults(difference: ResultsDifference? = nil) {
