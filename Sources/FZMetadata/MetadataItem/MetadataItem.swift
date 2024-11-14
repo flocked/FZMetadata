@@ -160,7 +160,7 @@ open class MetadataItem: Identifiable {
     var _updatedAttributes: [Attribute] = []
     
     func updatePath() {
-        guard values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = value(for: .path) else { return }
+      //  guard values[MetadataItem.Attribute.path.rawValue] == nil, let path: String = value(for: .path) else { return }
       //  values[MetadataItem.Attribute.path.rawValue] = path
     }
 
@@ -373,13 +373,7 @@ open class MetadataItem: Identifiable {
     /// The finder tags of the file.
     open var finderTags: [String]? {
         get { value(for: .finderTags) ?? url?.resources.finderTags }
-        set {
-            #if os(macOS)
-            url?.resources.finderTags = newValue ?? []
-            #else
-            setExplicity(.finderTags, to: newValue?.compactMap { $0 + "\n6" } ?? [])
-            #endif
-        }
+        set { url?.resources.finderTags = newValue ?? [] }
     }
     
     /// The primary (first) finder tag color.

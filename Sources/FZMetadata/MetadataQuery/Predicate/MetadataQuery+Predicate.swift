@@ -1042,7 +1042,7 @@ extension FileType {
         case .executable, .folder, .image, .video, .audio, .pdf, .presentation:
             key = NSExpression(forKeyPath: "_kMDItemGroupId")
             type = .equalTo
-        case .aliasFile, .application, .archive, .diskImage, .text, .gif, .document, .symbolicLink, .other, .calender, .contact, .font:
+        default:
             key = NSExpression(forKeyPath: "kMDItemContentTypeTree")
             type = .like
         }
@@ -1050,28 +1050,18 @@ extension FileType {
         switch self {
         case .executable: value = NSExpression(format: "%i", 8)
         case .folder: value = NSExpression(format: "%i", 9)
-        case .image: value = NSExpression(format: "%i", 13)
-        case .video: value = NSExpression(format: "%i", 7)
         case .audio: value = NSExpression(format: "%i", 10)
         case .pdf: value = NSExpression(format: "%i", 11)
+        case .image: value = NSExpression(format: "%i", 13)
+        case .video: value = NSExpression(format: "%i", 7)
         case .presentation: value = NSExpression(format: "%i", 12)
-        case .application: value = NSExpression(format: "%@", "com.apple.application")
-        case .archive: value = NSExpression(format: "%@", "com.apple.public.archive")
-        case .diskImage: value = NSExpression(format: "%@", "public.disk-image")
-        case .gif: value = NSExpression(format: "%@", "com.compuserve.gif")
-        case .document: value = NSExpression(format: "%@", "public.content")
-        case .text: value = NSExpression(format: "%@", "public.text")
-        case .aliasFile: value = NSExpression(format: "%@", "com.apple.alias-file")
-        case .symbolicLink: value = NSExpression(format: "%@", "public.symlink")
-        case .calender: value = NSExpression(format: "%@", "public.calendar-event")
-        case .contact:  value = NSExpression(format: "%@", "public.contact")
-        case .font:  value = NSExpression(format: "%@", "public.font")
-        case let .other(oValue): value = NSExpression(format: "%@", oValue)
+        case let .unknown(oValue): value = NSExpression(format: "%@", oValue)
+        default: value = NSExpression(format: "%@", identifier ?? "public.item")
         }
 
         let modifier: NSComparisonPredicate.Modifier
         switch self {
-        case .application, .archive, .text, .document, .other:
+        case .application, .archive, .text, .document, .unknown:
             modifier = .any
         default:
             modifier = .direct

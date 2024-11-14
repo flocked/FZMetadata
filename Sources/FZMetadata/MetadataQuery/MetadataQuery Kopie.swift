@@ -85,6 +85,7 @@ open class MetadataQuery: NSObject {
     var queryAttributes: [String] = []
     var debug = true
     var isFinished: Bool = false
+    let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
 
     struct ResultsUpdate: Hashable {
         var added: [MetadataItem] = []
@@ -324,7 +325,7 @@ open class MetadataQuery: NSObject {
      */
     open var results: [MetadataItem] {
         if state == .isGatheringItems, !pendingResultsUpdate.isEmpty {
-            _updateResults()
+            updateResults()
         }
         return _results.synchronized
     }
@@ -355,7 +356,9 @@ open class MetadataQuery: NSObject {
         
     func updateResults(postUpdate: Bool = false) {
         // Swift.print("updateResults", postUpdate)
+
         guard !pendingResultsUpdate.isEmpty else { return }
+        
         runWithPausedMonitoring {
             let added = pendingResultsUpdate.added, removed = pendingResultsUpdate.removed, changed = pendingResultsUpdate.changed
             pendingResultsUpdate = .init()
@@ -391,37 +394,17 @@ open class MetadataQuery: NSObject {
              */
         }
     }
-    
-    func _updateResults(postUpdate: Bool = false) {
-        guard !pendingResultsUpdate.isEmpty else { return }
-        runWithPausedMonitoring {
-            let results = query.results
-            let added = pendingResultsUpdate.added, removed = pendingResultsUpdate.removed, changed = pendingResultsUpdate.changed
-            for add in added {
-                add.queryIndex = query.index(ofResult: add)
-                updateResult(add, inital: true)
-            }
-            for change in changed {
-                change.queryIndex = query.index(ofResult: change)
-                updateResult(change, inital: false)
-            }
-            _results.synchronized = results
-            guard postUpdate else { return }
-            let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            if added.isEmpty, removed.isEmpty, !changed.isEmpty {
-                if changed.contains(where: { !$0.updatedAttributes.isEmpty }) {
-                    postResults(difference: diff)
-                }
-            } else {
-                postResults(difference: diff)
-            }
-        }
-    }
 
     func result(at index: Int) -> MetadataItem? {
         guard let result = query.result(at: index) as? MetadataItem else { return nil }
         result.queryIndex = index
         updateResult(result, inital: true)
+        return result
+    }
+    
+    func _result(at index: Int) -> MetadataItem? {
+        guard let result = query.result(at: index) as? MetadataItem else { return nil }
+        result.queryIndex = index
         return result
     }
         
@@ -454,7 +437,78 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)")
         isFinished = true
         updateMonitoring()
-        _updateResults(postUpdate: true)
+    
+
+        MeasureTime.printTimeElapsed(title: "ResultsArray") {
+            _ = query.results
+        }
+        
+        MeasureTime.printTimeElapsed(title: "Build") {
+            var _allResults: [MetadataItem] = []
+            for index in 0..<resultsCount {
+                if let item = _result(at: index) {
+                    _allResults.append(item)
+                }
+            }
+        }
+        
+        //         query.attributes = [.pixelSize, .path, .creationDate, .duration, .downloadedDate, .lastUsedDate, .usageCount, .fileSize, .finderTags, .contentType, .whereFroms ]
+        /*
+        MeasureTime.printTimeElapsed(title: "New") {
+            for index in 0..<resultsCount {
+                if let item = _result(at: index) {
+                    item.values = query.values(of: queryAttributes, forResultsAt: item.queryIndex)
+                    _ = item.pixelSize
+                    _ = item.creationDate
+                    _ = item.duration
+                    _ = item.downloadedDate
+                    _ = item.lastUsedDate
+                    _ = item.usageCount
+                    _ = item.fileSize
+                    _ = item.finderTags
+                    _ = item.contentTypeIdentifier
+                    _ = item.whereFroms
+                }
+            }
+        }
+        
+        MeasureTime.printTimeElapsed(title: "Manual") {
+            for index in 0..<resultsCount {
+                if let item = _result(at: index) {
+                    _ = item.pixelSize
+                    _ = item.creationDate
+                    _ = item.duration
+                    _ = item.downloadedDate
+                    _ = item.lastUsedDate
+                    _ = item.usageCount
+                    _ = item.fileSize
+                    _ = item.finderTags
+                    _ = item.contentTypeIdentifier
+                    _ = item.whereFroms
+                }
+            }
+        }
+*/
+        
+        
+        
+        postResults(difference: .init(added: _results.synchronized))
+
+        /*
+        
+        if _results.isEmpty {
+            // Swift.debugPrint("_results.isEmpty")
+            createResults()
+            postResults(difference: .init(added: _results.synchronized))
+        } else if !pendingResultsUpdate.isEmpty {
+            // Swift.debugPrint("!pendingResultsUpdate.isEmpty")
+            updateResults(postUpdate: true)
+        } else {
+            // Swift.debugPrint("postResults(difference: .empty)", _results.count, pendingResultsUpdate.added.count)
+            postResults(difference: .init())
+        }
+         */
+        pendingResultsUpdate = .init()
     }
 
     @objc func queryUpdated(_ notification: Notification) {
@@ -481,6 +535,12 @@ open class MetadataQuery: NSObject {
                 block()
             }
         } else {
+            block()
+        }
+    }
+    
+    func runWithQueue(_ block: @escaping () -> Void) {
+        queue.async(flags: .barrier) {
             block()
         }
     }
