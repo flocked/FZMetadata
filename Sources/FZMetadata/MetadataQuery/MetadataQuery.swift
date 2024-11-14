@@ -77,7 +77,7 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
-    let query = NSMetadataQuery()
+    public let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var resultsCount: Int { query.resultCount }
