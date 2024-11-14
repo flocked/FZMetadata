@@ -346,13 +346,15 @@ open class MetadataQuery: NSObject {
     open var hierarchicalResults: HierarchicalResults {
         HierarchicalResults(results)
     }
-            
+           
+    /*
     func createResults() {
         runWithPausedMonitoring {
             _results.synchronized = (0..<resultsCount).compactMap({ result(at: $0) })
         }
     }
         
+    
     func updateResults(postUpdate: Bool = false) {
         // Swift.print("updateResults", postUpdate)
         guard !pendingResultsUpdate.isEmpty else { return }
@@ -391,12 +393,14 @@ open class MetadataQuery: NSObject {
              */
         }
     }
+    */
     
     func _updateResults(postUpdate: Bool = false) {
-        guard !pendingResultsUpdate.isEmpty else { return }
+        // guard !pendingResultsUpdate.isEmpty else { return }
         runWithPausedMonitoring {
             let results = query.results as! [MetadataItem]
             let added = self.pendingResultsUpdate.added, removed = self.pendingResultsUpdate.removed, changed = self.pendingResultsUpdate.changed
+            self.pendingResultsUpdate = .init()
             for add in added {
                 add.queryIndex = query.index(ofResult: add)
                 updateResult(add, inital: true)
@@ -406,15 +410,10 @@ open class MetadataQuery: NSObject {
                 updateResult(change, inital: false)
             }
             _results.synchronized = results
+            Swift.print("_updateResults", _results.count)
             guard postUpdate else { return }
             let diff = ResultsDifference(added: added, removed: removed, changed: changed)
-            if added.isEmpty, removed.isEmpty, !changed.isEmpty {
-                if changed.contains(where: { !$0.updatedAttributes.isEmpty }) {
-                    postResults(difference: diff)
-                }
-            } else {
-                postResults(difference: diff)
-            }
+            postResults(difference: diff)
         }
     }
 
@@ -446,13 +445,16 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery gatheringProgressed, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count), postGathering: \(postGatheringUpdates), isFinished: \(isFinished)")
         pendingResultsUpdate += notification.resultsUpdate
         if postGatheringUpdates && !isFinished {
-            updateResults(postUpdate: true)
+            _updateResults(postUpdate: true)
         }
     }
         
     @objc func gatheringFinished(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)")
         isFinished = true
+        let aaaa = query.results as! [MetadataItem]
+       
+        Swift.print("CHECK", aaaa.count,  aaaa.filter({ $0.values.isEmpty }).count)
         updateMonitoring()
         _updateResults(postUpdate: true)
     }
