@@ -402,12 +402,14 @@ open class MetadataQuery: NSObject {
     @objc func gatheringProgressed(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringProgressed, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count), postGathering: \(postGatheringUpdates), isFinished: \(isFinished), didPostFinish: \(didPostFinishResults)")
         pendingResultsUpdate += notification.resultsUpdate
-        if postGatheringUpdates {
-            updateResults(postUpdate: true)
-        } else if isFinished && !didPostFinishResults {
+        
+        if isFinished && !didPostFinishResults {
             self.printTime("gatheringFinish")
-            delayedFinishResults?.cancel()
+            TimeDuration(from: startDate, to: Date()).string(allowedUnits: [.second, .millisecond])
+        //    delayedFinishResults?.cancel()
             didPostFinishResults = true
+            updateResults(postUpdate: true)
+        } else if postGatheringUpdates {
             updateResults(postUpdate: true)
         }
     }
@@ -420,18 +422,22 @@ open class MetadataQuery: NSObject {
         print("\(minutes):\(seconds):\(nano): \(title)")
     }
     
+    var startDate = Date()
         
     @objc func gatheringFinished(_ notification: Notification) {
         Swift.debugPrint("MetadataQuery gatheringFinished, results: \(resultsCount), monitors: \(monitorResults)", "current", _results.count, "pending", !pendingResultsUpdate.isEmpty)
         isFinished = true
+        startDate = Date()
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty {
             self.updateResults(postUpdate: true)
         } else if results.count != query.resultCount {
+            self.printTime("delayedStart")
             delayedFinishResults = .init { [weak self] in
                 guard let self = self else { return }
                 if !self.didPostFinishResults {
                     self.printTime("delayedFinish")
+                    self.TimeDuration(from: self.startDate, to: Date()).string(allowedUnits: [.second, .millisecond])
                     self.didPostFinishResults = true
                     if self.query.resultCount > self._results.count {
                         self.pendingResultsUpdate.added += (self._results.count..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
