@@ -401,6 +401,8 @@ open class MetadataQuery: NSObject {
             runWithPausedMonitoring {
                 let results = query.results as! [MetadataItem]
                 let added = self.pendingResultsUpdate.added, removed = self.pendingResultsUpdate.removed, changed = self.pendingResultsUpdate.changed
+                let missing = results.filter({ $0.values.isEmpty }).count
+                Swift.print("CHECK", results.count, missing, added.count, results.count - missing)
                 self.pendingResultsUpdate = .init()
                 for add in added {
                     add.queryIndex = query.index(ofResult: add)
