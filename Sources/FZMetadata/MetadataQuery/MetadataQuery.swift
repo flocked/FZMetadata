@@ -357,7 +357,7 @@ open class MetadataQuery: NSObject {
         HierarchicalResults(results)
     }
     
-    let fetchPathOperationQueue = OperationQueue(maxConcurrentOperationCount: 40)
+    let fetchPathOperationQueue = OperationQueue(maxConcurrentOperationCount: 80).qualityOfService(.userInitiated)
     public var fetchCount = 0
     func updateResults(postUpdate: Bool = false) {
         MeasureTime.printTimeElapsed(title: "_updateResults") {
