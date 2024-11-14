@@ -77,7 +77,7 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
-    public let query = NSMetadataQuery()
+    let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultsUpdate()
@@ -88,7 +88,7 @@ open class MetadataQuery: NSObject {
     var fetchItemPathsInBackground = false
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var debug = true
-    let queue = DispatchQueue(label: "ThumbnailGenerator", attributes: .concurrent)
+    let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
 
     struct ResultsUpdate: Hashable, CustomStringConvertible {
         var added: [MetadataItem] = []
@@ -490,6 +490,10 @@ open class MetadataQuery: NSObject {
         NotificationCenter.default.addObserver(self, selector: #selector(gatheringProgressed(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(gatheringFinished(_:)), name: .NSMetadataQueryDidFinishGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(queryUpdated(_:)), name: .NSMetadataQueryDidUpdate, object: query)
+    }
+    
+    deinit {
+        query.stop()
     }
 }
 
