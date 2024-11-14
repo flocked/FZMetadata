@@ -405,7 +405,7 @@ open class MetadataQuery: NSObject {
         
         if isFinished && !didPostFinishResults {
             self.printTime("gatheringFinish")
-            TimeDuration(from: startDate, to: Date()).string(allowedUnits: [.second, .millisecond])
+            print(TimeDuration(from: self.startDate, to: Date()).string(allowedUnits: [.second, .millisecond]))
         //    delayedFinishResults?.cancel()
             didPostFinishResults = true
             updateResults(postUpdate: true)
@@ -437,7 +437,7 @@ open class MetadataQuery: NSObject {
                 guard let self = self else { return }
                 if !self.didPostFinishResults {
                     self.printTime("delayedFinish")
-                    self.TimeDuration(from: self.startDate, to: Date()).string(allowedUnits: [.second, .millisecond])
+                    print(TimeDuration(from: self.startDate, to: Date()).string(allowedUnits: [.second, .millisecond]))
                     self.didPostFinishResults = true
                     if self.query.resultCount > self._results.count {
                         self.pendingResultsUpdate.added += (self._results.count..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
