@@ -405,6 +405,7 @@ open class MetadataQuery: NSObject {
         if postGatheringUpdates {
             updateResults(postUpdate: true)
         } else if isFinished && !didPostFinishResults {
+            Swift.print("YRD")
             delayedFinishResults?.cancel()
             didPostFinishResults = true
             updateResults(postUpdate: true)
