@@ -369,6 +369,7 @@ open class MetadataQuery: NSObject {
                     added.forEach({ updatePath($0) })
                     changed.forEach({ updatePath($0) })
                 }
+                
                 _results.synchronized = results
                 guard postUpdate else { return }
                 resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
@@ -385,7 +386,7 @@ open class MetadataQuery: NSObject {
     
     func updatePath(_ result: MetadataItem) {
         guard result.values[MetadataItem.Attribute.path.rawValue] == nil else { return }
-        result.values[MetadataItem.Attribute.path.rawValue] = result.path
+        result.values[MetadataItem.Attribute.path.rawValue] = result.item.path
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
@@ -512,3 +513,11 @@ extension MetadataQuery {
     }
 }
 #endif
+
+extension NSMetadataItem {
+    var path: String? {
+        guard let string = (value(forKey: "_item") as? NSObject)?.debugDescription else { return nil }
+        let value = string.components(separatedBy: "path = '").last?.components(separatedBy: "']").first
+        return value
+    }
+}
