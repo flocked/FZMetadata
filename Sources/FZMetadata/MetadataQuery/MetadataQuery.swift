@@ -407,7 +407,7 @@ open class MetadataQuery: NSObject {
     }
             
     @objc func gatheringFinished(_ notification: Notification) {
-        Swift.debugPrint("MetadataQuery gatheringFinished, results: \(query.resultCount), monitors: \(monitorResults)", "current", _results.count, "pending", !pendingResultsUpdate.isEmpty)
+        debugPrint("MetadataQuery gatheringFinished, results: \(query.resultCount), monitors: \(monitorResults), current: \(_results.count), pending: \(pendingResultsUpdate.isEmpty)")
         isFinished = true
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty {
@@ -528,7 +528,7 @@ class ItemPathFetchOperation: AsyncOperation {
         guard !isCancelled || !isExecuting else { return }
         state = .executing
         if item.filePath == nil {
-            item.filePath = item.path
+            item.filePath = item.value(for: .path)
         }
         guard !isCancelled else { return }
         finish()
