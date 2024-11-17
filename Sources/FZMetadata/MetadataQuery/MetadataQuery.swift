@@ -85,12 +85,12 @@ open class MetadataQuery: NSObject {
     var isFinished = false
     var didPostFinishResults = false
     var delayedFinishResults: DispatchWorkItem?
-    var fetchItemPathsInBackground = false
+    var fetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
-    var debug = true
+    var debug = false
     let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
 
-    struct ResultsUpdate: Hashable, CustomStringConvertible {
+    struct ResultsUpdate: Hashable {
         var added: [MetadataItem] = []
         var removed: [MetadataItem] = []
         var changed: [MetadataItem] = []
@@ -99,14 +99,6 @@ open class MetadataQuery: NSObject {
             lhs.added += rhs.added
             lhs.removed += rhs.removed
             lhs.changed += rhs.changed
-        }
-        
-        var description: String {
-            var strings: [String] = []
-            if !added.isEmpty { strings.append("added: \(added.count)")}
-            if !removed.isEmpty { strings.append("removed: \(removed.count)")}
-            if !changed.isEmpty { strings.append("changed: \(changed.count)")}
-            return strings.joined(separator: ", ")
         }
     }
     
