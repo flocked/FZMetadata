@@ -19,7 +19,21 @@ public extension MetadataQuery {
 
         /// Changed items compared to the previous results.
         public let changed: [MetadataItem]
-                
+        
+        var isEmpty: Bool { self == ResultsDifference() }
+        
+        var description: String {
+            var strings: [String] = []
+            if !added.isEmpty { strings.append("added: \(added.count)") }
+            if !removed.isEmpty { strings.append("removed: \(removed.count)") }
+            if !changed.isEmpty { strings.append("changed: \(changed.count)") }
+            return strings.joined(separator: ", ")
+        }
+        
+        static func + (lhs: Self, rhs: Self) -> Self {
+            ResultsDifference(added: lhs.added + rhs.added, removed: lhs.removed + rhs.removed, changed: lhs.changed + rhs.changed)            
+        }
+        
         init(added: [MetadataItem] = [], removed: [MetadataItem] = [], changed: [MetadataItem] = []) {
             self.added = added
             self.removed = removed

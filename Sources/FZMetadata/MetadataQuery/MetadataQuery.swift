@@ -80,27 +80,14 @@ open class MetadataQuery: NSObject {
     let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
-    var pendingResultsUpdate = ResultsUpdate()
+    var pendingResultsUpdate = ResultsDifference()
     var queryAttributes: [String] = []
     var isFinished = false
     var didPostFinishResults = false
-    var delayedFinishResults: DispatchWorkItem?
     var fetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var debug = false
     let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
-
-    struct ResultsUpdate: Hashable {
-        var added: [MetadataItem] = []
-        var removed: [MetadataItem] = []
-        var changed: [MetadataItem] = []
-        var isEmpty: Bool { self == ResultsUpdate() }
-        static func += (lhs: inout Self, rhs: Self) {
-            lhs.added += rhs.added
-            lhs.removed += rhs.removed
-            lhs.changed += rhs.changed
-        }
-    }
     
     /// The state of the query.
     open internal(set) var state: State = .isStopped
@@ -117,7 +104,7 @@ open class MetadataQuery: NSObject {
      */
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
-        set { runWithQueue { self.query.searchItems = newValue.isEmpty ? nil : (newValue as [NSURL]) } }
+        set { runWithQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] } }
     }
 
     /**
@@ -129,7 +116,7 @@ open class MetadataQuery: NSObject {
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
-        set { runWithQueue { self.query.valueListAttributes = (newValue + [.path]).flatMap(\.mdKeys).uniqued() } }
+        set { runWithQueue { self.query.valueListAttributes = newValue.flatMap(\.mdKeys).uniqued() } }
     }
 
     /**
@@ -260,7 +247,7 @@ open class MetadataQuery: NSObject {
     /**
      A Boolean value indicating whether the monitoring of changes to the results is enabled.
 
-     The default value is `true`, which specifies that the ``resultsHandler`` gets called whenever the results changes. The query also monitors for changes to the given ``attributes``.
+     The default value is `false`, which specifies that the ``resultsHandler`` gets called whenever the results changes. The query also monitors for changes to the given ``attributes``.
      
      ``updateNotificationInterval`` specifies the interval at which results changes are posted.
 
@@ -358,17 +345,17 @@ open class MetadataQuery: NSObject {
         HierarchicalResults(results)
     }
     
-    func updateResults(postUpdate: Bool = false) {
+    func updateResults(post: Bool = false) {
         runWithQueue {
             self.runWithPausedMonitoring {
                 let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
-                var added = self.pendingResultsUpdate.added, changed = self.pendingResultsUpdate.changed, removed = self.pendingResultsUpdate.removed
+                let pending = self.pendingResultsUpdate
                 self.pendingResultsUpdate = .init()
-                added.forEach({ self.updateResult($0, inital: true) })
-                changed.forEach({ self.updateResult($0, inital: false) })
+                pending.added.forEach({ self.updateResult($0, inital: true) })
+                pending.changed.forEach({ self.updateResult($0, inital: false) })
                 self._results.synchronized = results
-                guard postUpdate else { return }
-                self.resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
+                guard post else { return }
+                self.resultsHandler?(results, pending)
             }
         }
     }
@@ -386,50 +373,34 @@ open class MetadataQuery: NSObject {
         _results.removeAll()
         itemPathFetchOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
-        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
+        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
         state = .isGatheringItems
         isFinished = false
         didPostFinishResults = false
-        delayedFinishResults?.cancel()
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        debugPrint("MetadataQuery gatheringProgressed, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count), postGathering: \(postGatheringUpdates), isFinished: \(isFinished), didPostFinish: \(didPostFinishResults)")
-        pendingResultsUpdate += notification.resultsUpdate
-        
-        if isFinished && !didPostFinishResults {
-            delayedFinishResults?.cancel()
-            didPostFinishResults = true
-            updateResults(postUpdate: true)
-        } else if postGatheringUpdates {
-            updateResults(postUpdate: true)
+        pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
+        debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count), \(pendingResultsUpdate.description)")
+        if postGatheringUpdates || isFinished {
+            didPostFinishResults = isFinished
+            updateResults(post: true)
         }
     }
             
     @objc func gatheringFinished(_ notification: Notification) {
-        debugPrint("MetadataQuery gatheringFinished, results: \(query.resultCount), monitors: \(monitorResults), current: \(_results.count), pending: \(pendingResultsUpdate.isEmpty)")
+        debugPrint("MetadataQuery gatheringFinished, results: \(_results.count), \(pendingResultsUpdate.description)")
         isFinished = true
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty {
-            self.updateResults(postUpdate: true)
-        } else if results.count != query.resultCount {
-            delayedFinishResults = .init { [weak self] in
-                guard let self = self else { return }
-                if !self.didPostFinishResults {
-                    self.didPostFinishResults = true
-                    if self.query.resultCount > self._results.count {
-                        self.pendingResultsUpdate.added += (self._results.count..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
-                    }
-                    self.updateResults(postUpdate: true)
-                }
-            }.perform(after: 0.2)
+            self.updateResults(post: true)
         }
     }
 
     @objc func queryUpdated(_ notification: Notification) {
-        debugPrint("MetadataQuery updated, added: \(notification.added.count), removed: \(notification.removed.count), changed: \(notification.changed.count), _results: \(_results.count)")
-        pendingResultsUpdate += notification.resultsUpdate
-        updateResults(postUpdate: true)
+        pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
+        debugPrint("MetadataQuery updated, results: \(_results.count), \(pendingResultsUpdate.description)")
+        updateResults(post: true)
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
@@ -496,11 +467,8 @@ extension MetadataQuery {
 }
 
 extension Notification {
-    var added: [MetadataItem] { userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [] }
-    var removed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [] }
-    var changed: [MetadataItem] { userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [] }
-    var resultsUpdate: MetadataQuery.ResultsUpdate {
-        MetadataQuery.ResultsUpdate(added: added, removed: removed, changed: changed)
+    var resultsUpdate: MetadataQuery.ResultsDifference {
+        .init(added: userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [], removed: userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [], changed: userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [])
     }
 }
 
