@@ -53,17 +53,13 @@ extension NSMetadataQuery {
         }
     }
     
-    var notificationTokens: [Notification.Name:NotificationToken] {
-        get { getAssociatedValue("notificationTokens", initialValue: [:]) }
-        set { setAssociatedValue(newValue, key: "notificationTokens") }
-    }
-    
     @objc func gatheringStarted(_ notification: Notification) {
         handlers.gatheringStarted?()
     }
     
     @objc func gatheringProgressed(_ notification: Notification) {
-        handlers.gatheringProgressed?(notification.added, notification.removed, notification.changed)
+        let resultsUpdate = notification.resultsUpdate
+        handlers.gatheringProgressed?(resultsUpdate.added, resultsUpdate.removed, resultsUpdate.changed)
     }
     
     @objc func gatheringFinished(_ notification: Notification) {
@@ -71,15 +67,14 @@ extension NSMetadataQuery {
     }
     
     @objc func resultsUpdated(_ notification: Notification) {
-        handlers.resultsUpdated?(notification.added, notification.removed, notification.changed)
+        let resultsUpdate = notification.resultsUpdate
+        handlers.resultsUpdated?(resultsUpdate.added, resultsUpdate.removed, resultsUpdate.changed)
     }
     
     /// Updates the values for the specified attribute names.
     func values(of attributes: [String], forResultsAt index: Int) -> [String: Any] {
-        var values: [String: Any] = [:]
-        attributes.forEach {
-            values[$0] = value(ofAttribute: $0, forResultAt: index)
+        attributes.reduce(into: [String: Any]()) { partialResult, atribute in
+            partialResult[atribute] = value(ofAttribute: atribute, forResultAt: index)
         }
-        return values
     }
 }
