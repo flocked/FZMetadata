@@ -360,17 +360,15 @@ open class MetadataQuery: NSObject {
     
     func updateResults(postUpdate: Bool = false) {
         runWithQueue {
-            MeasureTime.printTimeElapsed(title: "_updateResults") {
-                self.runWithPausedMonitoring {
-                    let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
-                    var added = self.pendingResultsUpdate.added, changed = self.pendingResultsUpdate.changed, removed = self.pendingResultsUpdate.removed
-                    self.pendingResultsUpdate = .init()
-                    added.forEach({ self.updateResult($0, inital: true) })
-                    changed.forEach({ self.updateResult($0, inital: false) })
-                    self._results.synchronized = results
-                    guard postUpdate else { return }
-                    self.resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
-                }
+            self.runWithPausedMonitoring {
+                let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
+                var added = self.pendingResultsUpdate.added, changed = self.pendingResultsUpdate.changed, removed = self.pendingResultsUpdate.removed
+                self.pendingResultsUpdate = .init()
+                added.forEach({ self.updateResult($0, inital: true) })
+                changed.forEach({ self.updateResult($0, inital: false) })
+                self._results.synchronized = results
+                guard postUpdate else { return }
+                self.resultsHandler?(results, ResultsDifference(added: added, removed: removed, changed: changed))
             }
         }
     }
