@@ -85,7 +85,7 @@ open class MetadataQuery: NSObject {
     var isFinished = false
     var fetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
-    var debug = false
+    public var debug = false
     let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
     var lock = NSLock()
     
