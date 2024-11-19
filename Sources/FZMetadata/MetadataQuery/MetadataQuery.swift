@@ -401,7 +401,7 @@ open class MetadataQuery: NSObject {
             delayedPostFinishedResults = .init { [weak self] in
                 guard let self = self, self.isFinished, !self.didPostFinished else { return }
                 self.debugPrint("MetadataQuery delayedPostFinishResults")
-                self.updateResults(post: true)
+                self.resultsHandler?(results, .init())
             }.perform(after: 0.1)
         }
     }
