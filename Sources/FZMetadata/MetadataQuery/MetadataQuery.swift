@@ -300,18 +300,16 @@ open class MetadataQuery: NSObject {
 
     /// Starts the query and discards the previous results.
     open func start() {
-        self.runWithQueue {
-            guard self.state == .isStopped else { return }
-            self.runWithOperationQueue {
+        guard state == .isStopped else { return }
+        runWithOperationQueue {
                 self.query.enableUpdates()
                 self.query.start()
-            }
         }
     }
     
     /// Stops the query from gathering any further results.
     open func stop() {
-        runWithQueue {
+        runWithOperationQueue {
             self.state = .isStopped
             self.query.stop()
         }
