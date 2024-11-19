@@ -106,7 +106,7 @@ open class MetadataQuery: NSObject {
      */
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
-        set { runWithQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] } }
+        set { runWithOperationQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] } }
     }
 
     /**
@@ -118,7 +118,7 @@ open class MetadataQuery: NSObject {
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
-        set { runWithQueue { self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued() } }
+        set { runWithOperationQueue { self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued() } }
     }
 
     /**
@@ -145,7 +145,7 @@ open class MetadataQuery: NSObject {
      */
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
-            runWithQueue {
+            runWithOperationQueue {
                 self.query.predicate = self.predicate?(.init()).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
             }
         }
@@ -167,7 +167,7 @@ open class MetadataQuery: NSObject {
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
-        set { runWithQueue { self.query.searchScopes = newValue } }
+        set { runWithOperationQueue { self.query.searchScopes = newValue } }
     }
 
     /**
@@ -181,7 +181,7 @@ open class MetadataQuery: NSObject {
      */
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
-        set { runWithQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue) } }
+        set { runWithOperationQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue) } }
     }
 
     /**
@@ -204,7 +204,7 @@ open class MetadataQuery: NSObject {
      */
     open var sortedBy: [SortDescriptor] {
         get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
-        set { runWithQueue{ self.query.sortDescriptors = newValue } }
+        set { runWithOperationQueue{ self.query.sortDescriptors = newValue } }
     }
     
     /**
@@ -233,7 +233,7 @@ open class MetadataQuery: NSObject {
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
-        set { runWithQueue{ self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() } }
+        set { runWithOperationQueue{ self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() } }
     }
 
     /**
@@ -243,7 +243,7 @@ open class MetadataQuery: NSObject {
      */
     open var operationQueue: OperationQueue? {
         get { query.operationQueue }
-        set { runWithQueue{ self.query.operationQueue = newValue } }
+        set { runWithOperationQueue{ self.query.operationQueue = newValue } }
     }
     
     /**
@@ -300,16 +300,18 @@ open class MetadataQuery: NSObject {
 
     /// Starts the query and discards the previous results.
     open func start() {
-        guard state == .isStopped else { return }
         runWithOperationQueue {
+            guard self.state == .isStopped else { return }
+            self.runWithOperationQueue {
                 self.query.enableUpdates()
                 self.query.start()
+            }
         }
     }
     
     /// Stops the query from gathering any further results.
     open func stop() {
-        runWithQueue {
+        runWithOperationQueue {
             self.itemPathFetchOperationQueue.cancelAllOperations()
             self.state = .isStopped
             self.query.stop()
