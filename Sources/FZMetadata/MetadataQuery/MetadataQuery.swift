@@ -87,6 +87,7 @@ open class MetadataQuery: NSObject {
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var debug = false
     let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
+    var lock = NSLock()
     
     /// The state of the query.
     open internal(set) var state: State = .isStopped
@@ -345,7 +346,7 @@ open class MetadataQuery: NSObject {
     }
     
     func updateResults(post: Bool = false) {
-      //  runWithQueue {
+        runLocked {
             self.runWithPausedMonitoring {
                 let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
                 let pending = self.pendingResultsUpdate
@@ -356,7 +357,7 @@ open class MetadataQuery: NSObject {
                 guard post else { return }
                 self.resultsHandler?(results, pending)
             }
-      //  }
+        }
     }
         
     func updateResult(_ result: MetadataItem, inital: Bool) {
@@ -389,7 +390,7 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery gatheringFinished, results: \(_results.count), \(pendingResultsUpdate.description)")
         isFinished = true
         updateMonitoring()
-        if !pendingResultsUpdate.isEmpty {
+        if !pendingResultsUpdate.isEmpty || query.resultCount == 0 {
             updateResults(post: true)
         }
     }
@@ -398,6 +399,12 @@ open class MetadataQuery: NSObject {
         pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
         debugPrint("MetadataQuery updated, results: \(_results.count), \(pendingResultsUpdate.description)")
         updateResults(post: true)
+    }
+    
+    func runLocked(_ block: () -> Void) {
+        lock.lock()
+        block()
+        lock.unlock()
     }
     
     func runWithPausedMonitoring(_ block: () -> Void) {
