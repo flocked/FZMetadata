@@ -56,20 +56,12 @@ open class MetadataItem: Identifiable {
     public let item: NSMetadataItem
     
     /// Attribute values fetched by a query.
-    var values: [String: Any] = [:] {
-        didSet {
-            if let path = oldValue[Attribute.path.rawValue], values[Attribute.path.rawValue] == nil {
-                values[Attribute.path.rawValue] = path
-            }
-        }
-    }
+    var values: [String: Any] = [:]
             
     /// Previous attribute values fetched by a query.
     var previousValues: [String: Any]? = nil
     
-    /// Index of the item in a query results.
-    var queryIndex = 0
-    
+    /// Cached file path.
     var filePath: String?
         
     /**
@@ -126,7 +118,7 @@ open class MetadataItem: Identifiable {
     }
     
     /**
-     Attributes that updated as part of a metadata query results.
+     Attributes that were updated as part of a metadata query results.
 
      The array contains attributes that are part of a metadata query and that have changed since the last query results update.
      
@@ -152,14 +144,8 @@ open class MetadataItem: Identifiable {
      */
     open var updatedAttributes: [Attribute] {
         if let previous = previousValues {
-            let diff = values.keys.difference(to: previous.keys)
-            var updated = diff.removed + diff.added
-            for key in diff.unchanged {
-                if let val1 = values[key] as? (any Comparable), let val2 = previous[key] as? (any Comparable), !val1.isEqual(val2) {
-                    updated.append(key)
-                }
-            }
-            _updatedAttributes = updated.compactMap({ Attribute(rawValue: $0) })
+            let changed = values.keysChanged(from: previous)
+            _updatedAttributes = (changed.added + changed.removed + changed.changed).compactMap({ Attribute(rawValue: $0) })
             previousValues = nil
         }
         return _updatedAttributes

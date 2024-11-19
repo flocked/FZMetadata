@@ -365,6 +365,7 @@ open class MetadataQuery: NSObject {
     func updateResult(_ result: MetadataItem, isInital: Bool = false) {
         result.previousValues = isInital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
+        result.filePath = nil
         if shouldFetchItemPathsInBackground, isInital, result.filePath == nil {
             itemPathFetchOperationQueue.addOperation(ItemPathFetchOperation(result))
         }
@@ -395,9 +396,9 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery gatheringFinished, results: \(_results.count), \(pendingResultsUpdate.description)")
         isFinished = true
         updateMonitoring()
-        if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || query.resultCount == _results.count {
+        if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || (query.resultCount == _results.count && !monitorResults) {
             updateResults(post: true)
-        } else {
+        } else if !monitorResults {
             delayedPostFinishedResults = .init { [weak self] in
                 guard let self = self, self.isFinished, !self.didPostFinished else { return }
                 self.debugPrint("MetadataQuery delayedPostFinishResults")
@@ -405,7 +406,7 @@ open class MetadataQuery: NSObject {
             }.perform(after: 0.1)
         }
     }
-
+    
     @objc func queryUpdated(_ notification: Notification) {
         pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
         debugPrint("MetadataQuery updated, results: \(_results.count), \(pendingResultsUpdate.description)")
@@ -504,7 +505,7 @@ class ItemPathFetchOperation: AsyncOperation {
             item.filePath = item.value(for: .path)
         }
         guard !isCancelled else { return }
-        finish()
+        state = .finished
     }
     
     override func cancel() {
