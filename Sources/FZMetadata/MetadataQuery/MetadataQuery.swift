@@ -85,7 +85,7 @@ open class MetadataQuery: NSObject {
     var isFinished = false
     var didPostFinished = false
     var delayedPostFinishedResults: DispatchWorkItem?
-    var shouldFetchItemPathsInBackground = false
+    var shouldFetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     public var debug = false
     let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
@@ -434,9 +434,11 @@ open class MetadataQuery: NSObject {
     func runWithOperationQueue(_ block: @escaping () -> Void) {
         if let operationQueue = operationQueue {
             operationQueue.addOperation {
+                self.itemPathFetchOperationQueue.cancelAllOperations()
                 block()
             }
         } else {
+            itemPathFetchOperationQueue.cancelAllOperations()
             block()
         }
     }
@@ -502,7 +504,7 @@ extension MetadataQuery {
 #endif
 
 class ItemPathFetchOperation: AsyncOperation {
-    let item: MetadataItem
+    weak var item: MetadataItem?
     
     init(_ item: MetadataItem) {
         self.item = item
@@ -511,7 +513,7 @@ class ItemPathFetchOperation: AsyncOperation {
     override func start() {
         guard !isCancelled || !isExecuting else { return }
         state = .executing
-        if item.filePath == nil {
+        if let item = item, item.filePath == nil {
             item.filePath = item.value(for: .path)
         }
         guard !isCancelled else { return }
@@ -520,7 +522,6 @@ class ItemPathFetchOperation: AsyncOperation {
     
     override func cancel() {
         guard isExecuting else { return }
-        completionBlock = nil
         state = .cancelled
     }
 }
