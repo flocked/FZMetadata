@@ -395,7 +395,7 @@ open class MetadataQuery: NSObject {
         debugPrint("MetadataQuery gatheringFinished, results: \(_results.count), \(pendingResultsUpdate.description)")
         isFinished = true
         updateMonitoring()
-        if !pendingResultsUpdate.isEmpty || query.resultCount == 0 {
+        if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || query.resultCount == _results.count {
             updateResults(post: true)
         } else {
             delayedPostFinishedResults = .init { [weak self] in
