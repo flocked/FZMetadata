@@ -523,3 +523,15 @@ class ItemPathFetchOperation: AsyncOperation {
         state = .cancelled
     }
 }
+
+extension Dictionary where Key: Comparable, Value == Any {
+    func isEqual(to dic: Self) -> Bool {
+        guard keys.sorted() == dic.keys.sorted() else { return false }
+        for key in keys {
+            guard let val1 = self[key] as? (any Equatable), let val2 = dic[key] as? (any Equatable), val1.isEqual(val2) else {
+                return false
+            }
+        }
+        return true
+    }
+}
