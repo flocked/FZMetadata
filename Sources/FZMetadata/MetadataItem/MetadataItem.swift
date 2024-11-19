@@ -189,7 +189,12 @@ open class MetadataItem: Identifiable {
             return filePath
         }
         filePath = value(for: .path)
-        return fileName
+        return filePath
+    }
+    
+    func updatePath() {
+        guard fileName == nil, let path: String = value(for: .path) else { return }
+        filePath = path
     }
 
     /// The name of the file including the extension.

@@ -356,6 +356,9 @@ open class MetadataQuery: NSObject {
                 self.pendingResultsUpdate = .init()
                 pending.added.forEach({ self.updateResult($0, inital: true) })
                 pending.changed.forEach({ self.updateResult($0, inital: false) })
+                MeasureTime.printTimeElapsed(title: "UpdateRes \(pending.added.count)") {
+                    pending.added.forEach({ $0.updatePath() })
+                }
                 self._results.synchronized = results
                 guard post else { return }
                 self.resultsHandler?(results, pending)
