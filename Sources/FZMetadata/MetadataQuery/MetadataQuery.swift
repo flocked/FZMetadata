@@ -83,7 +83,6 @@ open class MetadataQuery: NSObject {
     var pendingResultsUpdate = ResultsDifference()
     var queryAttributes: [String] = []
     var isFinished = false
-    var didPostFinishResults = false
     var fetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var debug = false
@@ -346,7 +345,7 @@ open class MetadataQuery: NSObject {
     }
     
     func updateResults(post: Bool = false) {
-        runWithQueue {
+      //  runWithQueue {
             self.runWithPausedMonitoring {
                 let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
                 let pending = self.pendingResultsUpdate
@@ -357,7 +356,7 @@ open class MetadataQuery: NSObject {
                 guard post else { return }
                 self.resultsHandler?(results, pending)
             }
-        }
+      //  }
     }
         
     func updateResult(_ result: MetadataItem, inital: Bool) {
@@ -376,14 +375,12 @@ open class MetadataQuery: NSObject {
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
         state = .isGatheringItems
         isFinished = false
-        didPostFinishResults = false
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
         pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
-        debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count), \(pendingResultsUpdate.description)")
+        debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count), \(pendingResultsUpdate.description) \(isFinished)")
         if postGatheringUpdates || isFinished {
-            didPostFinishResults = isFinished
             updateResults(post: true)
         }
     }
@@ -393,7 +390,7 @@ open class MetadataQuery: NSObject {
         isFinished = true
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty {
-            self.updateResults(post: true)
+            updateResults(post: true)
         }
     }
 
