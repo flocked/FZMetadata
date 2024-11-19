@@ -185,7 +185,7 @@ open class MetadataItem: Identifiable {
      - Note: The attribute can't be used in a metadata query predicate or to sort query results.
      */
     open var path: String? { 
-        if let path = filePath {
+        if let filePath = filePath {
             return filePath
         }
         filePath = value(for: .path)
