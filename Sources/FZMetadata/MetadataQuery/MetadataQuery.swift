@@ -87,9 +87,8 @@ open class MetadataQuery: NSObject {
     var delayedPostFinishedResults: DispatchWorkItem?
     var shouldFetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
+    var resultsUpdateLock = NSLock()
     public var debug = false
-    let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
-    var lock = NSLock()
     
     /// The state of the query.
     open internal(set) var state: State = .isStopped
@@ -349,24 +348,24 @@ open class MetadataQuery: NSObject {
     }
     
     func updateResults(post: Bool = false) {
-        runLocked {
-            self.runWithPausedMonitoring {
-                let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
-                let pending = self.pendingResultsUpdate
-                self.pendingResultsUpdate = .init()
-                pending.added.forEach({ self.updateResult($0, inital: true) })
-                pending.changed.forEach({ self.updateResult($0, inital: false) })
-                self._results.synchronized = results
-                guard post else { return }
-                self.resultsHandler?(results, pending)
-            }
+        resultsUpdateLock.lock()
+        runWithPausedMonitoring {
+            let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
+            let pending = self.pendingResultsUpdate
+            self.pendingResultsUpdate = .init()
+            pending.added.forEach({ self.updateResult($0, isInital: true) })
+            pending.changed.forEach({ self.updateResult($0) })
+            self._results.synchronized = results
+            guard post else { return }
+            self.resultsHandler?(results, pending)
         }
+        resultsUpdateLock.unlock()
     }
         
-    func updateResult(_ result: MetadataItem, inital: Bool) {
-        result.previousValues = inital ? nil : result.values
+    func updateResult(_ result: MetadataItem, isInital: Bool = false) {
+        result.previousValues = isInital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
-        if shouldFetchItemPathsInBackground, inital, result.filePath == nil {
+        if shouldFetchItemPathsInBackground, isInital, result.filePath == nil {
             itemPathFetchOperationQueue.addOperation(ItemPathFetchOperation(result))
         }
     }
@@ -413,22 +412,10 @@ open class MetadataQuery: NSObject {
         updateResults(post: true)
     }
     
-    func runLocked(_ block: () -> Void) {
-        lock.lock()
-        block()
-        lock.unlock()
-    }
-    
     func runWithPausedMonitoring(_ block: () -> Void) {
         query.disableUpdates()
         block()
         query.enableUpdates()
-    }
-    
-    func runWithQueue(_ block: @escaping () -> Void) {
-        queue.async(flags: .barrier) {
-            block()
-        }
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
