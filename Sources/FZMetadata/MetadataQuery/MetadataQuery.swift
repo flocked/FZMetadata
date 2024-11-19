@@ -85,7 +85,7 @@ open class MetadataQuery: NSObject {
     var isFinished = false
     var didPostFinished = false
     var delayedPostFinishedResults: DispatchWorkItem?
-    var fetchItemPathsInBackground = true
+    var shouldFetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     public var debug = false
     let queue = DispatchQueue(label: "MetadataQuery", attributes: .concurrent)
@@ -309,7 +309,8 @@ open class MetadataQuery: NSObject {
     
     /// Stops the query from gathering any further results.
     open func stop() {
-        runWithOperationQueue {
+        runWithQueue {
+            self.itemPathFetchOperationQueue.cancelAllOperations()
             self.state = .isStopped
             self.query.stop()
         }
@@ -363,7 +364,7 @@ open class MetadataQuery: NSObject {
     func updateResult(_ result: MetadataItem, inital: Bool) {
         result.previousValues = inital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
-        if fetchItemPathsInBackground, inital, result.filePath == nil {
+        if shouldFetchItemPathsInBackground, inital, result.filePath == nil {
             itemPathFetchOperationQueue.addOperation(ItemPathFetchOperation(result))
         }
     }
