@@ -118,7 +118,7 @@ open class MetadataQuery: NSObject {
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
-        set { runWithQueue { self.query.valueListAttributes = newValue.flatMap(\.mdKeys).uniqued() } }
+        set { runWithQueue { self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued() } }
     }
 
     /**
@@ -374,7 +374,7 @@ open class MetadataQuery: NSObject {
         _results.removeAll()
         itemPathFetchOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
-        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
+        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGatheringItems
         isFinished = false
         didPostFinished = false
