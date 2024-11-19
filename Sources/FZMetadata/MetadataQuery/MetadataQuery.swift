@@ -83,6 +83,8 @@ open class MetadataQuery: NSObject {
     var pendingResultsUpdate = ResultsDifference()
     var queryAttributes: [String] = []
     var isFinished = false
+    var didPostFinished = false
+    var delayedPostFinishedResults: DispatchWorkItem?
     var fetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     public var debug = false
@@ -376,12 +378,15 @@ open class MetadataQuery: NSObject {
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? [])).uniqued()
         state = .isGatheringItems
         isFinished = false
+        didPostFinished = false
+        delayedPostFinishedResults?.cancel()
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
         pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
         debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count), \(pendingResultsUpdate.description) \(isFinished)")
         if postGatheringUpdates || isFinished {
+            didPostFinished = isFinished
             updateResults(post: true)
         }
     }
@@ -392,6 +397,11 @@ open class MetadataQuery: NSObject {
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty || query.resultCount == 0 {
             updateResults(post: true)
+        } else {
+            delayedPostFinishedResults = .init { [weak self] in
+                guard let self = self, self.isFinished, !self.didPostFinished else { return }
+                self.updateResults(post: true)
+            }.perform(after: 0.1)
         }
     }
 
@@ -510,13 +520,5 @@ class ItemPathFetchOperation: AsyncOperation {
         guard isExecuting else { return }
         completionBlock = nil
         state = .cancelled
-    }
-}
-
-extension NSMetadataItem {
-    var path: String? {
-        guard let string = (value(forKey: "_item") as? NSObject)?.debugDescription else { return nil }
-        let value = string.components(separatedBy: "path = '").last?.components(separatedBy: "']").first
-        return value
     }
 }
