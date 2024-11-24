@@ -36,6 +36,8 @@
 - ``ResultGroup``
 - ``ResultsDifference``
 - ``postGatheringUpdates``
+- ``hierarchicalResults``
+- ``HierarchicalResults``
 
 ### Sorting query results
 

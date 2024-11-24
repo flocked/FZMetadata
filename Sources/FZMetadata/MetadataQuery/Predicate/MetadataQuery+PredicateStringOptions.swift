@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension MetadataQuery {
+extension MetadataQuery {
     /// Options for string comparison in a query predicate.
     struct PredicateStringOptions: OptionSet {
         /// Case-sensitive string comparison.
@@ -57,12 +57,6 @@ public extension MetadataQuery {
             default:
                 self = []
             }
-        }
-
-        static func extract(_ value: inout String) -> Self {
-            let options = Self(extracting: value)
-            value = value.replacingOccurrences(of: options.string, with: "")
-            return options
         }
     }
 }

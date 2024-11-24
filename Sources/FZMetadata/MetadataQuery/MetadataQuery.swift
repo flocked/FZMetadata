@@ -88,6 +88,7 @@ open class MetadataQuery: NSObject {
     var shouldFetchItemPathsInBackground = true
     let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var resultsUpdateLock = NSLock()
+    /// A Boolean value indicating whether the query should output debug messages when running.
     public var debug = false
     
     /// The state of the query.
@@ -95,18 +96,6 @@ open class MetadataQuery: NSObject {
     
     /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
     open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
-
-    /**
-     An array of URLs whose metadata attributes are gathered by the query.
-
-     Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
-
-     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
-     */
-    open var urls: [URL] {
-        get { query.searchItems as? [URL] ?? [] }
-        set { runWithOperationQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] } }
-    }
 
     /**
      An array of metadata attributes whose values are gathered by the query.
@@ -154,6 +143,18 @@ open class MetadataQuery: NSObject {
     open var predicateFormat: String {
         query.predicate?.predicateFormat ?? ""
     }
+    
+    /**
+     An array of URLs whose metadata attributes are gathered by the query.
+
+     Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
+
+     - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
+     */
+    open var urls: [URL] {
+        get { query.searchItems as? [URL] ?? [] }
+        set { runWithOperationQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] } }
+    }
 
     /**
      An array of file-system directory URLs.
@@ -191,19 +192,20 @@ open class MetadataQuery: NSObject {
      ```swift
      query.sortedBy = [.descending(.creationDate), .ascending(.fileSize)]
      ```
-
+     
      The results can also be sorted by item relevance via ``MetadataItem/Attribute/queryContentRelevance``:
 
      ```swift
      query.sortedBy = [.ascending(.queryRelevance)]
      ```
-     Note that ``MetadataItem/Attribute/path`` can't be used for sorting.
      
+     - Note that ``MetadataItem/Attribute/path`` can't be used for sorting.
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
-    open var sortedBy: [SortDescriptor] {
-        get { query.sortDescriptors.compactMap { $0 as? SortDescriptor } }
-        set { runWithOperationQueue{ self.query.sortDescriptors = newValue } }
+    open var sortedBy: [SortDescriptor] = [] {
+        didSet {
+            runWithOperationQueue{ self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor }) }
+        }
     }
     
     /**
@@ -366,7 +368,7 @@ open class MetadataQuery: NSObject {
         result.previousValues = isInital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
         result.filePath = nil
-        if shouldFetchItemPathsInBackground, isInital, result.filePath == nil {
+        if shouldFetchItemPathsInBackground {
             itemPathFetchOperationQueue.addOperation(ItemPathFetchOperation(result))
         }
     }
@@ -376,7 +378,7 @@ open class MetadataQuery: NSObject {
         _results.removeAll()
         itemPathFetchOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
-        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.key) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
+        queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.attribute.rawValue) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGatheringItems
         isFinished = false
         didPostFinished = false
@@ -498,30 +500,11 @@ class ItemPathFetchOperation: AsyncOperation {
         self.item = item
     }
     
-    override func start() {
-        guard !isCancelled || !isExecuting else { return }
-        state = .executing
+    override func main() {
         if let item = item, item.filePath == nil {
             item.filePath = item.value(for: .path)
         }
         guard !isCancelled else { return }
         state = .finished
-    }
-    
-    override func cancel() {
-        guard isExecuting else { return }
-        state = .cancelled
-    }
-}
-
-extension Dictionary where Key: Comparable, Value == Any {
-    func isEqual(to dic: Self) -> Bool {
-        guard keys.sorted() == dic.keys.sorted() else { return false }
-        for key in keys {
-            guard let val1 = self[key] as? (any Equatable), let val2 = dic[key] as? (any Equatable), val1.isEqual(val2) else {
-                return false
-            }
-        }
-        return true
     }
 }

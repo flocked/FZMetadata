@@ -17,43 +17,38 @@ extension MetadataQuery {
        query.sortedBy = [>>.creationDate, <<.fileSize] // Sorts by ascending creationDate & descending fileSize
      ```
       */
-    open class SortDescriptor: NSSortDescriptor {
+    open class SortDescriptor {
+        /// The metadata attribute of the sort descriptor.
+        public let attribute: MetadataItem.Attribute
+        
+        /// A Boolean value that indicates whether the sort descriptor specifies sorting in ascending order.
+        public let ascending: Bool
+        
+        init(_ attribute: MetadataItem.Attribute, ascending: Bool = true) {
+            self.attribute = attribute
+            self.ascending = ascending
+        }
+        
         /**
          An ascending sort descriptor for the specified metadata attribute.
-
+         
          - Parameter attribute: The comparable metadata attribute.
          */
         public static func ascending(_ attribute: MetadataItem.Attribute) -> SortDescriptor {
-            SortDescriptor(key: attribute.rawValue, ascending: true)
+            SortDescriptor(attribute, ascending: true)
         }
-
+        
         /**
          A descending sort descriptor for the specified metadata attribute.
-
+         
          - Parameter attribute: The comparable metadata attribute.
          */
         public static func descending(_ attribute: MetadataItem.Attribute) -> SortDescriptor {
-            SortDescriptor(key: attribute.rawValue, ascending: false)
+            SortDescriptor(attribute, ascending: false)
+        }
+        
+        var sortDescriptor: NSSortDescriptor {
+            NSSortDescriptor(key: attribute.rawValue, ascending: ascending)
         }
     }
-}
-
-// MARK: Operator
-
-/**
- Returns an ascending metadata query sort descriptor for the specified metadata attribute.
-
- - Parameter attribute: The comparable metadata attribute.
- */
-public prefix func >> (attribute: MetadataItem.Attribute) -> MetadataQuery.SortDescriptor {
-    MetadataQuery.SortDescriptor(key: attribute.rawValue, ascending: true)
-}
-
-/**
- Returns a descending metadata query sort descriptor for the specified metadata attribute.
-
- - Parameter attribute: The comparable metadata attribute.
- */
-public prefix func << (attribute: MetadataItem.Attribute) -> MetadataQuery.SortDescriptor {
-    MetadataQuery.SortDescriptor(key: attribute.rawValue, ascending: false)
 }

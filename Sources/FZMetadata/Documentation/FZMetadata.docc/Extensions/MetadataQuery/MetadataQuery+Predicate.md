@@ -10,15 +10,13 @@
 ### General
 
 - ``isFile``
-- ``isDirectory``
+- ``isFolder``
 - ``isAlias``
 - ``isVolume``
 - ``any``
 
 ### Equatable
 
-- ``isNil``
-- ``isNotNil``
 - ``in(_:)``
 - ``&&(_:_:)``
 - ``||(_:_:)``
@@ -52,51 +50,37 @@
 
 ### String
 
-- ``begins(with:_:)``
-- ``begins(withAny:_:)``
-- ``ends(with:_:)``
-- ``ends(withAny:_:)``
-- ``contains(_:_:)``
-- ``contains(any:_:)``
-- ``equals(_:_:)``
-- ``equals(any:_:)``
-- ``equalsNot(_:_:)-21m62``
-- ``equalsNot(_:_:)-72dcm``
+- ``caseSensitive``
+- ``diacriticSensitive``
+- ``wordBased``
+
+- ``starts(with:)``
+- ``starts(withAny:)``
+- ``ends(with:)``
+- ``ends(withAny:)``
+- ``contains(_:)-5iysw``
+- ``contains(any:)-99ivy``
 - ``*==(_:_:)-2ws0t``
 - ``*==(_:_:)-7xntd``
 - ``==*(_:_:)-8zg0a``
 - ``==*(_:_:)-rzgf``
 - ``*=*(_:_:)-274ns``
 - ``*=*(_:_:)-7ijg7``
-- ``MetadataQuery/PredicateStringOptions``
 
 ### Date
 
-- ``isNow``
-- ``isToday``
-- ``isThisHour``
-- ``isYesterday``
-- ``isSameDay(as:)``
-- ``isThisWeek``
-- ``isLastWeek``
-- ``isSameWeek(as:)``
-- ``isThisMonth``
-- ``isLastMonth``
-- ``isSameMonth(as:)``
-- ``isThisYear``
-- ``isLastYear``
-- ``isSameYear(as:)``
+- ``DateValue``
+- ``between(_:)-7axbv``
 - ``isBefore(_:)``
 - ``isAfter(_:)``
-- ``within(_:_:)``
-- ``this(_:)``
-- ``between(_:)-7axbv``
+- ``MetadataQuery/PredicateDateValue``
+- ``==(_:_:)-8wvp5``
 
 ### Collection
 
-- ``contains(_:)``
+- ``contains(_:)-8fg9``
 - ``containsNot(_:)``
-- ``contains(any:)``
+- ``contains(any:)-2ysd3``
 - ``containsNot(any:)``
 - ``==(_:_:)-9m89j``
 - ``!=(_:_:)-8cjp0``
@@ -108,13 +92,10 @@
 
 ### Type Conformances
 
-Types that can be used for constructing a predicate.
-
 - ``FZMetadata/QueryCollection``
 - ``FZMetadata/QueryComparable``
 - ``FZMetadata/QueryDate``
 - ``FZMetadata/QueryEquatable``
-- ``FZMetadata/QueryFileType``
 - ``FZMetadata/QueryString``
 - ``FZMetadata/QueryUTType``
 - ``UniformTypeIdentifiers/UTType``
