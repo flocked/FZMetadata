@@ -9,21 +9,7 @@ import Foundation
 import FZSwiftUtils
 import UniformTypeIdentifiers
 
-extension NSPredicate {
-    typealias Item = MetadataQuery.Predicate<MetadataItem>
-    typealias BoolExpression = MetadataQuery.Predicate<Swift.Bool>
-
-    convenience init?(metadataExpression: (Item) -> (BoolExpression)) {
-        guard let predicateFormat = metadataExpression(.init()).predicate?.predicateFormat else { return nil }
-        self.init(format: predicateFormat)
-    }
-}
-
 public extension MetadataQuery {
-    func sdsd() {
-        predicate = { $0.isFile }
-    }
-    
     /**
      A predicate for filtering the results of a query.
 
@@ -170,33 +156,22 @@ public extension MetadataQuery {
     struct Predicate<T>: _Predicate {
         typealias ComparisonOperator = NSComparisonPredicate.Operator
 
-        /// This initaliser should be used from callers who require queries on primitive collections.
         init(_ mdKey: String) {
-            self.mdKey = mdKey
             self.mdKeys = [mdKey]
             self.predicate = nil
         }
 
         init(_ predicate: NSPredicate, _ predicates: [_Predicate] = []) {
-            self.mdKey = "Root"
+            self.mdKeys = predicates.flatMap({$0.mdKeys}).uniqued()
             self.predicate = predicate
-            self.mdKeys = predicates.compactMap({$0.mdKey}).uniqued()
         }
 
-        init() {
-            self.mdKey = "Root"
-            self.predicate = nil
-        }
-
-        let mdKey: String
         var mdKeys: [String] = []
         let predicate: NSPredicate?
-        
         var stringOptions: PredicateStringOptions = []
         var valueConverter: PredicateValueConverter? = nil
        
-
-        /// All attributes used for the predicate.
+        /// All attributes used by the predicate.
         var attributes: [MetadataItem.Attribute] {
             mdKeys.compactMap { MetadataItem.Attribute(rawValue: $0) }
         }
@@ -224,15 +199,15 @@ public extension MetadataQuery {
         }
         
         static func comparison(_ predicate: _Predicate, _ type: ComparisonOperator = .equalTo, _ value: Any) -> MetadataQuery.Predicate<Bool> {
-            .init(PredicateBuilder.comparison(predicate.mdKey, type, value, predicate.stringOptions, predicate.valueConverter), [predicate])
+            .init(self.predicate(predicate.mdKeys.first!, type, value, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
         static func comparisonAnd(_ predicate: _Predicate, _ comparisonOperator: ComparisonOperator = .equalTo, _ values: [Any]) -> MetadataQuery.Predicate<Bool> {
-            .init(PredicateBuilder.comparisonAnd(predicate.mdKey, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
+            .init(predicateAnd(predicate.mdKeys.first!, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
         static func comparisonOr(_ predicate: _Predicate, _ comparisonOperator: ComparisonOperator = .equalTo, _ values: [Any]) -> MetadataQuery.Predicate<Bool> {
-            .init(PredicateBuilder.comparisonOr(predicate.mdKey, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
+            .init(predicateOr(predicate.mdKeys.first!, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
         static func between(_ predicate: _Predicate, value1: Any, value2: Any) -> MetadataQuery.Predicate<Bool> {
@@ -244,10 +219,14 @@ public extension MetadataQuery {
         static func between(_ predicate: _Predicate, values: [(Any, Any)]) -> MetadataQuery.Predicate<Bool> {
             or(values.compactMap({ between(predicate, value1: $0.0, value2: $0.1) }))
         }
+        
+        static var root: Predicate<MetadataItem> {
+            .init("Root")
+        }
     }
 }
 
-// MARK: MetadataItem
+// MARK: General
 
 public extension MetadataQuery.Predicate where T == MetadataItem {
     /// Matches for ``MetadataItem/Attribute/fileName`` and ``MetadataItem/Attribute/textContent``.
@@ -305,8 +284,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
         if let rhs = rhs {
             return .comparison(lhs, .equalTo, rhs)
         } else {
-            let isNotNil: MetadataQuery.Predicate<Bool> = .comparison(lhs.mdKey, .like, "*")
-            return .not(isNotNil)
+            return .not(.comparison(lhs, .like, "*"))
         }
     }
 
@@ -315,7 +293,7 @@ public extension MetadataQuery.Predicate where T: QueryEquatable {
         if let rhs = rhs {
             return .comparison(lhs, .notEqualTo, rhs)
         } else {
-            return .comparison(lhs.mdKey, .like, "*")
+            return .comparison(lhs, .like, "*")
         }
     }
 
@@ -401,155 +379,7 @@ public extension MetadataQuery.Predicate where T: QueryComparable {
 
 // MARK: Date
 
-extension MetadataQuery.Predicate {
-    /// Predicate value f
-    public enum DateValue: Hashable {
-        /// Now.
-        case now
-        /// This minute.
-        case thisMinute
-        /// Last minute.
-        case lastMinute
-        
-        /// This hour.
-        case thisHour
-        /// Last hour.
-        case lastHour
-        /// Same hour as the specified date.
-        case sameHour(Date)
-        
-        /// Today.
-        case today
-        /// Yesterday.
-        case yesterday
-        /// Same day as the specified date.
-        case sameDay(Date)
-        
-        /// This week.
-        case thisWeek
-        /// Last week.
-        case lastWeek
-        /// Same week as the specified date.
-        case sameWeek(Date)
-        
-        /// This month.
-        case thisMonth
-        /// Last month.
-        case lastMonth
-        /// Same month as the specified date.
-        case sameMonth(Date)
-        
-        /// This year.
-        case thisYear
-        /// Last year.
-        case lastYear
-        /// Same year as the specified date.
-        case sameYear(Date)
-        
-        /**
-         Within the last specified amount of  calendar units.
-         
-         Example:
-         ```swift
-         // creationDate is within the last 8 weeks.
-         { $0.creationDate == .within(8, .week) }
-         
-         // creationDate is within the last 2 years.
-         { $0.creationDate == within(2, .year) }
-         ```
-         */
-        case within(_ amout: Int, _ unit: DateComponent)
-                
-        var values: [String] {
-            switch self {
-            case .within(let value, let unit):
-                return Self.last(value, unit)
-            case .now:
-                return ["$time.now", "$time.now(+10)"]
-            case .thisMinute:
-                return Self.this(.minute)
-            case .lastMinute:
-                return Self.last(1, .minute)
-            case .today:
-                return ["$time.today", "$time.today(+1)"]
-            case .yesterday:
-                return ["$time.today(-1)", "$time.today"]
-            case .thisHour:
-                return Self.this(.hour)
-            case .lastHour:
-                return Self.last(1, .hour)
-            case .thisWeek:
-                return Self.this(.week)
-            case .thisMonth:
-                return Self.this(.month)
-            case .thisYear:
-                return Self.this(.year)
-            case .sameHour(let date):
-                return Self.same(.hour, date)
-            case .sameDay(let date):
-                return Self.same(.day, date)
-            case .sameWeek(let date):
-                return Self.same(.weekOfYear, date)
-            case .sameMonth(let date):
-                return Self.same(.month, date)
-            case .sameYear(let date):
-                return Self.same(.year, date)
-            case .lastMonth:
-                return Self.last(1, .month)
-            case .lastWeek:
-                return Self.last(1, .week)
-            case .lastYear:
-                return Self.last(1, .year)
-            }
-        }
-        
-        static func this(_ unit: DateComponent) -> [String] {
-            let values = unit.values
-            return ["\(values.0)", "\(values.0)(+\(values.1 * 1))"]
-        }
-        
-        static func last(_ value: Int, _ unit: DateComponent) -> [String] {
-            let values = unit.values
-            return ["\(values.0)", "\(values.0)(\(values.1 * value)"]
-        }
-        
-        static func same(_ unit: Calendar.Component, _ date: Date) -> [String] {
-            return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
-        }
-        
-        public enum DateComponent {
-            /// Second.
-            case second
-            /// Minute.
-            case minute
-            /// Hour.
-            case hour
-            /// Day.
-            case day
-            /// Week.
-            case week
-            /// Month.
-            case month
-            /// Year.
-            case year
-            
-            var values: (String, Int) {
-                switch self {
-                case .second: return ("$time.now", 1)
-                case .minute: return ("$time.now", 60)
-                case .hour: return ("$time.now", 3600)
-                case .day: return ("$time.today", 1)
-                case .week: return ("$time.this_week", 1)
-                case .month: return ("$time.this_month", 1)
-                case .year: return ("$time.this_year", 1)
-                }
-            }
-        }
-    }
-}
-
 public extension MetadataQuery.Predicate where T: QueryDate {
-    
     /// Checks if a date matches the specified date value.
     static func == (lhs: Self, rhs: DateValue) -> MetadataQuery.Predicate<Bool> {
         let values = rhs.values
@@ -701,18 +531,6 @@ public extension MetadataQuery.Predicate where T: QueryUTType {
 
 // MARK: String
 
-protocol _Predicate {
-    var mdKey: String { get }
-    var stringOptions: MetadataQuery.PredicateStringOptions  { get }
-    var valueConverter: PredicateValueConverter?  { get }
-}
-
-extension String: _Predicate {
-    var mdKey: String { self }
-    var stringOptions: MetadataQuery.PredicateStringOptions { return [] }
-    var valueConverter: PredicateValueConverter? { return nil }
-}
-
 public extension MetadataQuery.Predicate where T: QueryString {
     /// Case-sensitive string comparison.
     var caseSensitive: Self {
@@ -728,63 +546,39 @@ public extension MetadataQuery.Predicate where T: QueryString {
         return predicate
     }
     
-    /// Matches words.
+    /// Word based string comparison.
     var wordBased: Self {
         var predicate = self
         predicate.stringOptions.insert(.wordBased)
         return predicate
     }
     
-    /**
-     Checks if a string contains a given string.
-
-     - Parameter value: The string to check.
-     */
+    /// Checks if a string contains the specified string.
     func contains(_ value: String) -> MetadataQuery.Predicate<Bool> {
         .comparison(self, .contains, value)
     }
 
-    /**
-     Checks if a string contains any of the given strings.
-
-     - Parameter value: The string to check.
-     */
+    /// Checks if a string contains any of the specified strings.
     func contains<C: Collection<String>>(any values: C) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(self, .contains, Array(values))
     }
 
-    /**
-     Checks if a string begins with a given string.
-
-     - Parameter value: The string to check.
-     */
+    /// Checks if a string begins with the specified string.
     func starts(with value: String) -> MetadataQuery.Predicate<Bool> {
         .comparison(self, .beginsWith, value)
     }
 
-    /**
-     Checks if a string begins with any of the given strings.
-
-     - Parameter value: The string to check.
-     */
+    /// Checks if a string begins with any of the specified strings.
     func starts<C: Collection<String>>(withAny values: C) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(self, .beginsWith, Array(values))
     }
 
-    /**
-     Checks if a string ends with a given string.
-
-     - Parameter value: The string to check.
-     */
+    /// Checks if a string ends with the specified string.
     func ends(with value: String) -> MetadataQuery.Predicate<Bool> {
         .comparison(self, .endsWith, value)
     }
 
-    /**
-     Checks if a string ends with any of the given strings.
-
-     - Parameter value: The string to check.
-     */
+    /// Checks if a string ends with any of the specified strings.
     func ends<C: Collection<String>>(withAny values: C) -> MetadataQuery.Predicate<Bool> {
         .comparisonOr(self, .endsWith, Array(values))
     }
@@ -888,27 +682,10 @@ public extension MetadataQuery.Predicate where T == DataSize? {
         unit(.petabyte)
     }
     
-    internal func unit(_ unit: DataSize.Unit) -> MetadataQuery.Predicate<Double?> {
-        var predicate: MetadataQuery.Predicate<Double?> = .init(mdKey)
+    private func unit(_ unit: DataSize.Unit) -> MetadataQuery.Predicate<Double?> {
+        var predicate: MetadataQuery.Predicate<Double?> = .init(mdKeys.first!)
         predicate.valueConverter = unit
         return predicate
-    }
-}
-
-extension DataSize.Unit: PredicateValueConverter {
-    func value(for value: Any) -> Any {
-        guard let value = value as? Double else { return value }
-        switch self {
-        case .byte: return Int(value)
-        case .kilobyte: return DataSize.kilobytes(value).bytes
-        case .megabyte: return DataSize.megabytes(value).bytes
-        case .gigabyte: return DataSize.gigabytes(value).bytes
-        case .terabyte: return DataSize.terabytes(value).bytes
-        case .petabyte: return DataSize.petabytes(value).bytes
-        case .exabyte: return DataSize.exabytes(value).bytes
-        case .zettabyte: return DataSize.zettabytes(value).bytes
-        case .yottabyte: return DataSize.yottabytes(value).bytes
-        }
     }
 }
 
@@ -950,104 +727,78 @@ public extension MetadataQuery.Predicate where T == TimeDuration? {
         unit(.year)
     }
     
-    internal func unit(_ unit: TimeDuration.Unit) -> MetadataQuery.Predicate<Double?> {
-        var predicate: MetadataQuery.Predicate<Double?> = .init(mdKey)
+    private func unit(_ unit: TimeDuration.Unit) -> MetadataQuery.Predicate<Double?> {
+        var predicate: MetadataQuery.Predicate<Double?> = .init(mdKeys.first!)
         predicate.valueConverter = unit
         return predicate
-    }
-}
-
-extension TimeDuration.Unit: PredicateValueConverter {
-    func value(for value: Any) -> Any {
-        guard let value = value as? Double else { return value }
-        let factor: Double = 60
-        let conversionFactor = pow(factor, Double(rawValue - TimeDuration.Unit.second.rawValue))
-        return value * conversionFactor
     }
 }
 
 // MARK: PredicateBuilder
 
 extension MetadataQuery.Predicate {
-    enum PredicateBuilder {
-        static func comparison(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
-            var value = converter?.value(for: value) ?? value
-            switch value {
-            case let value as String:
-                guard !value.hasPrefix("$time") else { break }
-                if !value.hasPrefix("$time") {
-                    return comparisonString(mdKey, type, value, options)
-                }
-            case let value as CGSize:
-                let widthMDKey = mdKey.replacingOccurrences(of: "Size", with: "Width")
-                let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
-                let predicates = [comparison(widthMDKey, type, [value.width]), comparison(heightMDKey, type, [value.height])]
-                return NSCompoundPredicate(and: predicates)
-            case let rect as CGRect:
-                value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
-            case let _value as (any QueryRawRepresentable):
-                value = _value.rawValue
-            default: break
-            }
+    static func predicate(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        var value = converter?.value(for: value) ?? value
+        switch value {
+        case let value as String:
+            guard !value.hasPrefix("$time") else { break }
+            return predicateString(mdKey, type, value, options)
+        case let value as CGSize:
+            return predicateSize(mdKey, type, value)
+        case let rect as CGRect:
+            value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
+        case let _value as (any QueryRawRepresentable):
+            value = _value.rawValue
+        default: break
+        }
+        let key = NSExpression(forKeyPath: mdKey)
+        let valueEx = NSExpression(forConstantValue: value)
+        return NSComparisonPredicate(leftExpression: key, rightExpression: valueEx, modifier: .direct, type: type)
+    }
+    
+    static func predicateAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        let predicates = values.enumerated().compactMap { predicate(mdKey, type, $0.element, option, converter) }
+        return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(and: predicates)
+    }
 
-            let key = NSExpression(forKeyPath: mdKey)
-            let valueEx = NSExpression(forConstantValue: value)
-            return NSComparisonPredicate(leftExpression: key, rightExpression: valueEx, modifier: .direct, type: type)
-        }
-        
-        static func comparisonAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
-            let predicates = values.enumerated().compactMap { comparison(mdKey, type, $0.element, option, converter) }
-            return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(and: predicates)
-        }
+    static func predicateOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        let predicates = values.enumerated().compactMap { predicate(mdKey, type, $0.element, option, converter) }
+        return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
+    }
 
-        static func comparisonOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
-            let predicates = values.enumerated().compactMap { comparison(mdKey, type, $0.element, option, converter) }
-            return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
+    static func predicateSize(_ mdKey: String, _ type: ComparisonOperator, _ value: CGSize) -> NSPredicate {
+        let widthMDKey = mdKey.replacingOccurrences(of: "Size", with: "Width")
+        let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
+        let predicates = [predicate(widthMDKey, type, [value.width]), predicate(heightMDKey, type, [value.height])]
+        return NSCompoundPredicate(and: predicates)
+    }
+    
+    static func predicateString(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
+        let predicateString: String
+        Swift.print("predicateString", value)
+        switch (type, value) {
+        case (_, "kMDItemFSExtension"):
+            predicateString = "kMDItemFSName = '*.\(value)'\(options.string)"
+        case (.contains, _):
+            predicateString = "\(mdKey) = '*\(value)*'\(options.string)"
+        case (.beginsWith, _):
+            predicateString = "\(mdKey) = '\(value)*'\(options.string)"
+        case (.endsWith, _):
+            predicateString = "\(mdKey) = '*\(value)'\(options.string)"
+        case (.notEqualTo, _):
+            predicateString = "\(mdKey) != '\(value)'\(options.string)"
+        default:
+            predicateString = "\(mdKey) = '\(value)'\(options.string)"
         }
-
-        static func comparisonSize(_ mdKey: String, _ type: ComparisonOperator, _ value: CGSize) -> NSPredicate {
-            let widthMDKey = mdKey.replacingOccurrences(of: "Size", with: "Width")
-            let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
-            let predicates = [comparison(widthMDKey, type, [value.width]), comparison(heightMDKey, type, [value.height])]
-            return NSCompoundPredicate(and: predicates)
-        }
-        
-        static func comparisonString(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
-            let predicateString: String
-            switch (type, value) {
-            case (_, "kMDItemFSExtension"):
-                predicateString = "kMDItemFSName = '*.\(value)'\(options.string)"
-            case (.contains, _):
-                predicateString = "\(mdKey) = '*\(value)*'\(options.string)"
-            case (.beginsWith, _):
-                predicateString = "\(mdKey) = '\(value)*'\(options.string)"
-            case (.endsWith, _):
-                predicateString = "\(mdKey) = '*\(value)'\(options.string)"
-            case (.notEqualTo, _):
-                predicateString = "\(mdKey) != '\(value)'\(options.string)"
-            default:
-                predicateString = "\(mdKey) = '\(value)'\(options.string)"
-            }
-            #if os(macOS)
-                return NSPredicate(fromMetadataQueryString: predicateString)!
-            #else
-                return NSPredicate(format: predicateString)
-            #endif
-        }
-        
-        /*
-         static func queryString(_ mdKey: String, _ type: ComparisonOperator, _ queryString: QueryStringOption) -> NSPredicate {
-                 return string(mdKey, type, queryString.value, queryString.options)
-         }
-          */
+        #if os(macOS)
+            return NSPredicate(fromMetadataQueryString: predicateString)!
+        #else
+            return NSPredicate(format: predicateString)
+        #endif
     }
 }
 
 // MARK: Protocols
-
-protocol PredicateValueConverter {
-    func value(for value: Any) -> Any
-}
 
 /// Conforms equatable to be used in a metadata query predicate.
 public protocol QueryEquatable { }
@@ -1139,6 +890,49 @@ extension ClosedRange: AnyRange {}
 extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
 extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
 
+protocol _Predicate {
+    var mdKeys: [String] { get }
+    var stringOptions: MetadataQuery.PredicateStringOptions { get }
+    var valueConverter: PredicateValueConverter? { get }
+}
+
+extension String: _Predicate {
+    var mdKey: String { self }
+    var mdKeys: [String] { [self] }
+    var stringOptions: MetadataQuery.PredicateStringOptions { return [] }
+    var valueConverter: PredicateValueConverter? { return nil }
+}
+
+protocol PredicateValueConverter {
+    func value(for value: Any) -> Any
+}
+
+extension TimeDuration.Unit: PredicateValueConverter {
+    func value(for value: Any) -> Any {
+        guard let value = value as? Double else { return value }
+        let factor: Double = 60
+        let conversionFactor = pow(factor, Double(rawValue - TimeDuration.Unit.second.rawValue))
+        return value * conversionFactor
+    }
+}
+
+extension DataSize.Unit: PredicateValueConverter {
+    func value(for value: Any) -> Any {
+        guard let value = value as? Double else { return value }
+        switch self {
+        case .byte: return Int(value)
+        case .kilobyte: return DataSize.kilobytes(value).bytes
+        case .megabyte: return DataSize.megabytes(value).bytes
+        case .gigabyte: return DataSize.gigabytes(value).bytes
+        case .terabyte: return DataSize.terabytes(value).bytes
+        case .petabyte: return DataSize.petabytes(value).bytes
+        case .exabyte: return DataSize.exabytes(value).bytes
+        case .zettabyte: return DataSize.zettabytes(value).bytes
+        case .yottabyte: return DataSize.yottabytes(value).bytes
+        }
+    }
+}
+
 
 // MARK: FileType + Predicate
 
@@ -1177,221 +971,3 @@ extension FileType {
         return NSComparisonPredicate(leftExpression: key, rightExpression: value, modifier: modifier, type: type)
     }
 }
-
-
-// MARK: String
-
-/*
- extension MetadataQuery.Predicate where T: QueryString {
-     public func begins<C: Collection<QueryString>>(with values: C) -> MetadataQuery.Predicate<Bool> {
-         let values = Array(values)
-         return (values.count == 1) ? .comparison(mdKey, .beginsWith, values.first!) : .or(mdKey, .beginsWith, values)
-     }
-
-     public func begins(with values: QueryString...) -> MetadataQuery.Predicate<Bool> {
-         self.begins(with: values)
-     }
-
-     public func contains<C: Collection<QueryString>>(_ values: C) -> MetadataQuery.Predicate<Bool> {
-         let values = Array(values)
-         return (values.count == 1) ? .comparison(mdKey, .contains, values.first!) : .or(mdKey, .contains, values)
-     }
-
-     public func contains(_ values: QueryString...) -> MetadataQuery.Predicate<Bool> {
-         self.contains(values)
-     }
-
-     public func ends<C: Collection<QueryString>>(with values: C) -> MetadataQuery.Predicate<Bool> {
-         let values = Array(values)
-         return (values.count == 1) ? .comparison(mdKey, .endsWith, values.first!) : .or(mdKey, .endsWith, values)
-     }
-
-     public func ends(with values: QueryString...) -> MetadataQuery.Predicate<Bool> {
-         self.ends(with: values)
-     }
-
-     public func equals<C: Collection<QueryString>>(any values: C) -> MetadataQuery.Predicate<Bool> {
-         let values = Array(values)
-         return (values.count == 1) ? .comparison(mdKey, .equalTo, values.first!) : .or(mdKey, .equalTo, values)
-     }
-
-     public func equals(any values: QueryString...) -> MetadataQuery.Predicate<Bool> {
-         self.equals(any: values)
-     }
-
-     public func equalsNot<C: Collection<QueryString>>(_ values: C) -> MetadataQuery.Predicate<Bool> {
-         let values = Array(values)
-         return (values.count == 1) ? .comparison(mdKey, .notEqualTo, values.first!) : .or(mdKey, .notEqualTo, values)
-     }
-
-     public func equalsNot(_ values: QueryString...) -> MetadataQuery.Predicate<Bool> {
-         self.equalsNot(values)
-     }
-
-     public static func == (_ lhs: MetadataQuery.Predicate<T>, _ rhs: QueryString) -> MetadataQuery.Predicate<Bool> {
-         .comparison(lhs.mdKey, .equalTo, rhs)
-     }
-
-     public static func == <C: Collection<QueryString>>(_ lhs: MetadataQuery.Predicate<T>, _ rhs: C) -> MetadataQuery.Predicate<Bool> {
-         .or(lhs.mdKey, .equalTo, Array(rhs))
-     }
-
-     public static func != (_ lhs: MetadataQuery.Predicate<T>, _ rhs: QueryString) -> MetadataQuery.Predicate<Bool> {
-         .comparison(lhs.mdKey, .notEqualTo, rhs)
-     }
-
-     public static func != <C: Collection<QueryString>>(_ lhs: MetadataQuery.Predicate<T>, _ rhs: C) -> MetadataQuery.Predicate<Bool> {
-         .and(lhs.mdKey, .notEqualTo, Array(rhs))
-     }
-
-     public static func *== (_ lhs: MetadataQuery.Predicate<T>, _ rhs: QueryString) -> MetadataQuery.Predicate<Bool> {
-         .comparison(lhs.mdKey, .beginsWith, rhs)
-     }
-
-     public static func *== <C: Collection<QueryString>>(_ lhs: MetadataQuery.Predicate<T>, _ rhs: C) -> MetadataQuery.Predicate<Bool> {
-         .or(lhs.mdKey, .beginsWith, Array(rhs))
-     }
-
-     public static func *=* (_ lhs: MetadataQuery.Predicate<T>, _ rhs: QueryString) -> MetadataQuery.Predicate<Bool> {
-         .comparison(lhs.mdKey, .contains, rhs)
-     }
-
-     public static func *=* <C: Collection<QueryString>>(_ lhs: MetadataQuery.Predicate<T>, _ rhs: C) -> MetadataQuery.Predicate<Bool> {
-         .or(lhs.mdKey, .contains, Array(rhs))
-     }
-
-     public static func ==* (_ lhs: MetadataQuery.Predicate<T>, _ rhs: QueryString) -> MetadataQuery.Predicate<Bool> {
-         .comparison(lhs.mdKey, .endsWith, rhs)
-     }
-
-     public static func ==* <C: Collection<QueryString>>(_ lhs: MetadataQuery.Predicate<T>, _ rhs: C) -> MetadataQuery.Predicate<Bool> {
-             .or(lhs.mdKey, .endsWith, Array(rhs))
-     }
- }
-
- public protocol QueryString { }
- extension String: QueryString { }
-
- public enum QString: QueryString {
-     case c(String)
-     case d(String)
-     case w(String)
-     case cd(String)
-     case cw(String)
-     case dw(String)
-     case cdw(String)
-     public var options: MetadataQuery.PredicateStringOptions {
-         switch self {
-         case .c( _): return .c
-         case .d( _): return .d
-         case .w( _): return .w
-         case .cd( _): return .cd
-         case .cw( _): return .cw
-         case .dw( _): return .dw
-         case .cdw( _): return .cdw
-         }
-     }
-     public var value: String {
-         switch self {
-         case .c(let value), .d(let value), .w(let value), .cd(let value), .cw(let value), .dw(let value), .cdw(let value):
-             return value
-         }
-     }
- }
-
- extension QueryString where Self == String {
-     static func c(_ value: String) -> QString {
-         QString.c(value)
-     }
-     static func d(_ value: String) -> QString {
-         QString.d(value)
-     }
-     static func w(_ value: String) -> QString {
-         QString.w(value)
-     }
-     static func cd(_ value: String) -> QString {
-         QString.cd(value)
-     }
-     static func cw(_ value: String) -> QString {
-         QString.cw(value)
-     }
-     static func dw(_ value: String) -> QString {
-         QString.dw(value)
-     }
-     static func cdw(_ value: String) -> QString {
-         QString.cdw(value)
-     }
- }
-  */
-
-/*
- public enum QueryStringOption {
-     case c(String)
-     case d(String)
-     case w(String)
-     case cd(String)
-     case cw(String)
-     case dw(String)
-     case cdw(String)
-     var value: String {
-         switch self {
-         case .c(let value), .d(let value), .w(let value), .cd(let value), .cw(let value), .dw(let value), .cdw(let value):
-             return value
-         }
-     }
-     var options: MetadataQuery.PredicateStringOptions {
-         switch self {
-         case .c(_): return .c
-         case .d(_): return .d
-         case .w(_): return .w
-         case .cd(_): return .cd
-         case .cw(_): return .cw
-         case .dw(_): return .dw
-         case .cdw(_): return .cdw
-         }
-     }
-
-     static func caseSensitive(_ string: String) -> QueryStringOption {
-         return .c(string)
-     }
-
-     static func diacriticSensitive(_ string: String) -> QueryStringOption {
-         return .d(string)
-     }
-
-     static func wordBased(_ string: String) -> QueryStringOption {
-         return .w(string)
-     }
- }
- */
-
-
-/*
- extension MetadataQuery.Predicate where T: Equatable {
-     /// Checks if an element equals a given value.
-     public static func == (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool>  {
-         .comparison(lhs.mdKey, .equalTo, rhs)
-     }
-
-     /// Checks if an element doesn't equal a given value.
-     public static func != (_ lhs: Self, _ rhs: T) -> MetadataQuery.Predicate<Bool> {
-         .comparison(lhs.mdKey, .notEqualTo, rhs)
-     }
- }
-  */
-
-
-/*
-  public func fileTypes(_ types: FileType...) -> MetadataQuery.Predicate<Bool> {
-     return self.fileTypes(types)
- }
-
-  public func fileTypes(_ types: [FileType]) -> MetadataQuery.Predicate<Bool> {
-     let keyPath: PartialKeyPath<MetadataItem> = \.fileType
-     if types.count == 1, let identifier = types.first?.identifier {
-         return .comparison(keyPath.mdItemKey, .equalTo, identifier)
-     } else {
-         return .or(keyPath.mdItemKey,.equalTo, types.compactMap({$0.identifier}))
-     }
- }
- */

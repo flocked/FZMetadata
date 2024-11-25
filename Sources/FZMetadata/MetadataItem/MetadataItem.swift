@@ -94,7 +94,7 @@ open class MetadataItem: Identifiable {
         public init?(url: URL) {
             guard let item = NSMetadataItem(url: url) else { return nil }
             self.item = item
-            self.values = [Attribute.path.rawValue:url.path, Attribute.url.rawValue: url]
+            self.filePath = url.path
         }
 
     #endif

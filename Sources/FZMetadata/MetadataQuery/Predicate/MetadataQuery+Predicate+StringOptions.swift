@@ -1,5 +1,5 @@
 //
-//  MetadataQuery+PredicateStringOptions.swift
+//  MetadataQuery+Predicate+StringOptions.swift
 //
 //
 //  Created by Florian Zand on 06.08.23.
