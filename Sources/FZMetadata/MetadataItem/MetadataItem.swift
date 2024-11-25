@@ -367,7 +367,12 @@ open class MetadataItem: Identifiable {
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
-        get { value(for: .finderTags) ?? url?.resources.finderTags }
+        get { 
+            if let finderTags: [String] = value(for: .finderTags) {
+                return finderTags
+            }
+            return url?.resources.finderTags
+        }
         set { url?.resources.finderTags = newValue ?? [] }
     }
     
