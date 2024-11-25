@@ -134,9 +134,6 @@ open class MetadataQuery: NSObject {
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
             runWithOperationQueue {
-                if let pred = self.predicate?(.root) {
-                    Swift.print("CHECK", pred.mdKeys, pred.predicate?.predicateFormat ?? "nil")
-                }
                 self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
             }
         }
