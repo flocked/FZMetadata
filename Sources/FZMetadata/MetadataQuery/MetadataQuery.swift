@@ -493,7 +493,7 @@ extension MetadataQuery {
 }
 #endif
 
-class ItemPathFetchOperation: AsyncOperation {
+class ItemPathFetchOperation: Operation {
     weak var item: MetadataItem?
     
     init(_ item: MetadataItem) {
@@ -501,10 +501,9 @@ class ItemPathFetchOperation: AsyncOperation {
     }
     
     override func main() {
+        guard !isCancelled else { return }
         if let item = item, item.filePath == nil {
             item.filePath = item.value(for: .path)
         }
-        guard !isCancelled else { return }
-        finish()
     }
 }
