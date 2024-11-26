@@ -505,6 +505,6 @@ class ItemPathFetchOperation: AsyncOperation {
             item.filePath = item.value(for: .path)
         }
         guard !isCancelled else { return }
-        state = .finished
+        finish()
     }
 }
