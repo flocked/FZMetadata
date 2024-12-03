@@ -162,7 +162,7 @@ open class MetadataItem: Identifiable {
     
     var _url: URL? {
         guard let path = path else { return nil }
-        return URL(fileURLWithPath: path)
+        return URL(filePath: path, directoryHint: .inferFromPath)
     }
 
     /**
