@@ -63,6 +63,7 @@ open class MetadataItem: Identifiable {
     
     /// Cached file path.
     var filePath: String?
+    weak var filePathOperation: Operation?
         
     /**
      Initializes a metadata item with a given `NSMetadataItem`.
@@ -171,6 +172,7 @@ open class MetadataItem: Identifiable {
      - Note: The attribute can't be used in a metadata query predicate or to sort query results.
      */
     open var path: String? { 
+        filePathOperation?.cancel()
         if let filePath = filePath {
             return filePath
         }

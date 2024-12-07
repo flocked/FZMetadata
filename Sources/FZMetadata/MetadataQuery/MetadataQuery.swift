@@ -85,8 +85,8 @@ open class MetadataQuery: NSObject {
     var isFinished = false
     var didPostFinished = false
     var delayedPostFinishedResults: DispatchWorkItem?
-    var shouldFetchItemPathsInBackground = true
-    let itemPathFetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
+    var prefetchesItemPathsInBackground = true
+    let itemPathPrefetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var resultsUpdateLock = NSLock()
     /// A Boolean value indicating whether the query should output debug messages when running.
     public var debug = false
@@ -313,7 +313,7 @@ open class MetadataQuery: NSObject {
     /// Stops the query from gathering any further results.
     open func stop() {
         runWithOperationQueue {
-            self.itemPathFetchOperationQueue.cancelAllOperations()
+            self.itemPathPrefetchOperationQueue.cancelAllOperations()
             self.state = .isStopped
             self.query.stop()
         }
@@ -368,15 +368,15 @@ open class MetadataQuery: NSObject {
         result.previousValues = isInital ? nil : result.values
         result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
         result.filePath = nil
-        if shouldFetchItemPathsInBackground {
-            itemPathFetchOperationQueue.addOperation(ItemPathFetchOperation(result))
+        if prefetchesItemPathsInBackground {
+            itemPathPrefetchOperationQueue.addOperation(ItemPathPrefetchOperation(result))
         }
     }
         
     @objc func gatheringStarted(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
-        itemPathFetchOperationQueue.cancelAllOperations()
+        itemPathPrefetchOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.attribute.rawValue) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGatheringItems
@@ -386,8 +386,20 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
         debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count), \(pendingResultsUpdate.description) \(isFinished)")
+        let resultsUpdate = notification.resultsUpdate
+        pendingResultsUpdate = pendingResultsUpdate + resultsUpdate
+        (resultsUpdate.added + resultsUpdate.changed).forEach({ 
+            $0.filePath = nil
+            $0.filePathOperation?.cancel()
+        })
+        if prefetchesItemPathsInBackground {
+            (resultsUpdate.added + resultsUpdate.changed).forEach({ item in
+                let operation = ItemPathPrefetchOperation(item)
+                item.filePathOperation = operation
+                itemPathPrefetchOperationQueue.addOperation(operation)
+            })
+        }
         if postGatheringUpdates || isFinished {
             didPostFinished = isFinished
             updateResults(post: true)
@@ -424,11 +436,11 @@ open class MetadataQuery: NSObject {
     func runWithOperationQueue(_ block: @escaping () -> Void) {
         if let operationQueue = operationQueue {
             operationQueue.addOperation {
-                self.itemPathFetchOperationQueue.cancelAllOperations()
+                self.itemPathPrefetchOperationQueue.cancelAllOperations()
                 block()
             }
         } else {
-            itemPathFetchOperationQueue.cancelAllOperations()
+            itemPathPrefetchOperationQueue.cancelAllOperations()
             block()
         }
     }
@@ -493,7 +505,7 @@ extension MetadataQuery {
 }
 #endif
 
-class ItemPathFetchOperation: Operation {
+class ItemPathPrefetchOperation: Operation {
     weak var item: MetadataItem?
     
     init(_ item: MetadataItem) {
