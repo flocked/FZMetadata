@@ -92,3 +92,4 @@ query.start()
 ### File Query
 
 - ``MetadataQuery``
+- ``FileMonitor``
