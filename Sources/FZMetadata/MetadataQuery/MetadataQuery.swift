@@ -615,9 +615,3 @@ func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryB
     }
     MDQuerySetBatchingParameters(query, params)
 }
-
-@_cdecl("swizzled_MDQueryCreate")
-func swizzled_MDQueryCreate(_ alloc: CFAllocator?, _ queryString: CFString, _ attrList: CFArray, _ scopeList: CFArray) -> MDQuery? {
-    // Swift.print("MDQueryCreate")
-    return MDQueryCreate(alloc, queryString, attrList, scopeList)
-}
