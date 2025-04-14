@@ -78,6 +78,7 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
+    static var batchingParametersQuery: MetadataQuery?
     let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
@@ -351,11 +352,11 @@ open class MetadataQuery: NSObject {
     var batchingParameters = BatchingParameters() {
         didSet {
             guard oldValue != batchingParameters, state != .isStopped else { return }
-            MDQueryInterceptor.shared.metadataQuery = self
+            Self.batchingParametersQuery = self
             query.notificationBatchingInterval = Double.random(max: 100.0)
         }
     }
-    
+        
     struct BatchingParameters: Hashable {
         public var initialNotificationDelay: TimeInterval = 0.08
         public var initialResultThreshold: Int = 20
@@ -376,7 +377,7 @@ open class MetadataQuery: NSObject {
     open func start() {
         runWithOperationQueue {
             guard self.state == .isStopped else { return }
-            MDQueryInterceptor.shared.metadataQuery = self
+            Self.batchingParametersQuery = self
             self.runWithOperationQueue {
                 self.query.enableUpdates()
                 self.query.start()
@@ -526,7 +527,7 @@ open class MetadataQuery: NSObject {
     
     func interceptMDQuery() {
         guard state != .isStopped else { return }
-        MDQueryInterceptor.shared.metadataQuery = self
+        Self.batchingParametersQuery = self
     }
         
     /**
@@ -599,42 +600,24 @@ class ItemPathPrefetchOperation: Operation {
     }
 }
 
-final class MDQueryInterceptor {
-    static let shared = MDQueryInterceptor()
-    
-    var metadataQuery: MetadataQuery?
-    var count = 0
+@_cdecl("swizzled_MDQuerySetBatchingParameters")
+func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
+    // Swift.print("MDQuerySetBatchingParameters")
+    var params = params
+    if let batching = MetadataQuery.batchingParametersQuery?.batchingParameters {
+        params.first_max_num = batching.initialResultThreshold
+        params.first_max_ms = Int((batching.initialNotificationDelay * 1000).rounded())
+        params.progress_max_num = batching.gatheringResultThreshold
+        params.progress_max_ms = Int((batching.gatheringNotificationInterval * 1000).rounded())
+        params.update_max_num = batching.monitoringResultThreshold
+        params.update_max_ms = Int((batching.monitoringNotificationInterval * 1000).rounded())
+        MetadataQuery.batchingParametersQuery = nil
+    }
+    MDQuerySetBatchingParameters(query, params)
+}
 
-    static let handleQueryCreated: @convention(c) (MDQuery?) -> Void = { query in
-        guard let query = query else { return }
-        shared.didCreateQuery(query)
-    }
-
-    static let handleBatchingParameters: @convention(c) (MDQuery?, UnsafeMutablePointer<MDQueryBatchingParams>?) -> Void = { query, params in
-        guard let query = query else { return }
-        shared.overrideBatchingParameters(for: query, params: params)
-    }
-
-    func didCreateQuery(_ query: MDQuery) {
-         // print("MDQuery created: \(query)")
-        // metadataQuery?.mdQuery = query
-    }
-
-    func overrideBatchingParameters(for query: MDQuery, params: UnsafeMutablePointer<MDQueryBatchingParams>?) {
-        guard let p = params else { return }
-        // print("MDQuery set batching parameters: \(query)")
-        guard let batching = metadataQuery?.batchingParameters else { return }
-        p.pointee.first_max_num = batching.initialResultThreshold
-        p.pointee.first_max_ms = Int((batching.initialNotificationDelay * 1000).rounded())
-        p.pointee.progress_max_num = batching.gatheringResultThreshold
-        p.pointee.progress_max_ms = Int((batching.gatheringNotificationInterval * 1000).rounded())
-        p.pointee.update_max_num = batching.monitoringResultThreshold
-        p.pointee.update_max_ms = Int((batching.monitoringNotificationInterval * 1000).rounded())
-        metadataQuery = nil
-    }
-    
-    init() {
-        MDQueryCreateHandler = Self.handleQueryCreated
-        MDQuerySetBatchingHandler = Self.handleBatchingParameters
-    }
+@_cdecl("swizzled_MDQueryCreate")
+func swizzled_MDQueryCreate(_ alloc: CFAllocator?, _ queryString: CFString, _ attrList: CFArray, _ scopeList: CFArray) -> MDQuery? {
+    // Swift.print("MDQueryCreate")
+    return MDQueryCreate(alloc, queryString, attrList, scopeList)
 }
