@@ -78,7 +78,7 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
-    static var batchingParametersQuery: MetadataQuery?
+    static var batchingParameters: BatchingParameters?
     let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
@@ -352,7 +352,7 @@ open class MetadataQuery: NSObject {
     var batchingParameters = BatchingParameters() {
         didSet {
             guard oldValue != batchingParameters, state != .isStopped else { return }
-            Self.batchingParametersQuery = self
+            Self.batchingParameters = batchingParameters
             query.notificationBatchingInterval = Double.random(max: 100.0)
         }
     }
@@ -377,7 +377,7 @@ open class MetadataQuery: NSObject {
     open func start() {
         runWithOperationQueue {
             guard self.state == .isStopped else { return }
-            Self.batchingParametersQuery = self
+            Self.batchingParameters = self.batchingParameters
             self.runWithOperationQueue {
                 self.query.enableUpdates()
                 self.query.start()
@@ -527,7 +527,7 @@ open class MetadataQuery: NSObject {
     
     func interceptMDQuery() {
         guard state != .isStopped else { return }
-        Self.batchingParametersQuery = self
+        Self.batchingParameters = batchingParameters
     }
         
     /**
@@ -604,14 +604,14 @@ class ItemPathPrefetchOperation: Operation {
 func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
     // Swift.print("MDQuerySetBatchingParameters")
     var params = params
-    if let batching = MetadataQuery.batchingParametersQuery?.batchingParameters {
+    if let batching = MetadataQuery.batchingParameters {
         params.first_max_num = batching.initialResultThreshold
         params.first_max_ms = Int((batching.initialNotificationDelay * 1000).rounded())
         params.progress_max_num = batching.gatheringResultThreshold
         params.progress_max_ms = Int((batching.gatheringNotificationInterval * 1000).rounded())
         params.update_max_num = batching.monitoringResultThreshold
         params.update_max_ms = Int((batching.monitoringNotificationInterval * 1000).rounded())
-        MetadataQuery.batchingParametersQuery = nil
+        MetadataQuery.batchingParameters = nil
     }
     MDQuerySetBatchingParameters(query, params)
 }
