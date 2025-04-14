@@ -7,6 +7,7 @@
 
 import Foundation
 import FZSwiftUtils
+import _MDQueryInterposer
 
 /**
  A query object that can search and observe file system items and fetch large batches of metadata attributes.
@@ -106,7 +107,12 @@ open class MetadataQuery: NSObject {
      */
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
-        set { runWithOperationQueue { self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued() } }
+        set {
+            runWithOperationQueue {
+                self.interceptMDQuery()
+                self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued()
+            }
+        }
     }
 
     /**
@@ -134,6 +140,7 @@ open class MetadataQuery: NSObject {
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
         didSet {
             runWithOperationQueue {
+                self.interceptMDQuery()
                 self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
             }
         }
@@ -153,7 +160,12 @@ open class MetadataQuery: NSObject {
      */
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
-        set { runWithOperationQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] } }
+        set {
+            runWithOperationQueue {
+                self.interceptMDQuery()
+                self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL]
+            }
+        }
     }
 
     /**
@@ -167,7 +179,12 @@ open class MetadataQuery: NSObject {
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
-        set { runWithOperationQueue { self.query.searchScopes = newValue } }
+        set {
+            runWithOperationQueue {
+                self.interceptMDQuery()
+                self.query.searchScopes = newValue
+            }
+        }
     }
 
     /**
@@ -181,7 +198,12 @@ open class MetadataQuery: NSObject {
      */
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
-        set { runWithOperationQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue) } }
+        set {
+            runWithOperationQueue{
+                self.interceptMDQuery()
+                self.query.searchScopes = newValue.compactMap(\.rawValue)
+            }
+        }
     }
 
     /**
@@ -204,7 +226,10 @@ open class MetadataQuery: NSObject {
      */
     open var sortedBy: [SortDescriptor] = [] {
         didSet {
-            runWithOperationQueue{ self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor }) }
+            runWithOperationQueue{
+                self.interceptMDQuery()
+                self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor })
+            }
         }
     }
     
@@ -234,7 +259,12 @@ open class MetadataQuery: NSObject {
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
-        set { runWithOperationQueue{ self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() } }
+        set {
+            runWithOperationQueue{
+                self.interceptMDQuery()
+                self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued()
+            }
+        }
     }
 
     /**
@@ -285,11 +315,54 @@ open class MetadataQuery: NSObject {
         }
     }
     
+    /// The maximum time (in milliseconds) that can pass after the query begins before updating the results.
+    open var initialNotificationDelay: Int {
+        get { batchingParameters.initialNotificationDelay }
+        set { batchingParameters.initialNotificationDelay = newValue }
+    }
+    /// The maximum number of changes that can accumulate after the query begins before updating the results.
+    open var initialResultThreshold: Int {
+        get { batchingParameters.initialResultThreshold }
+        set { batchingParameters.initialResultThreshold = newValue }
+    }
     
-    /// The interval (in seconds) at which notifications of updated results occur. The default value is `1.0` seconds.
-    open var updateNotificationInterval: TimeInterval {
-        get { query.notificationBatchingInterval }
-        set { query.notificationBatchingInterval = newValue }
+    /// The maximum time (in milliseconds) that can pass while gathering before updating the results.
+    open var gatheringNotificationInterval: Int {
+        get { batchingParameters.gatheringNotificationInterval }
+        set { batchingParameters.gatheringNotificationInterval = newValue }
+    }
+    /// The maximum number of changes that can accumulate while gathering before updating the results.
+    open var gatheringResultThreshold: Int {
+        get { batchingParameters.gatheringResultThreshold }
+        set { batchingParameters.gatheringResultThreshold = newValue }
+    }
+    
+    /// The maximum time (in milliseconds) that can pass while monitoring before updating the results.
+    open var monitoringNotificationInterval: Int {
+        get { batchingParameters.monitoringNotificationInterval }
+        set { batchingParameters.monitoringNotificationInterval = newValue }
+    }
+    /// The maximum number of changes that can accumulate while monitoring before updating the results.
+    open var monitoringResultThreshold: Int {
+        get { batchingParameters.monitoringResultThreshold }
+        set { batchingParameters.monitoringResultThreshold = newValue }
+    }
+    
+    var batchingParameters = BatchingParameters() {
+        didSet {
+            guard oldValue != batchingParameters, state != .isStopped else { return }
+            MDQueryInterceptor.shared.metadataQuery = self
+            query.notificationBatchingInterval = Double.random(max: 100.0)
+        }
+    }
+    
+    struct BatchingParameters: Hashable {
+        public var initialNotificationDelay: Int = 80
+        public var initialResultThreshold: Int = 20
+        public var gatheringNotificationInterval: Int = 1000
+        public var gatheringResultThreshold: Int = 50000
+        public var monitoringNotificationInterval: Int = 1000
+        public var monitoringResultThreshold: Int = 50000
     }
     
     /**
@@ -303,6 +376,7 @@ open class MetadataQuery: NSObject {
     open func start() {
         runWithOperationQueue {
             guard self.state == .isStopped else { return }
+            MDQueryInterceptor.shared.metadataQuery = self
             self.runWithOperationQueue {
                 self.query.enableUpdates()
                 self.query.start()
@@ -449,6 +523,11 @@ open class MetadataQuery: NSObject {
         guard debug else { return }
         Swift.print(string)
     }
+    
+    func interceptMDQuery() {
+        guard state != .isStopped else { return }
+        MDQueryInterceptor.shared.metadataQuery = self
+    }
         
     /**
      Creates a metadata query with the specified operation queue.
@@ -517,5 +596,45 @@ class ItemPathPrefetchOperation: Operation {
         if let item = item, item.filePath == nil {
             item.filePath = item.value(for: .path)
         }
+    }
+}
+
+final class MDQueryInterceptor {
+    static let shared = MDQueryInterceptor()
+    
+    var metadataQuery: MetadataQuery?
+    var count = 0
+
+    static let handleQueryCreated: @convention(c) (MDQuery?) -> Void = { query in
+        guard let query = query else { return }
+        shared.didCreateQuery(query)
+    }
+
+    static let handleBatchingParameters: @convention(c) (MDQuery?, UnsafeMutablePointer<MDQueryBatchingParams>?) -> Void = { query, params in
+        guard let query = query else { return }
+        shared.overrideBatchingParameters(for: query, params: params)
+    }
+
+    func didCreateQuery(_ query: MDQuery) {
+         // print("MDQuery created: \(query)")
+        // metadataQuery?.mdQuery = query
+    }
+
+    func overrideBatchingParameters(for query: MDQuery, params: UnsafeMutablePointer<MDQueryBatchingParams>?) {
+        guard let p = params else { return }
+        // print("MDQuery set batching parameters: \(query)")
+        guard let batching = metadataQuery?.batchingParameters else { return }
+        p.pointee.first_max_num = batching.initialResultThreshold
+        p.pointee.first_max_ms = batching.initialNotificationDelay
+        p.pointee.progress_max_num = batching.gatheringResultThreshold
+        p.pointee.progress_max_ms = batching.gatheringNotificationInterval
+        p.pointee.update_max_num = batching.monitoringResultThreshold
+        p.pointee.update_max_ms = batching.monitoringNotificationInterval
+        metadataQuery = nil
+    }
+    
+    init() {
+        MDQueryCreateHandler = Self.handleQueryCreated
+        MDQuerySetBatchingHandler = Self.handleBatchingParameters
     }
 }

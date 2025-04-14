@@ -51,11 +51,13 @@ open class FileMonitor: NSObject {
         set { query.operationQueue = newValue }
     }
     
+    /*
     /// The interval (in seconds) at which the handler gets called for changes to the observed file. The default value is `0.5` seconds.
     public var notificationInterval: TimeInterval {
         get { query.updateNotificationInterval }
         set { query.updateNotificationInterval = newValue }
     }
+     */
     
     /**
      Starts monitoring the file.
@@ -104,7 +106,6 @@ open class FileMonitor: NSObject {
         query.urls = [fileURL]
         query.operationQueue = operationQueue
         query.attributes = [.fileName]
-        query.updateNotificationInterval = 0.5
         query.monitorResults = true
         query.resultsHandler = { [weak self] items, _ in
             guard let self = self else { return }

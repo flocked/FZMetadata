@@ -24,6 +24,15 @@
 - ``SearchScope``
 - ``operationQueue``
 
+### Configuring update notifications
+
+- ``initialNotificationDelay``
+- ``initialResultThreshold``
+- ``gatheringNotificationInterval``
+- ``gatheringResultThreshold``
+- ``monitoringNotificationInterval``
+- ``monitoringResultThreshold``
+
 ### Getting query results
 
 - ``start()``
@@ -31,7 +40,6 @@
 - ``results``
 - ``groupedResults``
 - ``monitorResults``
-- ``updateNotificationInterval``
 - ``resultsHandler``
 - ``ResultGroup``
 - ``ResultsDifference``
