@@ -315,8 +315,8 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    /// The maximum time (in milliseconds) that can pass after the query begins before updating the results.
-    open var initialNotificationDelay: Int {
+    /// The maximum time (in seconds) that can pass after the query begins before updating the results.
+    open var initialNotificationDelay: TimeInterval {
         get { batchingParameters.initialNotificationDelay }
         set { batchingParameters.initialNotificationDelay = newValue }
     }
@@ -326,8 +326,8 @@ open class MetadataQuery: NSObject {
         set { batchingParameters.initialResultThreshold = newValue }
     }
     
-    /// The maximum time (in milliseconds) that can pass while gathering before updating the results.
-    open var gatheringNotificationInterval: Int {
+    /// The maximum time (in seconds) that can pass while gathering before updating the results.
+    open var gatheringNotificationInterval: TimeInterval {
         get { batchingParameters.gatheringNotificationInterval }
         set { batchingParameters.gatheringNotificationInterval = newValue }
     }
@@ -337,8 +337,8 @@ open class MetadataQuery: NSObject {
         set { batchingParameters.gatheringResultThreshold = newValue }
     }
     
-    /// The maximum time (in milliseconds) that can pass while monitoring before updating the results.
-    open var monitoringNotificationInterval: Int {
+    /// The maximum time (in seconds) that can pass while monitoring before updating the results.
+    open var monitoringNotificationInterval: TimeInterval {
         get { batchingParameters.monitoringNotificationInterval }
         set { batchingParameters.monitoringNotificationInterval = newValue }
     }
@@ -357,11 +357,11 @@ open class MetadataQuery: NSObject {
     }
     
     struct BatchingParameters: Hashable {
-        public var initialNotificationDelay: Int = 80
+        public var initialNotificationDelay: TimeInterval = 0.08
         public var initialResultThreshold: Int = 20
-        public var gatheringNotificationInterval: Int = 1000
+        public var gatheringNotificationInterval: TimeInterval = 1.0
         public var gatheringResultThreshold: Int = 50000
-        public var monitoringNotificationInterval: Int = 1000
+        public var monitoringNotificationInterval: TimeInterval = 1.0
         public var monitoringResultThreshold: Int = 50000
     }
     
@@ -625,11 +625,11 @@ final class MDQueryInterceptor {
         // print("MDQuery set batching parameters: \(query)")
         guard let batching = metadataQuery?.batchingParameters else { return }
         p.pointee.first_max_num = batching.initialResultThreshold
-        p.pointee.first_max_ms = batching.initialNotificationDelay
+        p.pointee.first_max_ms = Int((batching.initialNotificationDelay * 1000).rounded())
         p.pointee.progress_max_num = batching.gatheringResultThreshold
-        p.pointee.progress_max_ms = batching.gatheringNotificationInterval
+        p.pointee.progress_max_ms = Int((batching.gatheringNotificationInterval * 1000).rounded())
         p.pointee.update_max_num = batching.monitoringResultThreshold
-        p.pointee.update_max_ms = batching.monitoringNotificationInterval
+        p.pointee.update_max_ms = Int((batching.monitoringNotificationInterval * 1000).rounded())
         metadataQuery = nil
     }
     
