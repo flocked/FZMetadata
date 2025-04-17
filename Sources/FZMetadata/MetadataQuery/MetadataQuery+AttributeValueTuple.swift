@@ -14,13 +14,17 @@ extension MetadataQuery {
      
      Attribute-value tuples are returned by ``MetadataQuery`` as the results in the value lists. Each attribute/value tuple contains the attribute name, the value, and the number of instances of that value that exist for the attribute name.
      */
-    public struct AttributeValueTuple {
+    public struct AttributeValueTuple: CustomStringConvertible {
         /// The attribute name for the tuple’s value.
         public let attribute: MetadataItem.Attribute
         /// The value of the tuple’s attribute.
         public let value: Any?
         /// The number of instances of the value for the tuple’s attribute.
         public let count: Int
+        
+        public var description: String {
+            "[value: \(value != nil ? "\(value!)": "-"), count: \(count)]"
+        }
         
         func mapped<V>(to keyPath: KeyPath<MetadataItem, V>) -> MappedAttributeValueTuple<V>? {
             guard let value = value as? V else { return nil }
@@ -39,13 +43,17 @@ extension MetadataQuery {
      
      Attribute-value tuples are returned by ``MetadataQuery`` as the results in the value lists. Each attribute/value tuple contains the attribute name, the value, and the number of instances of that value that exist for the attribute name.
      */
-    public class MappedAttributeValueTuple<Value> {
+    public class MappedAttributeValueTuple<Value>: CustomStringConvertible {
         /// The attribute name for the tuple’s value.
         public let attribute: MetadataItem.Attribute
         /// The value of the tuple’s attribute.
         public let value: Value
         /// The number of instances of the value for the tuple’s attribute.
         public let count: Int
+        
+        public var description: String {
+            "[value: \(value), count: \(count)]"
+        }
         
         init(_ attribute: MetadataItem.Attribute, _ value: Value, _ count: Int) {
             self.value = value
