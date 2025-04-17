@@ -738,8 +738,12 @@ public extension MetadataQuery.Predicate where T == TimeDuration? {
 
 extension MetadataQuery.Predicate {
     static func predicate(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
-        var comparisonOptions: NSComparisonPredicate.Options = []
         var value = converter?.value(for: value) ?? value
+        var comparisonOptions: NSComparisonPredicate.Options = []
+        if mdKey == "kMDItemFSExtension" {
+            let predicate = NSComparisonPredicate(left: .keyPath("kMDItemFSName"), right: .constant( ".\(value)"), type: .endsWith, options: (options-[.diacriticSensitive, .wordBased]).options)
+            return type == .notEqualTo ? !predicate : predicate
+        }
         switch value {
         case let value as String:
             guard !value.hasPrefix("$time") else { break }
@@ -751,10 +755,6 @@ extension MetadataQuery.Predicate {
         case let rawRepresentable as (any QueryRawRepresentable):
             value = rawRepresentable.rawValue
         default: break
-        }
-        if mdKey == "kMDItemFSExtension" {
-            let predicate = NSComparisonPredicate(left: .keyPath("kMDItemFSName"), right: .constant( ".\(value)"), type: .endsWith, options: (options-[.diacriticSensitive, .wordBased]).options)
-            return type == .notEqualTo ? !predicate : predicate
         }
         return NSComparisonPredicate(left: .keyPath(mdKey), right: .constant(value), type: type, options: comparisonOptions)
     }
