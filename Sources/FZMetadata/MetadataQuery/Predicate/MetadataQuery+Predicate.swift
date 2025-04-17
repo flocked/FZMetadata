@@ -753,10 +753,10 @@ extension MetadataQuery.Predicate {
         default: break
         }
         if mdKey == "kMDItemFSExtension" {
-            let predicate = NSComparisonPredicate(leftExpression: .keyPath("kMDItemFSName"), rightExpression: .constant( ".\(value)"), modifier: .direct, type: .endsWith, options: (options-[.diacriticSensitive, .wordBased]).options)
-            return type == .notEqualTo ? NSCompoundPredicate(notPredicateWithSubpredicate: predicate) : predicate
+            let predicate = NSComparisonPredicate(left: .keyPath("kMDItemFSName"), right: .constant( ".\(value)"), type: .endsWith, options: (options-[.diacriticSensitive, .wordBased]).options)
+            return type == .notEqualTo ? !predicate : predicate
         }
-        return NSComparisonPredicate(leftExpression: .keyPath(mdKey), rightExpression: .constant(value), modifier: .direct, type: type, options: comparisonOptions)
+        return NSComparisonPredicate(left: .keyPath(mdKey), right: .constant(value), type: type, options: comparisonOptions)
     }
     
     static func predicateAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
