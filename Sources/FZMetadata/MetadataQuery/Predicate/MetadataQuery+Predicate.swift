@@ -777,7 +777,13 @@ extension MetadataQuery.Predicate {
         let predicateString: String
         switch (type, mdKey) {
         case (_, "kMDItemFSExtension"):
+            NSComparisonPredicate(NSExpression(forKeyPath: "kMDItemFSExtension") == NSExpression(forKeyPath: "kMDItemFSExtension"))
+            let key = NSExpression(forKeyPath: "kMDItemFSExtension")
+            let valueEx = NSExpression(format: "'\(value)'")
+            let predicate = NSComparisonPredicate(leftExpression: key, rightExpression: valueEx, modifier: .direct, type: type, options: [.init(rawValue: 16)])
             predicateString = "kMDItemFSName ENDSWITH\((options - [.wordBased, .diacriticSensitive]).string) '.\(value)'"
+            Swift.print(valueEx, predicate.predicateFormat, NSPredicate(format: predicateString).predicateFormat)
+
             if type == .notEqualTo {
                 return NSCompoundPredicate(notPredicateWithSubpredicate: NSPredicate(format: predicateString))
             }
@@ -968,4 +974,9 @@ extension FileType {
         }
         return NSComparisonPredicate(leftExpression: key, rightExpression: value, modifier: modifier, type: type)
     }
+}
+
+extension NSComparisonPredicate.Options {
+    /// A word-based predicate.
+    public static let wordBased = NSComparisonPredicate.Options(rawValue: 8)
 }
