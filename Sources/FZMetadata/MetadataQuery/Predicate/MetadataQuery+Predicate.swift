@@ -936,7 +936,7 @@ extension DataSize.Unit: PredicateValueConverter {
 // MARK: FileType + Predicate
 
 extension FileType {
-    var metadataPredicate: NSPredicate {
+    internal var metadataPredicate: NSPredicate {
         let key: NSExpression
         let type: NSComparisonPredicate.Operator
         switch self {
