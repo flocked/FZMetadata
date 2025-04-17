@@ -78,8 +78,9 @@ open class MetadataQuery: NSObject {
         case isStopped
     }
 
-    static var batchingParameters: BatchingParameters?
-    let query = NSMetadataQuery()
+    // static var batchingParameters: BatchingParameters?
+    static var batchingParameters: ResultsUpdateOptions?
+    public let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultsDifference()
@@ -305,65 +306,35 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    func updateMonitoring() {
-        guard isFinished else { return }
-        if monitorResults {
-            query.enableUpdates()
-            state = .isMonitoring
-        } else {
-            query.disableUpdates()
-            state = .isStopped
+    /**
+     The interval (in seconds) at which the results gets updated with accumulated changes.
+     
+     This value is advisory, in that the update will be triggered at some point after the specified seconds passed since the last update.
+     */
+    open var resultsUpdateInterval: TimeInterval {
+        get { resultsUpdateOptions.gatheringInterval }
+        set {
+            resultsUpdateOptions.gatheringInterval = newValue
+            resultsUpdateOptions.monitoringInterval = newValue
         }
     }
     
-    /// The maximum time (in seconds) that can pass after the query begins before updating the results.
-    open var initialNotificationDelay: TimeInterval {
-        get { batchingParameters.initialNotificationDelay }
-        set { batchingParameters.initialNotificationDelay = newValue }
-    }
-    /// The maximum number of changes that can accumulate after the query begins before updating the results.
-    open var initialResultThreshold: Int {
-        get { batchingParameters.initialResultThreshold }
-        set { batchingParameters.initialResultThreshold = newValue }
+    /// The maximum number of changes that can accumulate before updating the results.
+    open var resultsUpdateThreshold: Int {
+        get { resultsUpdateOptions.gatheringThreshold }
+        set {
+            resultsUpdateOptions.gatheringThreshold = newValue
+            resultsUpdateOptions.monitoringThreshold = newValue
+        }
     }
     
-    /// The maximum time (in seconds) that can pass while gathering before updating the results.
-    open var gatheringNotificationInterval: TimeInterval {
-        get { batchingParameters.gatheringNotificationInterval }
-        set { batchingParameters.gatheringNotificationInterval = newValue }
-    }
-    /// The maximum number of changes that can accumulate while gathering before updating the results.
-    open var gatheringResultThreshold: Int {
-        get { batchingParameters.gatheringResultThreshold }
-        set { batchingParameters.gatheringResultThreshold = newValue }
-    }
-    
-    /// The maximum time (in seconds) that can pass while monitoring before updating the results.
-    open var monitoringNotificationInterval: TimeInterval {
-        get { batchingParameters.monitoringNotificationInterval }
-        set { batchingParameters.monitoringNotificationInterval = newValue }
-    }
-    /// The maximum number of changes that can accumulate while monitoring before updating the results.
-    open var monitoringResultThreshold: Int {
-        get { batchingParameters.monitoringResultThreshold }
-        set { batchingParameters.monitoringResultThreshold = newValue }
-    }
-    
-    var batchingParameters = BatchingParameters() {
+    /// Options for when the metadata query updates it's results with accumulated changes.
+    var resultsUpdateOptions = ResultsUpdateOptions() {
         didSet {
-            guard oldValue != batchingParameters, state != .isStopped else { return }
-            Self.batchingParameters = batchingParameters
+            guard oldValue != resultsUpdateOptions, !query.isStopped else { return }
+            Self.batchingParameters = resultsUpdateOptions
             query.notificationBatchingInterval = Double.random(max: 100.0)
         }
-    }
-        
-    struct BatchingParameters: Hashable {
-        public var initialNotificationDelay: TimeInterval = 0.08
-        public var initialResultThreshold: Int = 20
-        public var gatheringNotificationInterval: TimeInterval = 1.0
-        public var gatheringResultThreshold: Int = 50000
-        public var monitoringNotificationInterval: TimeInterval = 1.0
-        public var monitoringResultThreshold: Int = 50000
     }
     
     /**
@@ -377,7 +348,7 @@ open class MetadataQuery: NSObject {
     open func start() {
         runWithOperationQueue {
             guard self.state == .isStopped else { return }
-            Self.batchingParameters = self.batchingParameters
+            Self.batchingParameters = self.resultsUpdateOptions
             self.runWithOperationQueue {
                 self.query.enableUpdates()
                 self.query.start()
@@ -502,6 +473,17 @@ open class MetadataQuery: NSObject {
         updateResults(post: true)
     }
     
+    func updateMonitoring() {
+        guard isFinished else { return }
+        if monitorResults {
+            query.enableUpdates()
+            state = .isMonitoring
+        } else {
+            query.disableUpdates()
+            state = .isStopped
+        }
+    }
+    
     func runWithPausedMonitoring(_ block: () -> Void) {
         query.disableUpdates()
         block()
@@ -526,8 +508,8 @@ open class MetadataQuery: NSObject {
     }
     
     func interceptMDQuery() {
-        guard state != .isStopped else { return }
-        Self.batchingParameters = batchingParameters
+        guard !query.isStopped else { return }
+        Self.batchingParameters = resultsUpdateOptions
     }
         
     /**
@@ -605,12 +587,12 @@ func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryB
     // Swift.print("MDQuerySetBatchingParameters")
     var params = params
     if let batching = MetadataQuery.batchingParameters {
-        params.first_max_num = batching.initialResultThreshold
-        params.first_max_ms = Int((batching.initialNotificationDelay * 1000).rounded())
-        params.progress_max_num = batching.gatheringResultThreshold
-        params.progress_max_ms = Int((batching.gatheringNotificationInterval * 1000).rounded())
-        params.update_max_num = batching.monitoringResultThreshold
-        params.update_max_ms = Int((batching.monitoringNotificationInterval * 1000).rounded())
+        params.first_max_num = batching.initialThreshold
+        params.first_max_ms = Int((batching.initialDelay * 1000).rounded())
+        params.progress_max_num = batching.gatheringThreshold
+        params.progress_max_ms = Int((batching.gatheringInterval * 1000).rounded())
+        params.update_max_num = batching.monitoringThreshold
+        params.update_max_ms = Int((batching.monitoringInterval * 1000).rounded())
         MetadataQuery.batchingParameters = nil
     }
     MDQuerySetBatchingParameters(query, params)

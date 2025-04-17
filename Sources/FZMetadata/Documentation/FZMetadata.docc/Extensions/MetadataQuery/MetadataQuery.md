@@ -24,14 +24,10 @@
 - ``SearchScope``
 - ``operationQueue``
 
-### Configuring update notifications
+### Configuring query results updates
 
-- ``initialNotificationDelay``
-- ``initialResultThreshold``
-- ``gatheringNotificationInterval``
-- ``gatheringResultThreshold``
-- ``monitoringNotificationInterval``
-- ``monitoringResultThreshold``
+- ``resultsUpdateInterval``
+- ``resultsUpdateThreshold``
 
 ### Getting query results
 
