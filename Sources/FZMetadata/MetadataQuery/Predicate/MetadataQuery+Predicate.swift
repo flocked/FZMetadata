@@ -956,13 +956,13 @@ extension FileType {
         case .image: value = NSExpression(format: "%i", 13)
         case .video: value = NSExpression(format: "%i", 7)
         case .presentation: value = NSExpression(format: "%i", 12)
-        case let .unknown(oValue): value = NSExpression(format: "%@", oValue)
+        case .other(let pathExtension,_): value = NSExpression(format: "%@", pathExtension)
         default: value = NSExpression(format: "%@", identifier ?? "public.item")
         }
 
         let modifier: NSComparisonPredicate.Modifier
         switch self {
-        case .application, .archive, .text, .document, .unknown:
+        case .application, .archive, .text, .document, .other:
             modifier = .any
         default:
             modifier = .direct
