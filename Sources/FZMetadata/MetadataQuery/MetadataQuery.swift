@@ -69,16 +69,23 @@ import _MDQueryInterposer
 open class MetadataQuery: NSObject {
     
     /// The state of the query.
-    public enum State: Int {
+    @objc public enum State: Int, CustomStringConvertible {
         /// The query is in it's initial phase of gathering all matching items.
         case isGatheringItems
         /// The query is monitoring for updates to the results.
         case isMonitoring
         /// The query is stopped.
         case isStopped
+        
+        public var description: String {
+            switch self {
+            case .isGatheringItems: return "isGatheringItems"
+            case .isMonitoring: return "isMonitoring"
+            case .isStopped: return "isStopped"
+            }
+        }
     }
 
-    // static var batchingParameters: BatchingParameters?
     static var batchingParameters: ResultsUpdateOptions?
     let query = NSMetadataQuery()
     let delegate = Delegate()
@@ -91,11 +98,11 @@ open class MetadataQuery: NSObject {
     var prefetchesItemPathsInBackground = true
     let itemPathPrefetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var resultsUpdateLock = NSLock()
-    /// A Boolean value indicating whether the query should output debug messages when running.
+    /// A Boolean value indicating whether the query should output debug messages.
     public var debug = false
     
     /// The state of the query.
-    open internal(set) var state: State = .isStopped
+    @objc dynamic open internal(set) var state: State = .isStopped
     
     /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
     open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
@@ -432,10 +439,10 @@ open class MetadataQuery: NSObject {
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
-        debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count), \(pendingResultsUpdate.description) \(isFinished)")
         let resultsUpdate = notification.resultsUpdate
         pendingResultsUpdate = pendingResultsUpdate + resultsUpdate
-        (resultsUpdate.added + resultsUpdate.changed).forEach({ 
+        debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count) \(pendingResultsUpdate._description)")
+        (resultsUpdate.added + resultsUpdate.changed).forEach({
             $0.filePath = nil
             $0.filePathOperation?.cancel()
         })
@@ -453,7 +460,7 @@ open class MetadataQuery: NSObject {
     }
             
     @objc func gatheringFinished(_ notification: Notification) {
-        debugPrint("MetadataQuery gatheringFinished, results: \(_results.count), \(pendingResultsUpdate.description)")
+        debugPrint("MetadataQuery gatheringFinished, results: \(_results.count) \(pendingResultsUpdate._description)")
         isFinished = true
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || (query.resultCount == _results.count && !monitorResults) {
@@ -469,7 +476,7 @@ open class MetadataQuery: NSObject {
     
     @objc func queryUpdated(_ notification: Notification) {
         pendingResultsUpdate = pendingResultsUpdate + notification.resultsUpdate
-        debugPrint("MetadataQuery updated, results: \(_results.count), \(pendingResultsUpdate.description)")
+        debugPrint("MetadataQuery updated, results: \(_results.count) \(pendingResultsUpdate._description)")
         updateResults(post: true)
     }
     

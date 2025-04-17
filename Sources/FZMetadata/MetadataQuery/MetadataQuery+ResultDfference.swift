@@ -10,7 +10,7 @@ import FZSwiftUtils
 
 public extension MetadataQuery {
     /// The difference of a query results compared to the previous results.
-    struct ResultsDifference: Hashable {
+    struct ResultsDifference: Hashable, CustomStringConvertible {
         /// Added items compared to the previous results.
         public let added: [MetadataItem]
 
@@ -22,12 +22,16 @@ public extension MetadataQuery {
         
         var isEmpty: Bool { self == ResultsDifference() }
         
-        var description: String {
+        public var description: String {
+            "[added:\(added.count), changed:\(changed.count), removed:\(removed.count)]"
+        }
+        
+        var _description: String {
             var strings: [String] = []
             if !added.isEmpty { strings.append("added: \(added.count)") }
             if !removed.isEmpty { strings.append("removed: \(removed.count)") }
             if !changed.isEmpty { strings.append("changed: \(changed.count)") }
-            return strings.joined(separator: ", ")
+            return strings.isEmpty ? "" : "(\(strings.joined(separator: ", ")))"
         }
         
         static func + (lhs: Self, rhs: Self) -> Self {
