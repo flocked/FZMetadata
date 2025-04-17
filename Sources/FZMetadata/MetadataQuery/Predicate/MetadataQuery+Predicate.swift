@@ -154,8 +154,6 @@ public extension MetadataQuery {
      */
     @dynamicMemberLookup
     struct Predicate<T>: _Predicate {
-        typealias ComparisonOperator = NSComparisonPredicate.Operator
-
         init(_ mdKey: String) {
             self.mdKeys = [mdKey]
             self.predicate = nil
@@ -166,14 +164,14 @@ public extension MetadataQuery {
             self.predicate = predicate
         }
 
-        var mdKeys: [String] = []
+        let mdKeys: [String]
         let predicate: NSPredicate?
         var stringOptions: PredicateStringOptions = []
         var valueConverter: PredicateValueConverter? = nil
        
-        /// All attributes used by the predicate.
-        var attributes: [MetadataItem.Attribute] {
-            mdKeys.compactMap { MetadataItem.Attribute(rawValue: $0) }
+        /// Metadata item attributes used by the predicate.
+        public var attributes: [MetadataItem.Attribute] {
+            mdKeys.compactMap { MetadataItem.Attribute(rawValue: $0) }.uniqued()
         }
 
         /// Returns the metadata attribute for the specified `MetadataItem` keypath.
@@ -195,18 +193,18 @@ public extension MetadataQuery {
         }
 
         static func not(_ predicate: MetadataQuery.Predicate<Bool>) -> MetadataQuery.Predicate<Bool> {
-            .init(NSCompoundPredicate(not: predicate.predicate!), [predicate])
+            .init(!predicate.predicate!, [predicate])
         }
         
-        static func comparison(_ predicate: _Predicate, _ type: ComparisonOperator = .equalTo, _ value: Any) -> MetadataQuery.Predicate<Bool> {
+        static func comparison(_ predicate: _Predicate, _ type: NSComparisonPredicate.Operator = .equalTo, _ value: Any) -> MetadataQuery.Predicate<Bool> {
             .init(self.predicate(predicate.mdKeys.first!, type, value, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
-        static func comparisonAnd(_ predicate: _Predicate, _ comparisonOperator: ComparisonOperator = .equalTo, _ values: [Any]) -> MetadataQuery.Predicate<Bool> {
+        static func comparisonAnd(_ predicate: _Predicate, _ comparisonOperator: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> MetadataQuery.Predicate<Bool> {
             .init(predicateAnd(predicate.mdKeys.first!, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
-        static func comparisonOr(_ predicate: _Predicate, _ comparisonOperator: ComparisonOperator = .equalTo, _ values: [Any]) -> MetadataQuery.Predicate<Bool> {
+        static func comparisonOr(_ predicate: _Predicate, _ comparisonOperator: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> MetadataQuery.Predicate<Bool> {
             .init(predicateOr(predicate.mdKeys.first!, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
@@ -217,7 +215,7 @@ public extension MetadataQuery {
         }
         
         static func between(_ predicate: _Predicate, values: [(Any, Any)]) -> MetadataQuery.Predicate<Bool> {
-            or(values.compactMap({ between(predicate, value1: $0.0, value2: $0.1) }))
+            or(values.map({ between(predicate, value1: $0.0, value2: $0.1) }))
         }
         
         static var root: Predicate<MetadataItem> {
@@ -737,7 +735,7 @@ public extension MetadataQuery.Predicate where T == TimeDuration? {
 // MARK: PredicateBuilder
 
 extension MetadataQuery.Predicate {
-    static func predicate(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+    static func predicate(_ mdKey: String, _ type: NSComparisonPredicate.Operator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
         var value = converter?.value(for: value) ?? value
         var comparisonOptions: NSComparisonPredicate.Options = []
         if mdKey == "kMDItemFSExtension" {
@@ -759,13 +757,13 @@ extension MetadataQuery.Predicate {
         return NSComparisonPredicate(left: .keyPath(mdKey), right: .constant(value), type: type, options: comparisonOptions)
     }
     
-    static func predicateAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
-        let predicates = values.enumerated().compactMap { predicate(mdKey, type, $0.element, option, converter) }
+    static func predicateAnd(_ mdKey: String, _ type: NSComparisonPredicate.Operator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        let predicates = values.map { predicate(mdKey, type, $0, option, converter) }
         return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(and: predicates)
     }
 
-    static func predicateOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
-        let predicates = values.enumerated().compactMap { predicate(mdKey, type, $0.element, option, converter) }
+    static func predicateOr(_ mdKey: String, _ type: NSComparisonPredicate.Operator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        let predicates = values.map { predicate(mdKey, type, $0, option, converter) }
         return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
     }
 }
