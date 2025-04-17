@@ -11,10 +11,6 @@ import FZSwiftUtils
 public extension MetadataItem {
     /// The attribute of metadata item.
     enum Attribute: String, Hashable, CustomStringConvertible, CaseIterable {
-        public var description: String {
-            rawValue.replacingOccurrences(of: "kMDItem", with: "").lowercasedFirst()
-        }
-        
         // MARK: - Common
         
         /// The url of the file.
@@ -439,6 +435,10 @@ public extension MetadataItem {
          The value is a value between `0.0` and `1.0`.
          */
         case queryContentRelevance = "NSMetadataQueryResultContentRelevanceAttribute"
+        
+        public var description: String {
+            rawValue.replacingOccurrences(of: "kMDItem", with: "").replacingOccurrences(of: "FS", with: "File").lowercasedFirst()
+        }
         
         static func values(for mdKeys: [String]) -> [Self] {
             var attriutes = mdKeys.compactMap { Self(rawValue: $0) }
