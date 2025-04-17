@@ -230,7 +230,7 @@ public extension MetadataQuery {
 
 public extension MetadataQuery.Predicate where T == MetadataItem {
     /// Matches for ``MetadataItem/Attribute/fileName`` and ``MetadataItem/Attribute/textContent``.
-    var any: MetadataQuery.Predicate<String> {
+    var any: MetadataQuery.Predicate<String?> {
         .init("*")
     }
 
@@ -775,25 +775,24 @@ extension MetadataQuery.Predicate {
     
     static func predicateString(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
         let predicateString: String
-        switch (type, value) {
+        switch (type, mdKey) {
         case (_, "kMDItemFSExtension"):
-            predicateString = "kMDItemFSName = '*.\(value)'\(options.string)"
-        case (.contains, _):
-            predicateString = "\(mdKey) = '*\(value)*'\(options.string)"
-        case (.beginsWith, _):
-            predicateString = "\(mdKey) = '\(value)*'\(options.string)"
-        case (.endsWith, _):
-            predicateString = "\(mdKey) = '*\(value)'\(options.string)"
-        case (.notEqualTo, _):
-            predicateString = "\(mdKey) != '\(value)'\(options.string)"
+            predicateString = "kMDItemFSName ENDSWITH\((options - [.wordBased, .diacriticSensitive]).string) '.\(value)'"
+            if type == .notEqualTo {
+                return NSCompoundPredicate(notPredicateWithSubpredicate: NSPredicate(format: predicateString))
+            }
+        case (.contains,_):
+            predicateString = "\(mdKey) CONTAINS\(options.string) '\(value)'"
+        case (.beginsWith,_):
+            predicateString = "\(mdKey) BEGINSWITH\(options.string) '\(value)'"
+        case (.endsWith,_):
+            predicateString = "\(mdKey) ENDSWITH\(options.string) '\(value)'"
+        case (.notEqualTo,_):
+            predicateString = "\(mdKey) !=\(options.string) '\(value)'"
         default:
-            predicateString = "\(mdKey) = '\(value)'\(options.string)"
+            predicateString = "\(mdKey) ==\(options.string) '\(value)'"
         }
-        #if os(macOS)
-            return NSPredicate(fromMetadataQueryString: predicateString)!
-        #else
-            return NSPredicate(format: predicateString)
-        #endif
+        return NSPredicate(format: predicateString)
     }
 }
 

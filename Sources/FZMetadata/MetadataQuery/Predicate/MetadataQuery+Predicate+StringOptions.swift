@@ -14,15 +14,15 @@ extension MetadataQuery {
         public static let caseSensitive = Self(rawValue: 1 << 0)
         /// Diacritic-sensitive string comparison.
         public static let diacriticSensitive = Self(rawValue: 1 << 1)
-
+        /// Matches words.
+        public static let wordBased = Self(rawValue: 1 << 2)
+        
         /// Case-sensitive string comparison.
         public static let c = Self(rawValue: 1 << 0)
         /// Diacritic-sensitive string comparison.
         public static let d = Self(rawValue: 1 << 1)
         /// Case and diacritical-sensitive string comparison.
         public static let cd: Self = [.c, .d]
-        /// Matches words.
-        public static let wordBased = Self(rawValue: 1 << 2)
         /// Matches words.
         public static let w = Self(rawValue: 1 << 2)
         static let cdw: Self = [.c, .d, .w]
@@ -35,7 +35,7 @@ extension MetadataQuery {
         }
 
         var string: String {
-            "$[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
+            return self == .cd ? "" : "[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
         }
 
         init(extracting value: String) {
