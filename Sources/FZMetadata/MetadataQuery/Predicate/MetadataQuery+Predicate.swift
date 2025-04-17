@@ -775,7 +775,6 @@ extension MetadataQuery.Predicate {
     
     static func predicateString(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
         let predicateString: String
-        Swift.print("predicateString", value)
         switch (type, value) {
         case (_, "kMDItemFSExtension"):
             predicateString = "kMDItemFSName = '*.\(value)'\(options.string)"

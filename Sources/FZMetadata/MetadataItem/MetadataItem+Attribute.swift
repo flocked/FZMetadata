@@ -701,6 +701,11 @@ public extension MetadataItem {
 extension PartialKeyPath where Root == MetadataItem {
     /// The metadata query key for the attribute at the key path.
     var mdItemKey: String {
+        if self == \.contentTypeIdentifier {
+            return "kMDItemContentType"
+        } else if self == \.contentTypeTreeIdentifiers {
+            return "kMDItemContentTypeTree"
+        }
         var key = MetadataItem.Attribute.allCases.first(where: {$0.keyPath == self})?.rawValue ?? MetadataItem.Attribute.fileName.rawValue
         if key.hasPrefix("_") {
             key = String(key.dropFirst())
