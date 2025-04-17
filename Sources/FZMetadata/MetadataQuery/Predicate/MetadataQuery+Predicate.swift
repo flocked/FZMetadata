@@ -738,22 +738,25 @@ public extension MetadataQuery.Predicate where T == TimeDuration? {
 
 extension MetadataQuery.Predicate {
     static func predicate(_ mdKey: String, _ type: ComparisonOperator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        var comparisonOptions: NSComparisonPredicate.Options = []
         var value = converter?.value(for: value) ?? value
         switch value {
         case let value as String:
             guard !value.hasPrefix("$time") else { break }
-            return predicateString(mdKey, type, value, options)
+            comparisonOptions = options.options
         case let value as CGSize:
             return predicateSize(mdKey, type, value)
         case let rect as CGRect:
             value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
-        case let _value as (any QueryRawRepresentable):
-            value = _value.rawValue
+        case let rawRepresentable as (any QueryRawRepresentable):
+            value = rawRepresentable.rawValue
         default: break
         }
-        let key = NSExpression(forKeyPath: mdKey)
-        let valueEx = NSExpression(forConstantValue: value)
-        return NSComparisonPredicate(leftExpression: key, rightExpression: valueEx, modifier: .direct, type: type)
+        if mdKey == "kMDItemFSExtension" {
+            let predicate = NSComparisonPredicate(leftExpression: .keyPath("kMDItemFSName"), rightExpression: .constant( ".\(value)"), modifier: .direct, type: .endsWith, options: (options-[.diacriticSensitive, .wordBased]).options)
+            return type == .notEqualTo ? NSCompoundPredicate(notPredicateWithSubpredicate: predicate) : predicate
+        }
+        return NSComparisonPredicate(leftExpression: .keyPath(mdKey), rightExpression: .constant(value), modifier: .direct, type: type, options: comparisonOptions)
     }
     
     static func predicateAnd(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
@@ -771,34 +774,6 @@ extension MetadataQuery.Predicate {
         let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
         let predicates = [predicate(widthMDKey, type, [value.width]), predicate(heightMDKey, type, [value.height])]
         return NSCompoundPredicate(and: predicates)
-    }
-    
-    static func predicateString(_ mdKey: String, _ type: ComparisonOperator, _ value: String, _ options: MetadataQuery.PredicateStringOptions = []) -> NSPredicate {
-        let predicateString: String
-        switch (type, mdKey) {
-        case (_, "kMDItemFSExtension"):
-            NSComparisonPredicate(NSExpression(forKeyPath: "kMDItemFSExtension") == NSExpression(forKeyPath: "kMDItemFSExtension"))
-            let key = NSExpression(forKeyPath: "kMDItemFSExtension")
-            let valueEx = NSExpression(format: "'\(value)'")
-            let predicate = NSComparisonPredicate(leftExpression: key, rightExpression: valueEx, modifier: .direct, type: type, options: [.init(rawValue: 16)])
-            predicateString = "kMDItemFSName ENDSWITH\((options - [.wordBased, .diacriticSensitive]).string) '.\(value)'"
-            Swift.print(valueEx, predicate.predicateFormat, NSPredicate(format: predicateString).predicateFormat)
-
-            if type == .notEqualTo {
-                return NSCompoundPredicate(notPredicateWithSubpredicate: NSPredicate(format: predicateString))
-            }
-        case (.contains,_):
-            predicateString = "\(mdKey) CONTAINS\(options.string) '\(value)'"
-        case (.beginsWith,_):
-            predicateString = "\(mdKey) BEGINSWITH\(options.string) '\(value)'"
-        case (.endsWith,_):
-            predicateString = "\(mdKey) ENDSWITH\(options.string) '\(value)'"
-        case (.notEqualTo,_):
-            predicateString = "\(mdKey) !=\(options.string) '\(value)'"
-        default:
-            predicateString = "\(mdKey) ==\(options.string) '\(value)'"
-        }
-        return NSPredicate(format: predicateString)
     }
 }
 
@@ -974,9 +949,4 @@ extension FileType {
         }
         return NSComparisonPredicate(leftExpression: key, rightExpression: value, modifier: modifier, type: type)
     }
-}
-
-extension NSComparisonPredicate.Options {
-    /// A word-based predicate.
-    public static let wordBased = NSComparisonPredicate.Options(rawValue: 8)
 }

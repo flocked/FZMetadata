@@ -33,9 +33,13 @@ extension MetadataQuery {
         public init(rawValue: Int8) {
             self.rawValue = rawValue
         }
-
-        var string: String {
-            return self == .cd ? "" : "[\(contains(.caseSensitive) ? "" : "c")\(contains(.diacriticSensitive) ? "" : "d")\(contains(.wordBased) ? "w" : "")]"
+        
+        var options: NSComparisonPredicate.Options {
+            var options: NSComparisonPredicate.Options = []
+            if !contains(.caseSensitive) { options.insert(.caseInsensitive) }
+            if !contains(.diacriticSensitive) { options.insert(.diacriticInsensitive) }
+            if contains(.wordBased) { options.insert(.wordBased) }
+            return options
         }
 
         init(extracting value: String) {
