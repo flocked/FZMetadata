@@ -745,7 +745,7 @@ extension MetadataQuery.Predicate {
             guard !value.hasPrefix("$time") else { break }
             comparisonOptions = options.options
         case let value as CGSize:
-            return predicateSize(mdKey, type, value)
+            return predicate(mdKey.replacingOccurrences(of: "Size", with: "Width"), type, [value.width]) && predicate(mdKey.replacingOccurrences(of: "Size", with: "Height"), type, [value.height])
         case let rect as CGRect:
             value = [rect.origin.x, rect.origin.y, rect.width, rect.height]
         case let rawRepresentable as (any QueryRawRepresentable):
@@ -767,13 +767,6 @@ extension MetadataQuery.Predicate {
     static func predicateOr(_ mdKey: String, _ type: ComparisonOperator, _ values: [Any], _ option: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
         let predicates = values.enumerated().compactMap { predicate(mdKey, type, $0.element, option, converter) }
         return (predicates.count == 1) ? predicates.first! : NSCompoundPredicate(or: predicates)
-    }
-
-    static func predicateSize(_ mdKey: String, _ type: ComparisonOperator, _ value: CGSize) -> NSPredicate {
-        let widthMDKey = mdKey.replacingOccurrences(of: "Size", with: "Width")
-        let heightMDKey = mdKey.replacingOccurrences(of: "Size", with: "Height")
-        let predicates = [predicate(widthMDKey, type, [value.width]), predicate(heightMDKey, type, [value.height])]
-        return NSCompoundPredicate(and: predicates)
     }
 }
 
