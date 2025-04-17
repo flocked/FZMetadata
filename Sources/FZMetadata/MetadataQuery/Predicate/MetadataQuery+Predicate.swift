@@ -170,8 +170,13 @@ public extension MetadataQuery {
         var valueConverter: PredicateValueConverter? = nil
        
         /// Metadata item attributes used by the predicate.
-        public var attributes: [MetadataItem.Attribute] {
-            mdKeys.compactMap { MetadataItem.Attribute(rawValue: $0) }.uniqued()
+        var attributes: [MetadataItem.Attribute] {
+            mdKeys.compactMap { MetadataItem.Attribute(rawValue: $0) }
+        }
+        
+        /// The predicate format string.
+        var format: String? {
+            predicate?.predicateFormat
         }
 
         /// Returns the metadata attribute for the specified `MetadataItem` keypath.
@@ -647,6 +652,29 @@ public extension MetadataQuery.Predicate where T: QueryCollection {
     }
 }
 
+public extension MetadataQuery.Predicate where T: QueryCollection, T.Element: QueryString {
+    /// Case-sensitive string comparison.
+    var caseSensitive: Self {
+        var predicate = self
+        predicate.stringOptions.insert(.caseSensitive)
+        return predicate
+    }
+    
+    /// Diacritic-sensitive string comparison.
+    var diacriticSensitive: Self {
+        var predicate = self
+        predicate.stringOptions.insert(.diacriticSensitive)
+        return predicate
+    }
+    
+    /// Word based string comparison.
+    var wordBased: Self {
+        var predicate = self
+        predicate.stringOptions.insert(.wordBased)
+        return predicate
+    }
+}
+
 // MARK: DataSize
 
 public extension MetadataQuery.Predicate where T == DataSize? {
@@ -736,6 +764,7 @@ public extension MetadataQuery.Predicate where T == TimeDuration? {
 
 extension MetadataQuery.Predicate {
     static func predicate(_ mdKey: String, _ type: NSComparisonPredicate.Operator, _ value: Any, _ options: MetadataQuery.PredicateStringOptions = [], _ converter: PredicateValueConverter? = nil) -> NSPredicate {
+        Swift.print("PRED", mdKey, options.options)
         var value = converter?.value(for: value) ?? value
         var comparisonOptions: NSComparisonPredicate.Options = []
         if mdKey == "kMDItemFSExtension" {

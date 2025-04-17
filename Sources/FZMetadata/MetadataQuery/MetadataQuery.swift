@@ -80,7 +80,7 @@ open class MetadataQuery: NSObject {
 
     // static var batchingParameters: BatchingParameters?
     static var batchingParameters: ResultsUpdateOptions?
-    public let query = NSMetadataQuery()
+    let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultsDifference()
@@ -140,17 +140,17 @@ open class MetadataQuery: NSObject {
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>))? {
+        get { _predicate }
+        set { _predicate = newValue ?? { $0.contentTypeTreeIdentifiers.caseSensitive.diacriticSensitive == "public.item" } }
+    }
+    
+    private var _predicate: ((Predicate<MetadataItem>) -> (Predicate<Bool>)) = { $0.contentTypeTreeIdentifiers.caseSensitive.diacriticSensitive == "public.item" } {
         didSet {
             runWithOperationQueue {
                 self.interceptMDQuery()
-                self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
+                self.query.predicate = self._predicate(.root).predicate
             }
         }
-    }
-    
-    /// The predicate format string.
-    open var predicateFormat: String {
-        query.predicate?.predicateFormat ?? ""
     }
     
     /**
