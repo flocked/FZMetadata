@@ -53,7 +53,7 @@ open class MetadataItem: Identifiable {
     /// The identifier of the item.
     public let id = UUID()
     
-    public let item: NSMetadataItem
+    let item: NSMetadataItem
     
     /// Attribute values fetched by a query.
     var values: [String: Any] = [:]

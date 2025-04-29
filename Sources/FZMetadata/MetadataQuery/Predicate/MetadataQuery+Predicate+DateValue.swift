@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension MetadataQuery.Predicate {
+extension MetadataQuery.PredicateComponent {
     /// Predicate value f
     public enum DateValue: Hashable {
         /// Now.
