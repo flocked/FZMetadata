@@ -384,7 +384,7 @@ open class MetadataQuery: NSObject {
      
      The default value is `false`.
      */
-    var isGatheringSynchronous: Bool {
+    public var isSynchronous: Bool {
         get { options.contains(.synchronous) }
         set { options[.synchronous] = newValue }
     }
@@ -648,15 +648,6 @@ class ItemPathPrefetchOperation: Operation {
     }
 }
 
-/*
-@_cdecl("swizzled_MDQueryCreate")
-func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!, _ valueListAttrs: CFArray!, _ sortingAttrs: CFArray!) -> MDQuery! {
-    Swift.print("MDQuery")
-    return MDQueryCreate(allocator, queryString, valueListAttrs, sortingAttrs)
-}
- */
-
-
 @_cdecl("swizzled_MDQueryExecute")
 func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
 ) -> Bool {
@@ -671,16 +662,15 @@ func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
 
 @_cdecl("swizzled_MDQuerySetBatchingParameters")
 func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
-    // Swift.print("MDQuerySetBatchingParameters")
-    var params = params
-    if let batching = MetadataQuery.batchingParameters {
-        params.first_max_num = batching.initialThreshold
-        params.first_max_ms = Int((batching.initialDelay * 1000).rounded())
-        params.progress_max_num = batching.gatheringThreshold
-        params.progress_max_ms = Int((batching.gatheringInterval * 1000).rounded())
-        params.update_max_num = batching.monitoringThreshold
-        params.update_max_ms = Int((batching.monitoringInterval * 1000).rounded())
-        MetadataQuery.batchingParameters = nil
-    }
+    let params = MetadataQuery.batchingParameters?.batching ?? params
+    MetadataQuery.batchingParameters = nil
     MDQuerySetBatchingParameters(query, params)
 }
+
+/*
+@_cdecl("swizzled_MDQueryCreate")
+func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!, _ valueListAttrs: CFArray!, _ sortingAttrs: CFArray!) -> MDQuery! {
+    Swift.print("MDQuery")
+    return MDQueryCreate(allocator, queryString, valueListAttrs, sortingAttrs)
+}
+ */

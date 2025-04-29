@@ -11,29 +11,34 @@ extension MetadataQuery {
     /// Options for when the metadata query updates it's results with accumulated changes.
     struct ResultsUpdateOptions: Hashable {
         /// The inital maximum time (in seconds) that can pass after the query begins before updating the results with accumulated changes.
-        var initialDelay: TimeInterval = 0.08
+        public var initialDelay: TimeInterval = 0.08
+        
         /// The initial maximum number of changes that can accumulate after the query started before updating the results.
-        var initialThreshold: Int = 20
+        public var initialThreshold: Int = 20
         
         /**
          The interval (in seconds) at which the results gets updated with accumulated changes while gathering.
          
          This value is advisory, in that the update will be triggered at some point after the specified seconds passed since the last update.
          */
-        var gatheringInterval: TimeInterval = 1.0
-
+        public var gatheringInterval: TimeInterval = 1.0
+        
         /// The maximum number of changes that can accumulate while gathering before updating the results.
-        var gatheringThreshold: Int = 50000
+        public var gatheringThreshold: Int = 50000
         
         /**
          The interval (in seconds) at which the results gets updated with accumulated changes while monitoring.
          
          This value is advisory, in that the update will be triggered at some point after the specified seconds passed since the last update.
          */
-        var monitoringInterval: TimeInterval = 1.0
-
+        public var monitoringInterval: TimeInterval = 1.0
+        
         /// The maximum number of changes that can accumulate while monitoring before updating the results.
-        var monitoringThreshold: Int = 50000
+        public var monitoringThreshold: Int = 50000
+        
+        internal var batching: MDQueryBatchingParams {
+            MDQueryBatchingParams(first_max_num: initialThreshold, first_max_ms: Int((initialDelay * 1000).rounded()), progress_max_num: gatheringThreshold, progress_max_ms: Int((gatheringInterval * 1000).rounded()), update_max_num: monitoringThreshold, update_max_ms: Int((monitoringInterval * 1000).rounded()))
+        }
         
         init(initialDelay: TimeInterval = 0.08, initialThreshold: Int = 20, gatheringInterval: TimeInterval = 1.0, gatheringThreshold: Int = 50000, monitoringInterval: TimeInterval = 1.0, monitoringThreshold: Int = 50000) {
             self.initialDelay = initialDelay
@@ -67,6 +72,7 @@ extension MetadataQuery {
          This option is ignored if the `synchronous` option is specified.
          */
         public static var wantsUpdates = Self(rawValue: 1 << 2)
+        
         /**
          The query interacts directly with the filesystem to resolve parts of the query, in addition to using the Spotlight metadata index.
          
