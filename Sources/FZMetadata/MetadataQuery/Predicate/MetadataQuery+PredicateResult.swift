@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 extension MetadataQuery {
     public struct PredicateResult: _Predicate {
         let mdKeys: [String]
-        let predicate: NSPredicate?
+        let predicate: NSPredicate
         var stringOptions: PredicateStringOptions = []
         var valueConverter: PredicateValueConverter? = nil
         
@@ -21,42 +21,38 @@ extension MetadataQuery {
             self.predicate = predicate
         }
         
-        init(_ mdKey: String) {
-            self.mdKeys = [mdKey]
-            self.predicate = nil
-        }
         
-        static func and(_ predicates: [MetadataQuery.PredicateResult]) -> MetadataQuery.PredicateResult {
+        static func and(_ predicates: [Self]) -> Self {
             .init(NSCompoundPredicate(and: predicates.compactMap(\.predicate)), predicates)
         }
 
-        static func or(_ predicates: [MetadataQuery.PredicateResult]) -> MetadataQuery.PredicateResult {
+        static func or(_ predicates: [Self]) -> Self {
             .init(NSCompoundPredicate(or: predicates.compactMap(\.predicate)), predicates)
         }
 
-        static func not(_ predicate: MetadataQuery.PredicateResult) -> MetadataQuery.PredicateResult {
-            .init(!predicate.predicate!, [predicate])
+        static func not(_ predicate: Self) -> Self {
+            .init(!predicate.predicate, [predicate])
         }
         
-        static func comparison(_ predicate: _Predicate, _ type: NSComparisonPredicate.Operator = .equalTo, _ value: Any) -> MetadataQuery.PredicateResult {
+        static func comparison(_ predicate: _Predicate, _ type: NSComparisonPredicate.Operator = .equalTo, _ value: Any) -> Self {
             .init(self.predicate(predicate.mdKeys.first!, type, value, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
-        static func comparisonAnd(_ predicate: _Predicate, _ comparisonOperator: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> MetadataQuery.PredicateResult {
+        static func comparisonAnd(_ predicate: _Predicate, _ comparisonOperator: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> Self {
             .init(predicateAnd(predicate.mdKeys.first!, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
-        static func comparisonOr(_ predicate: _Predicate, _ comparisonOperator: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> MetadataQuery.PredicateResult {
+        static func comparisonOr(_ predicate: _Predicate, _ comparisonOperator: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> Self {
             .init(predicateOr(predicate.mdKeys.first!, comparisonOperator, values, predicate.stringOptions, predicate.valueConverter), [predicate])
         }
         
-        static func between(_ predicate: _Predicate, value1: Any, value2: Any) -> MetadataQuery.PredicateResult {
+        static func between(_ predicate: _Predicate, value1: Any, value2: Any) -> Self {
             and([
                 comparison(predicate, .greaterThanOrEqualTo, value1),
                 comparison(predicate, .lessThanOrEqualTo, value2)])
         }
         
-        static func between(_ predicate: _Predicate, values: [(Any, Any)]) -> MetadataQuery.PredicateResult {
+        static func between(_ predicate: _Predicate, values: [(Any, Any)]) -> Self {
             or(values.map({ between(predicate, value1: $0.0, value2: $0.1) }))
         }
     }
@@ -73,6 +69,10 @@ public extension MetadataQuery.PredicateResult {
 
     static func || (_ lhs: Self, _ rhs: Self) -> MetadataQuery.PredicateResult {
         .or([lhs, rhs])
+    }
+    
+    static func == (lhs: Self, rhs: Bool) -> Self {
+        rhs == true ? lhs : .not(lhs)
     }
 }
 

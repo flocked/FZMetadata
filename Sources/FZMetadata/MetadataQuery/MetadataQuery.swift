@@ -104,9 +104,7 @@ open class MetadataQuery: NSObject {
     var prefetchesItemPathsInBackground = true
     let itemPathPrefetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var resultsUpdateLock = NSLock()
-    var mdQuery: MDQuery?
-    /// A Boolean value indicating whether the query should output debug messages.
-    public var debug = false
+    var debug = false
     
     /// The state of the query.
     @objc dynamic open internal(set) var state: State = .isStopped
@@ -473,17 +471,18 @@ open class MetadataQuery: NSObject {
     
     func updateResults(post: Bool = false) {
         resultsUpdateLock.lock()
-        runWithPausedMonitoring {
-            let results = (0..<self.query.resultCount).compactMap({ self.query.result(at: $0) as? MetadataItem })
-            let pending = self.pendingResultsUpdate
-            self.pendingResultsUpdate = .init()
-            pending.added.forEach({ self.updateResult($0, isInital: true) })
-            pending.changed.forEach({ self.updateResult($0) })
-            self._results.synchronized = results
-            guard post else { return }
-            self.resultsHandler?(results, pending)
-        }
+        query.disableUpdates()
+        let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
+        let pending = pendingResultsUpdate
+        pendingResultsUpdate = .init()
+        pending.added.forEach({ updateResult($0, isInital: true) })
+        pending.changed.forEach({ updateResult($0) })
+        _results.synchronized = results
+        query.enableUpdates()
         resultsUpdateLock.unlock()
+        if post {
+            resultsHandler?(results, pending)
+        }
     }
         
     func updateResult(_ result: MetadataItem, isInital: Bool = false) {
@@ -558,12 +557,6 @@ open class MetadataQuery: NSObject {
             query.disableUpdates()
             state = .isStopped
         }
-    }
-    
-    func runWithPausedMonitoring(_ block: () -> Void) {
-        query.disableUpdates()
-        block()
-        query.enableUpdates()
     }
     
     func runWithOperationQueue(_ block: @escaping () -> Void) {
