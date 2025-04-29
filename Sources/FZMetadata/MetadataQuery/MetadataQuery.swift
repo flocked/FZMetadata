@@ -89,7 +89,6 @@ open class MetadataQuery: NSObject {
         }
     }
 
-    static var query: MetadataQuery?
     static var maxResults: Int?
     static var batchingParameters: ResultsUpdateOptions?
     static var options: Options?
@@ -661,8 +660,6 @@ func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!,
 @_cdecl("swizzled_MDQueryExecute")
 func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
 ) -> Bool {
-    MetadataQuery.query?.mdQuery = query
-    MetadataQuery.query = nil
     let optionFlags = MetadataQuery.options?.rawValue ?? optionFlags
     MetadataQuery.options = nil
     if let maxResults = MetadataQuery.maxResults {
