@@ -14,7 +14,7 @@ public extension MetadataQuery {
      A predicate for filtering the results of a query.
 
      ### Operators
-     Predicates can be defined by comparing MetadataItem properties to values using operators and functions.
+     Predicates can be defined by comparing ``MetadataItem`` properties to values using operators and functions.
 
      Depending on the property type there are different operators and functions available:
 
@@ -23,7 +23,7 @@ public extension MetadataQuery {
      - ``isFolder``
      - ``isAlias``
      - ``isVolume``
-     - ``any``  (either file, directory, alias or volume)
+     - ``any``:  Matches for ``MetadataItem/Attribute/fileName`` and ``MetadataItem/Attribute/textContent``.
 
      ```swift
      // is a file
@@ -32,8 +32,8 @@ public extension MetadataQuery {
      // is not an alias file
      { $0.isAlias == false }
 
-     // is any
-     { $0.any }
+     // File name or text content is "ViewController"
+     { $0.any == "ViewController" }
      ```
 
      ## Equatable
@@ -73,9 +73,10 @@ public extension MetadataQuery {
      ```
 
      ## String
-     - ``starts(with:)`` OR  `*== String`
-     - ``ends(with:)`` OR  `==* String`
-     - ``contains(_:)-5iysw`` OR `*=* String`
+     
+     - ``MetadataQuery/PredicateComponent/starts(with:)`` OR  `*== String`
+     - ``MetadataQuery/PredicateComponent/ends(with:)`` OR  `==* String`
+     - ``MetadataQuery/PredicateComponent/contains(_:)-914nr`` OR `*=* String`
 
      ```swift
      // fileName ends with ".doc"
@@ -89,7 +90,7 @@ public extension MetadataQuery {
 
      By default string predicates are case- and diacritic-insensitive.
 
-     Use ``caseSensitive`` for case-sensitive, ``diacriticSensitive``, for diacritic-sensitve and ``wordBased`` for word-based string comparsion.
+     Use ``MetadataQuery/PredicateComponent/caseSensitive-419ud`` for case-sensitive, ``MetadataQuery/PredicateComponent/diacriticSensitive-ldq4``, for diacritic-sensitve and ``MetadataQuery/PredicateComponent/wordBased-1d75h`` for word-based string comparsion.
 
      ```swift
      // case-sensitive
@@ -101,40 +102,44 @@ public extension MetadataQuery {
 
      ## Date
     
-     You can either compare a date to another date, or use ``DateValue``.
+     You can either compare a date to another date, or use the following:
      
-     - ``DateValue/now``.
-     - ``DateValue/today``
-     - ``DateValue/yesterday``
-     - ``DateValue/sameDay(_:)``
-     - ``DateValue/thisWeek``
-     - ``DateValue/lastWeek``
-     - ``DateValue/sameWeek(_:)``
-     - ``DateValue/thisMonth``
-     - ``DateValue/lastMonth``
-     - ``DateValue/sameMonth(_:)``
-     - ``DateValue/thisYear``
-     - ``DateValue/lastYear``
-     - ``DateValue/sameYear(_:)``
-     - ``DateValue/within(_:_:)``
-     - ``DateValue/this(_:)``
-
+     - ``MetadataQuery/PredicateComponent/isNow``
+     - ``MetadataQuery/PredicateComponent/isThisMinute``
+     - ``MetadataQuery/PredicateComponent/isLastMinute``
+     - ``MetadataQuery/PredicateComponent/isThisHour``
+     - ``MetadataQuery/PredicateComponent/isLastHour``
+     - ``MetadataQuery/PredicateComponent/isSameHour(as:)``
+     - ``MetadataQuery/PredicateComponent/isToday``
+     - ``MetadataQuery/PredicateComponent/isYesterday``
+     - ``MetadataQuery/PredicateComponent/isSameDay(as:)``
+     - ``MetadataQuery/PredicateComponent/isThisWeek``
+     - ``MetadataQuery/PredicateComponent/isLastWeek``
+     - ``MetadataQuery/PredicateComponent/isSameWeek(as:)``
+     - ``MetadataQuery/PredicateComponent/isThisMonth``
+     - ``MetadataQuery/PredicateComponent/isLastMonth``
+     - ``MetadataQuery/PredicateComponent/isSameMonth(as:)``
+     - ``MetadataQuery/PredicateComponent/isThisYear``
+     - ``MetadataQuery/PredicateComponent/isLastYear``
+     - ``MetadataQuery/PredicateComponent/isSameYear(as:)``
+     - ``MetadataQuery/PredicateComponent/isWithin(_:_:)``
+     
      ```swift
      // is today
-     { $0.creationDate == .today }
+     { $0.creationDate.isToday }
 
      // is same week as otherDate
-     { $0.creationDate == .sameWeek(otherDate) }
+     { $0.creationDate.isSameWeek(as: otherDate) }
 
      // is within 4 weeks
-     { $0.creationDate == .within(4, .week) }
+     { $0.creationDate.isWithin(4, .week) }
      ```
 
      ## Collection
-     - ``contains(_:)-8fg9``  OR `== Element`
-     - ``containsNot(_:)``  OR `!= Element`
-     - ``contains(any:)-2ysd3``
-     - ``containsNot(any:)``
+     - ``MetadataQuery/PredicateComponent/contains(_:)-3yy8y``  OR `== Element`
+     - ``MetadataQuery/PredicateComponent/containsNot(_:)``  OR `!= Element`
+     - ``MetadataQuery/PredicateComponent/contains(any:)-92ca0``
+     - ``MetadataQuery/PredicateComponent/containsNot(any:)``
 
      ```swift
      // finderTags contains "red"
@@ -188,10 +193,6 @@ public extension MetadataQuery {
         /// The item is an alias file.
         public var isAlias: MetadataQuery.PredicateResult {
             .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
-        }
-        
-        internal var isItem: MetadataQuery.PredicateResult {
-            .comparison("kMDItemContentTypeTree", .equalTo, "public.item")
         }
         
         static var root: PredicateItem {

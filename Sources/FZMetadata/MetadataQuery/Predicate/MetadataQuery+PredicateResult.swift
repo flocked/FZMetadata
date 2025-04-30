@@ -47,9 +47,7 @@ extension MetadataQuery {
         }
         
         static func between(_ predicate: _Predicate, value1: Any, value2: Any) -> Self {
-            and([
-                comparison(predicate, .greaterThanOrEqualTo, value1),
-                comparison(predicate, .lessThanOrEqualTo, value2)])
+            and([comparison(predicate, .greaterThanOrEqualTo, value1), comparison(predicate, .lessThanOrEqualTo, value2)])
         }
         
         static func between(_ predicate: _Predicate, values: [(Any, Any)]) -> Self {
@@ -59,15 +57,15 @@ extension MetadataQuery {
 }
 
 public extension MetadataQuery.PredicateResult {
-    static prefix func ! (_ lhs: Self) -> MetadataQuery.PredicateResult {
+    static prefix func ! (lhs: Self) -> Self {
         .not(lhs)
     }
 
-    static func && (_ lhs: Self, _ rhs: Self) -> MetadataQuery.PredicateResult {
+    static func && (lhs: Self, rhs: Self) -> Self {
         .and([lhs, rhs])
     }
 
-    static func || (_ lhs: Self, _ rhs: Self) -> MetadataQuery.PredicateResult {
+    static func || (lhs: Self, rhs: Self) -> Self {
         .or([lhs, rhs])
     }
     

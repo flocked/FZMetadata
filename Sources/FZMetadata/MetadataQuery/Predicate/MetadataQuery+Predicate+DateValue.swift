@@ -7,9 +7,10 @@
 
 import Foundation
 
+
 extension MetadataQuery.PredicateComponent {
     /// Predicate value f
-    public enum DateValue: Hashable {
+    enum DateValue: Hashable {
         /// Now.
         case now
         /// This minute.
@@ -122,33 +123,33 @@ extension MetadataQuery.PredicateComponent {
         static func same(_ unit: Calendar.Component, _ date: Date) -> [String] {
             return ["\(date.beginning(of: unit) ?? date)", "\(date.end(of: unit) ?? date)"]
         }
+    }
+    
+    public enum DateComponent {
+        /// Second.
+        case second
+        /// Minute.
+        case minute
+        /// Hour.
+        case hour
+        /// Day.
+        case day
+        /// Week.
+        case week
+        /// Month.
+        case month
+        /// Year.
+        case year
         
-        public enum DateComponent {
-            /// Second.
-            case second
-            /// Minute.
-            case minute
-            /// Hour.
-            case hour
-            /// Day.
-            case day
-            /// Week.
-            case week
-            /// Month.
-            case month
-            /// Year.
-            case year
-            
-            var values: (String, Int) {
-                switch self {
-                case .second: return ("$time.now", 1)
-                case .minute: return ("$time.now", 60)
-                case .hour: return ("$time.now", 3600)
-                case .day: return ("$time.today", 1)
-                case .week: return ("$time.this_week", 1)
-                case .month: return ("$time.this_month", 1)
-                case .year: return ("$time.this_year", 1)
-                }
+        var values: (String, Int) {
+            switch self {
+            case .second: return ("$time.now", 1)
+            case .minute: return ("$time.now", 60)
+            case .hour: return ("$time.now", 3600)
+            case .day: return ("$time.today", 1)
+            case .week: return ("$time.this_week", 1)
+            case .month: return ("$time.this_month", 1)
+            case .year: return ("$time.this_year", 1)
             }
         }
     }

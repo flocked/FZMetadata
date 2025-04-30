@@ -18,6 +18,12 @@ extension MetadataQuery {
         init(_ mdKey: String) {
             self.mdKeys = [mdKey]
         }
+        
+        init(_ mdKeys: [String], _ converter: PredicateValueConverter? = nil, _ stringOptions: PredicateStringOptions = []) {
+            self.mdKeys = mdKeys
+            self.valueConverter = converter
+            self.stringOptions = stringOptions
+        }
     }
 }
 
@@ -121,10 +127,110 @@ public extension MetadataQuery.PredicateComponent where T: QueryComparable {
 // MARK: Date
 
 public extension MetadataQuery.PredicateComponent where T: QueryDate {
-    /// Checks if a date matches the specified date value.
-    static func == (lhs: Self, rhs: DateValue) -> MetadataQuery.PredicateResult {
-        let values = rhs.values
-        return .between(lhs, value1: values[0], value2: values[1])
+    /// Checks if a date is now.
+    var isNow: MetadataQuery.PredicateResult {
+        self == .now
+    }
+    
+    /// Checks if a date is this Minute.
+    var isThisMinute: MetadataQuery.PredicateResult {
+        self == .thisMinute
+    }
+    
+    /// Checks if a date is last minute.
+    var isLastMinute: MetadataQuery.PredicateResult {
+        self == .lastMinute
+    }
+    
+    /// Checks if a date is this hour.
+    var isThisHour: MetadataQuery.PredicateResult {
+        self == .thisHour
+    }
+    
+    /// Checks if a date is last hour.
+    var isLastHour: MetadataQuery.PredicateResult {
+        self == .lastHour
+    }
+    
+    /// Checks if a date is same hour as the specified date.
+    func isSameHour(as date: Date) -> MetadataQuery.PredicateResult {
+        self == .sameHour(date)
+    }
+    
+    /// Checks if a date is today.
+    var isToday: MetadataQuery.PredicateResult {
+        self == .today
+    }
+    
+    /// Checks if a date is yesterday.
+    var isYesterday: MetadataQuery.PredicateResult {
+        self == .yesterday
+    }
+    
+    /// Checks if a date is same day as the specified date.
+    func isSameDay(as date: Date) -> MetadataQuery.PredicateResult {
+        self == .sameDay(date)
+    }
+    
+    /// Checks if a date is this week.
+    var isThisWeek: MetadataQuery.PredicateResult {
+        self == .thisWeek
+    }
+    
+    /// Checks if a date is last week.
+    var isLastWeek: MetadataQuery.PredicateResult {
+        self == .lastWeek
+    }
+    
+    /// Checks if a date is same week as the specified date.
+    func isSameWeek(as date: Date) -> MetadataQuery.PredicateResult {
+        self == .sameWeek(date)
+    }
+    
+    /// Checks if a date is this month.
+    var isThisMonth: MetadataQuery.PredicateResult {
+        self == .thisMonth
+    }
+    
+    /// Checks if a date is last month.
+    var isLastMonth: MetadataQuery.PredicateResult {
+        self == .lastMonth
+    }
+    
+    /// Checks if a date is same month as the specified date.
+    func isSameMonth(as date: Date) -> MetadataQuery.PredicateResult {
+        self == .sameMonth(date)
+    }
+    
+    /// Checks if a date is this year.
+    var isThisYear: MetadataQuery.PredicateResult {
+        self == .thisYear
+    }
+    
+    /// Checks if a date is last year.
+    var isLastYear: MetadataQuery.PredicateResult {
+        self == .lastYear
+    }
+    
+    /// Checks if a date is same year as the specified date.
+    func isSameYear(as date: Date) -> MetadataQuery.PredicateResult {
+        self == .sameYear(date)
+    }
+    
+    /**
+     Checks if a date is within the last specified amount of  calendar units.
+     
+     Example:
+     ```swift
+     // creationDate is within the last 8 weeks.
+     { $0.creationDate.isWithin(8, .week) }
+     
+     // creationDate is within the last 2 years.
+     { $0.creationDate.isWithin(2, .year) }
+     ```
+     */
+    func isWithin(_ amount: Int, _ unit: DateComponent) -> MetadataQuery.PredicateResult {
+        self == .within(amount, unit)
     }
     
     /// Checks if a date is before the specified date.
@@ -138,13 +244,14 @@ public extension MetadataQuery.PredicateComponent where T: QueryDate {
     }
     
     /// Checks if a date is between the specified date interval.
-    func isBetween(_ interval: DateInterval) -> MetadataQuery.PredicateResult {
-        .between(self, value1: interval.start, value2: interval.end)
+    static func == (lhs: Self, rhs: DateInterval) -> MetadataQuery.PredicateResult {
+        .between(lhs, value1: rhs.start, value2: rhs.end)
     }
     
-    /// Checks if a date is between the specified date interval.
-    static func == (lhs: Self, rhs: DateInterval) -> MetadataQuery.PredicateResult {
-        lhs.isBetween(rhs)
+    /// Checks if a date matches the specified date value.
+    internal static func == (lhs: Self, rhs: DateValue) -> MetadataQuery.PredicateResult {
+        let values = rhs.values
+        return .between(lhs, value1: values[0], value2: values[1])
     }
 }
 
@@ -153,12 +260,12 @@ public extension MetadataQuery.PredicateComponent where T: QueryDate {
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 public extension MetadataQuery.PredicateComponent where T: QueryUTType {
     /// Checks iif the content type is a subtype of a given type.
-    func subtype(of type: UTType) -> MetadataQuery.PredicateResult {
+    func isSubtype(of type: UTType) -> MetadataQuery.PredicateResult {
         .comparison("kMDItemContentTypeTree", .equalTo, type.identifier)
     }
 
     /// Checks if the content type is a subtype of any given type.
-    func subtype<C: Collection<UTType>>(of anyTypes: C) -> MetadataQuery.PredicateResult {
+    func isSubtype<C: Collection<UTType>>(of anyTypes: C) -> MetadataQuery.PredicateResult {
         .comparisonOr("kMDItemContentTypeTree", .equalTo, Array(anyTypes))
     }
 
@@ -170,6 +277,11 @@ public extension MetadataQuery.PredicateComponent where T: QueryUTType {
     /// Checks iif the content type is equal to any given type.
     static func == <C: Collection<UTType>>(_: Self, _ rhs: C) -> MetadataQuery.PredicateResult {
         .comparisonOr("kMDItemContentType", .equalTo, Array(rhs))
+    }
+    
+    /// The identifier of the content type.
+    var identifier: MetadataQuery.PredicateComponent<String?> {
+        .init("kMDItemContentType")
     }
 }
 
@@ -296,23 +408,17 @@ public extension MetadataQuery.PredicateComponent where T: QueryCollection {
 public extension MetadataQuery.PredicateComponent where T: QueryCollection, T.Element: QueryString {
     /// Case-sensitive string comparison.
     var caseSensitive: Self {
-        var predicate = self
-        predicate.stringOptions.insert(.caseSensitive)
-        return predicate
+        Self(mdKeys, nil, stringOptions + .caseSensitive)
     }
     
     /// Diacritic-sensitive string comparison.
     var diacriticSensitive: Self {
-        var predicate = self
-        predicate.stringOptions.insert(.diacriticSensitive)
-        return predicate
+        Self(mdKeys, nil, stringOptions + .diacriticSensitive)
     }
     
     /// Word based string comparison.
     var wordBased: Self {
-        var predicate = self
-        predicate.stringOptions.insert(.wordBased)
-        return predicate
+        Self(mdKeys, nil, stringOptions + .wordBased)
     }
 }
 
@@ -320,39 +426,33 @@ public extension MetadataQuery.PredicateComponent where T: QueryCollection, T.El
 
 public extension MetadataQuery.PredicateComponent where T == DataSize? {
     /// Bytes.
-    var bytes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.byte)
+    var bytes: MetadataQuery.PredicateComponent<Int> {
+        .init(mdKeys)
     }
     
     /// Kilobytes.
-    var kilobytes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.kilobyte)
+    var kilobytes: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, DataSize.Unit.kilobyte)
     }
     
     /// Megabytes.
-    var megabytes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.megabyte)
+    var megabytes: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, DataSize.Unit.megabyte)
     }
     
     /// Gigabytes.
-    var gigabytes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.gigabyte)
+    var gigabytes: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, DataSize.Unit.gigabyte)
     }
     
     /// Terabytes.
-    var terabytes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.terabyte)
+    var terabytes: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, DataSize.Unit.terabyte)
     }
     
     /// Petabytes.
-    var petabytes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.petabyte)
-    }
-    
-    private func unit(_ unit: DataSize.Unit) -> MetadataQuery.PredicateComponent<Bool> {
-        var predicate: MetadataQuery.PredicateComponent<Bool> = .init(mdKeys.first!)
-        predicate.valueConverter = unit
-        return predicate
+    var petabytes: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, DataSize.Unit.petabyte)
     }
 }
 
@@ -360,141 +460,37 @@ public extension MetadataQuery.PredicateComponent where T == DataSize? {
 
 public extension MetadataQuery.PredicateComponent where T == TimeDuration? {
     /// Seconds.
-    var seconds: MetadataQuery.PredicateComponent<Bool> {
-        unit(.minute)
+    var seconds: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.second)
     }
     
     /// Minutes.
-    var minutes: MetadataQuery.PredicateComponent<Bool> {
-        unit(.minute)
+    var minutes: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.minute)
     }
     
     /// Hours.
-    var hours: MetadataQuery.PredicateComponent<Bool> {
-        unit(.hour)
+    var hours: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.hour)
     }
     
     /// Days.
-    var days: MetadataQuery.PredicateComponent<Bool> {
-        unit(.day)
+    var days: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.day)
     }
     
     /// weeks.
-    var weeks: MetadataQuery.PredicateComponent<Bool> {
-        unit(.week)
+    var weeks: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.week)
     }
     
     /// Months.
-    var months: MetadataQuery.PredicateComponent<Bool> {
-        unit(.month)
+    var months: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.month)
     }
     
     /// Years.
-    var years: MetadataQuery.PredicateComponent<Bool> {
-        unit(.year)
-    }
-    
-    private func unit(_ unit: TimeDuration.Unit) -> MetadataQuery.PredicateComponent<Bool> {
-        var predicate: MetadataQuery.PredicateComponent<Bool> = .init(mdKeys.first!)
-        predicate.valueConverter = unit
-        return predicate
+    var years: MetadataQuery.PredicateComponent<Double> {
+        .init(mdKeys, TimeDuration.Unit.year)
     }
 }
-
-
-/*
-/// Checks if a date is now.
-var isNow: MetadataQuery.PredicateResult {
-    self == .now
-}
-
-/// Checks if a date is this hour.
-var isThisHour: MetadataQuery.PredicateResult {
-    self == .thisHour
-}
-
-/// Checks if a date is last hour.
-var isLastHour: MetadataQuery.PredicateResult {
-    self == .lastHour
-}
-
-/// Checks if a date is same hour as the specified date.
-func isSameHour(as date: Date) -> MetadataQuery.PredicateResult {
-    self == .sameHour(date)
-}
-
-/// Checks if a date is today.
-var today: MetadataQuery.PredicateResult {
-    self == .today
-}
-
-/// Checks if a date is yesterday.
-var yesterday: MetadataQuery.PredicateResult {
-    self == .yesterday
-}
-
-/// Checks if a date is same day as the specified date.
-func isSameDay(as date: Date) -> MetadataQuery.PredicateResult {
-    self == .sameDay(date)
-}
-
-var isThisWeek: MetadataQuery.PredicateResult {
-    self == .thisWeek
-}
-
-/// Checks if a date is last week.
-var isLastWeek: MetadataQuery.PredicateResult {
-    self == .lastWeek
-}
-
-/// Checks if a date is same week as the specified date.
-func isSameWeek(as date: Date) -> MetadataQuery.PredicateResult {
-    self == .sameWeek(date)
-}
-
-/// Checks if a date is this month.
-var isThisMonth: MetadataQuery.PredicateResult {
-    self == .thisMonth
-}
-
-/// Checks if a date is last month.
-var isLastMonth: MetadataQuery.PredicateResult {
-    self == .lastMonth
-}
-
-/// Checks if a date is same month as the specified date.
-func isSameMonth(as date: Date) -> MetadataQuery.PredicateResult {
-    self == .sameMonth(date)
-}
-
-/// Checks if a date is this year.
-var isThisYear: MetadataQuery.PredicateResult {
-    self == .thisYear
-}
-
-/// Checks if a date is last year.
-var isLastYear: MetadataQuery.PredicateResult {
-    self == .lastYear
-}
-
-/// Checks if a date is same year as the specified date.
-func isSameYear(as date: Date) -> MetadataQuery.PredicateResult {
-    self == .sameYear(date)
-}
-
-/**
- Checks if a date is within the last specified amount of  calendar units.
- 
- Example:
- ```swift
- // creationDate is within the last 8 weeks.
- { $0.creationDate.isWithin(8, .week) }
- 
- // creationDate is within the last 2 years.
- { $0.creationDate.isWithin(2, .year) }
- ```
- */
-func isWithin(_ amount: Int, _ unit: DateValue.DateComponent) -> MetadataQuery.PredicateResult {
-    self == .within(amount, unit)
-}
- */

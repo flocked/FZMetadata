@@ -223,26 +223,36 @@ open class MetadataItem: Identifiable {
         return nil
     }
 
-    /// The content type identifier (`UTI`) of the file.
-    open var contentTypeIdentifier: String? { value(for: .contentType) }
-
-    /// The content type tree identifiers (`UTI`) of the file.
-    open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
-
-    /// The content type tree of the file.
-    @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-    open var contentTypeTree: [UTType]? {
-        contentTypeTreeIdentifiers?.compactMap { UTType($0) }
-    }
-
     /// The content type of the file.
-    @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
+    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentType: UTType? {
         if let type = contentTypeIdentifier {
             return UTType(type)
         }
         return nil
     }
+    
+    /// The content type tree of the file.
+    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
+    open var contentTypeTree: [UTType]? {
+        contentTypeTreeIdentifiers?.compactMap { UTType($0) }
+    }
+    
+    @available(macOS, obsoleted: 11.0, message: "Use contentType instead")
+    @available(iOS, obsoleted: 14.0, message: "Use contentType instead")
+    @available(macCatalyst, obsoleted: 14.0, message: "Use contentType instead")
+    @available(tvOS, obsoleted: 14.0, message: "Use contentType instead")
+    @available(watchOS, obsoleted: 7.0, message: "Use contentType instead")
+    /// The content type identifier (`UTI`) of the file.
+    open var contentTypeIdentifier: String? { value(for: .contentType) }
+
+    @available(macOS, obsoleted: 11.0, message: "Use contentType instead")
+    @available(iOS, obsoleted: 14.0, message: "Use contentType instead")
+    @available(macCatalyst, obsoleted: 14.0, message: "Use contentType instead")
+    @available(tvOS, obsoleted: 14.0, message: "Use contentType instead")
+    @available(watchOS, obsoleted: 7.0, message: "Use contentType instead")
+    /// The content type tree identifiers (`UTI`) of the file.
+    open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
 
     /// The date that the file was created.
     open var creationDate: Date? {
