@@ -1,4 +1,4 @@
-# ``MetadataQuery/ResultsDifference``
+# ``MetadataQuery/ResultDifference``
 
 ## Topics
 

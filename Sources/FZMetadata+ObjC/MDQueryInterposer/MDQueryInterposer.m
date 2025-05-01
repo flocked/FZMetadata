@@ -7,14 +7,6 @@
 
 #import <CoreServices/CoreServices.h>
 
-/*
-extern MDQueryRef swizzled_MDQueryCreate(CFAllocatorRef allocator, CFStringRef queryString, CFStringRef queryScope, CFArrayRef attributes);
-
-MDQueryRef my_MDQueryCreate(CFAllocatorRef allocator, CFStringRef queryString, CFStringRef queryScope, CFArrayRef attributes) {
-    return swizzled_MDQueryCreate(allocator, queryString, queryScope, attributes);
-}
- */
-
 extern Boolean swizzled_MDQueryExecute(MDQueryRef, CFOptionFlags);
 
 Boolean my_MDQueryExecute(MDQueryRef query, CFOptionFlags flags) {
@@ -26,6 +18,14 @@ extern void swizzled_MDQuerySetBatchingParameters(MDQueryRef, MDQueryBatchingPar
 void my_MDQuerySetBatchingParameters(MDQueryRef query, MDQueryBatchingParams params) {
     swizzled_MDQuerySetBatchingParameters(query, params);
 }
+
+/*
+extern MDQueryRef swizzled_MDQueryCreate(CFAllocatorRef allocator, CFStringRef queryString, CFArrayRef queryScope, CFArrayRef attributes);
+
+MDQueryRef my_MDQueryCreate(CFAllocatorRef allocator, CFStringRef queryString, CFArrayRef queryScope, CFArrayRef attributes) {
+    return swizzled_MDQueryCreate(allocator, queryString, queryScope, attributes);
+}
+ */
 
 __attribute__((used)) static struct {
     const void *replacement;

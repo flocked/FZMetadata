@@ -40,7 +40,7 @@
 - ``addedDate``
 - ``attributeModificationDate``
 - ``contentCreationDate``
-- ``contentChangeDate``
+- ``modificationDate``
 - ``contentModificationDate``
 - ``lastUsedDate``
 - ``lastUsageDates``

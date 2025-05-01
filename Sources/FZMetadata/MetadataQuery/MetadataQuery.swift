@@ -30,7 +30,7 @@ import _MDQueryInterposer
  query.start()
  ```
  
- The handler is called when all matching files are found. By enabling ``postGatheringUpdates``
+ The handler is called when all matching files are found. By enabling ``postsGatheringUpdates``
  
  By enabling ``monitorResults``, the query can monitor for updates to the results and posts the updated results also to the results handler.
  
@@ -88,16 +88,18 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-
+    
     static var maxResults: Int?
-    static var batchingParameters: ResultsUpdateOptions?
+    static var batchingParameters: ResultUpdateOptions?
     static var options: Options?
-    public let query = NSMetadataQuery()
-    var pausedState: State = .isPaused
+    
+    let query = NSMetadataQuery()
+    var resumeState: State = .isPaused
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
-    var pendingResultsUpdate = ResultsDifference()
+    var pendingResultsUpdate = ResultDifference()
     var queryAttributes: [String] = []
+    var resultCount: Int = 0
     var isFinished = false
     var didPostFinished = false
     var delayedPostFinishedResults: DispatchWorkItem?
@@ -110,13 +112,13 @@ open class MetadataQuery: NSObject {
     @objc dynamic open internal(set) var state: State = .isStopped
     
     /// The handler that gets called when the results changes with the metadata items of the results and the difference to the previous results.
-    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultsDifference) -> Void)? = nil
-
+    open var resultsHandler: ((_ items: [MetadataItem], _ difference: ResultDifference) -> Void)? = nil
+    
     /**
      An array of metadata attributes whose values are gathered by the query.
      
      If ``monitorResults`` is enabled, any changes to those attributes updates the results and calls the results handler.
-
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var attributes: [MetadataItem.Attribute] {
@@ -128,23 +130,23 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-
+    
     /**
      The predicate used to filter the query results.
-          
+     
      Set this property to define filtering logic for files and directories.
      If the value is `nil`, all items are included in the query results.
-
+     
      The predicate is expressed by comparing properties of ``MetadataItem`` using operators and helper functions.
      For example:
-
+     
      ```swift
      // Matches items whose file name starts with "vid", file size is at least 1 GB,
      // and creation date is earlier than `otherDate`.
      query.predicate = {
-        $0.fileName.begins(with: "vid") &&
-        $0.fileSize.gigabytes >= 1 &&
-        $0.creationDate.isBefore(otherDate)
+     $0.fileName.begins(with: "vid") &&
+     $0.fileSize.gigabytes >= 1 &&
+     $0.creationDate.isBefore(otherDate)
      }
      ```
      
@@ -155,7 +157,7 @@ open class MetadataQuery: NSObject {
      Files that begin to match the predicate are added to ``results``, while files that no longer match are removed.
      
      The ``resultsHandler`` gets called for any changes.
-          
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var predicate: ((PredicateItem) -> (PredicateResult))? {
@@ -174,9 +176,9 @@ open class MetadataQuery: NSObject {
     
     /**
      An array of URLs whose metadata attributes are gathered by the query.
-
+     
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
-
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var urls: [URL] {
@@ -188,14 +190,14 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-
+    
     /**
      An array of file-system directory URLs.
-
+     
      The query searches for items at these search locations. An empty array indicates that there is no limitation on where the query searches.
      
      The query can alternativly also search at specific scopes via ``searchScopes``.
-
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var searchLocations: [URL] {
@@ -207,14 +209,14 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-
+    
     /**
      An array containing the seatch scopes.
-
+     
      The query searches for items at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
-          
+     
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
-
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var searchScopes: [SearchScope] {
@@ -226,20 +228,20 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-
+    
     /**
      The sort descriptors for sorting the query results.
-
+     
      Example usage:
-
+     
      ```swift
-     query.sortedBy = [.descending(.creationDate), .ascending(.fileSize)]
+     query.sortedBy = [.fileSize, .creationDate.descending]
      ```
      
      The results can also be sorted by item relevance via ``MetadataItem/Attribute/queryContentRelevance``:
-
+     
      ```swift
-     query.sortedBy = [.ascending(.queryRelevance)]
+     query.sortedBy = [.queryRelevance]
      ```
      
      - Note that ``MetadataItem/Attribute/path`` can't be used for sorting.
@@ -256,7 +258,7 @@ open class MetadataQuery: NSObject {
     
     /**
      An array of attributes for grouping the results.
-
+     
      The grouped results can be accessed via ``groupedResults``.
      the items of the results are grouped by unique content types (e.g. video, image…). Each group contains the matching items and sub groups where it's matching items are grouped by unique finder tags:
      
@@ -266,16 +268,16 @@ open class MetadataQuery: NSObject {
      // ... later
      for group in query.groupedResults {
      
-        // items with matching contentType.
-        let items = group.items
-  
-        for subGroup in group.subGroups! {
+     // items with matching contentType.
+     let items = group.items
+     
+     for subGroup in group.subGroups! {
      // items with matching finder tags.
-            let items = subGroup.items
-        }
+     let items = subGroup.items
+     }
      }
      ```
-
+     
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
     open var groupingAttributes: [MetadataItem.Attribute] {
@@ -287,10 +289,10 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-
+    
     /**
      The queue on which the results gets gathered and the results handler gets called.
-
+     
      Use this property to decouple the processing of results from the thread used to execute the query. This makes it easier to synchronize query result processing with other related operations—such as updating the data model or user interface—which you might want to perform on the main queue.
      */
     open var operationQueue: OperationQueue? {
@@ -300,28 +302,28 @@ open class MetadataQuery: NSObject {
     
     /**
      A Boolean value indicating whether the monitoring of changes to the results is enabled.
-
+     
      Updates are triggered during the live-update phase when a file starts or stops matching the ``predicate-swift.property``, or when a file changes one of it's attributes specified in ``attributes``.
-
+     
      Files that begin to match the query are added to ``results``, while files that no longer match are removed.
      
      The ``resultsHandler`` gets called for any changes.
-
+     
      The default value is `false`, which specifies that the ``resultsHandler`` gets called whenever the results changes. The query also monitors for changes to the given ``attributes``.
      
-     ``resultsUpdateInterval`` specifies the interval at which results changes are posted.
-
+     ``resultUpdateInterval`` specifies the interval at which results changes are posted.
+     
      In the following example the result handler is called whenever a screenshot is captured or deleted.
      
      ```swift
      query.predicate = { $0.isScreenCapture }
      query.monitorResults = true
      query.resultsHandler = { items, _ in
-        // Is called whenever a new screenshot is taken.
+     // Is called whenever a new screenshot is taken.
      }
      query.start()
      ```
-          
+     
      - Note: Enabling monitoring can have a significant performance impact. You should define a operation queue via ``operationQueue`` as otherwise any updates can cause a log on the main thread.
      */
     open var monitorResults = false {
@@ -337,38 +339,38 @@ open class MetadataQuery: NSObject {
      The property must be set before the query is executed else the value is ignored.
      */
     open var maxResults: Int?
-    
+        
     /**
      The interval (in seconds) at which the results gets updated with accumulated changes.
      
      This value is advisory, in that the update will be triggered at some point after the specified seconds passed since the last update.
      */
-    open var resultsUpdateInterval: TimeInterval {
-        get { resultsUpdateOptions.gatheringInterval }
+    open var resultUpdateInterval: TimeInterval {
+        get { resultUpdateOptions.gatheringInterval }
         set {
-            resultsUpdateOptions.gatheringInterval = newValue
-            resultsUpdateOptions.monitoringInterval = newValue
+            resultUpdateOptions.gatheringInterval = newValue
+            resultUpdateOptions.monitoringInterval = newValue
         }
     }
     
     /// The maximum number of changes that can accumulate before updating the results.
-    open var resultsUpdateThreshold: Int {
-        get { resultsUpdateOptions.gatheringThreshold }
+    open var resultUpdateThreshold: Int {
+        get { resultUpdateOptions.gatheringThreshold }
         set {
-            resultsUpdateOptions.gatheringThreshold = newValue
-            resultsUpdateOptions.monitoringThreshold = newValue
+            resultUpdateOptions.gatheringThreshold = newValue
+            resultUpdateOptions.monitoringThreshold = newValue
         }
     }
     
     /**
      Options for when the metadata query updates it's results with accumulated changes.
      
-     This provides more granular configuration options compared to ``resultsUpdateInterval`` and ``resultsUpdateThreshold``.
+     This provides more granular configuration options compared to ``resultUpdateInterval`` and ``resultUpdateThreshold``.
      */
-    var resultsUpdateOptions = ResultsUpdateOptions() {
+    var resultUpdateOptions = ResultUpdateOptions() {
         didSet {
-            guard oldValue != resultsUpdateOptions, !query.isStopped else { return }
-            Self.batchingParameters = resultsUpdateOptions
+            guard oldValue != resultUpdateOptions, !query.isStopped else { return }
+            Self.batchingParameters = resultUpdateOptions
             Self.options = options
             Self.maxResults = maxResults
             query.notificationBatchingInterval = Double.random(max: 100.0)
@@ -386,7 +388,7 @@ open class MetadataQuery: NSObject {
         get { options.contains(.synchronous) }
         set { options[.synchronous] = newValue }
     }
-        
+    
     /**
      Execution options for the query.
      
@@ -395,23 +397,23 @@ open class MetadataQuery: NSObject {
     var options: Options = [.wantsUpdates]
     
     /**
-     A Boolean value indicating whether changes to the results are posted while gathering the inital results.
+     A Boolean value indicating whether changes to the results are posted while gathering the initial results.
      
      The default value is `false`.
-          
-     - Note: Enabling gathering updates can have a significant performance impact. You should define a operation queue via ``operationQueue`` as otherwise any updates can cause a log on the main thread.
+     
+     - Note: Enabling gathering updates can have a significant performance impact. You should define an operation queue via ``operationQueue`` as otherwise any updates can cause lag on the main thread.
      */
-    open var postGatheringUpdates: Bool = false
-
-    /// Starts the query and discards the previous results.
+    open var postsGatheringUpdates: Bool = false
+    
+    /// Starts the query, discarding any previous results, or resumes a paused query.
     open func start() {
         if state == .isPaused {
-            state = pausedState
+            state = resumeState
             query.enableUpdates()
         } else {
             runWithOperationQueue {
                 guard self.state == .isStopped else { return }
-                Self.batchingParameters = self.resultsUpdateOptions
+                Self.batchingParameters = self.resultUpdateOptions
                 Self.options = self.options
                 Self.maxResults = self.maxResults
                 self.runWithOperationQueue {
@@ -422,15 +424,19 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    /// Pauses the query, if it's running.
+    /// Pauses a running query.
     open func pause() {
         guard state == .isGathering || state == .isMonitoring else { return }
         query.disableUpdates()
-        pausedState = state
+        resumeState = state
         state = .isPaused
     }
     
-    /// Stops the query from gathering any further results.
+    /**
+     Stops the query from gathering any further results.
+     
+     Once the query is stopped, the query can't monitor and update the results for changes. Calling ``start()`` will discard the current results and start a new query.
+     */
     open func stop() {
         runWithOperationQueue {
             self.itemPathPrefetchOperationQueue.cancelAllOperations()
@@ -438,10 +444,10 @@ open class MetadataQuery: NSObject {
             self.query.stop()
         }
     }
-
+    
     /**
      An array containing the query’s results.
-
+     
      The array contains ``MetadataItem`` objects. Accessing the results before a query is finished will momentarly pause the query and provide a snapshot of the current query results.
      */
     open var results: [MetadataItem] {
@@ -453,7 +459,7 @@ open class MetadataQuery: NSObject {
     
     /**
      An array containing hierarchical groups of query results.
-
+     
      These groups are based on the ``groupingAttributes``.
      */
     open var groupedResults: [ResultGroup] {
@@ -461,19 +467,20 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     The hierarchical query results.
+     The hierarchical query result.
      
      The items of the query’s results are mapped hierarchically to their file system path.
      */
-    open var hierarchicalResults: HierarchicalResults {
-        HierarchicalResults(results)
+    open var hierarchicalResult: HierarchicalResult {
+        HierarchicalResult(results)
     }
     
     func updateResults(post: Bool = false) {
         resultsUpdateLock.lock()
         query.disableUpdates()
         let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
-        let pending = pendingResultsUpdate
+        resultCount = query.resultCount
+        var pending = pendingResultsUpdate
         pendingResultsUpdate = .init()
         pending.added.forEach({ updateResult($0, isInital: true) })
         pending.changed.forEach({ updateResult($0) })
@@ -481,19 +488,30 @@ open class MetadataQuery: NSObject {
         query.enableUpdates()
         resultsUpdateLock.unlock()
         if post {
+            pending.changes = Changes(pending.changed)
             resultsHandler?(results, pending)
         }
     }
-        
+    
     func updateResult(_ result: MetadataItem, isInital: Bool = false) {
-        result.previousValues = isInital ? nil : result.values
-        result.values = query.values(of: queryAttributes, forResultsAt: query.index(ofResult: result))
-        result.filePath = nil
-        if prefetchesItemPathsInBackground {
-            itemPathPrefetchOperationQueue.addOperation(ItemPathPrefetchOperation(result))
+        let index = query.index(ofResult: result)
+        guard index < resultCount else { return }
+        result.values = query.values(of: queryAttributes, forResultsAt: index)
+        if !isInital {
+            result.changes.update(with: result.values)
         }
+        result.filePath = nil
+        result.filePathOperation?.cancel()
+        prefetchItemPath(for: result)
     }
-        
+    
+    func prefetchItemPath(for item: MetadataItem) {
+        guard prefetchesItemPathsInBackground else { return }
+        let operation = ItemPathPrefetchOperation(item)
+        item.filePathOperation = operation
+        itemPathPrefetchOperationQueue.addOperation(operation)
+    }
+    
     @objc func gatheringStarted(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringStarted")
         _results.removeAll()
@@ -510,20 +528,15 @@ open class MetadataQuery: NSObject {
         let resultsUpdate = notification.resultsUpdate
         pendingResultsUpdate = pendingResultsUpdate + resultsUpdate
         debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count) \(pendingResultsUpdate._description)")
-        (resultsUpdate.added + resultsUpdate.changed).forEach({
-            $0.filePath = nil
-            $0.filePathOperation?.cancel()
-        })
-        if prefetchesItemPathsInBackground {
-            (resultsUpdate.added + resultsUpdate.changed).forEach({ item in
-                let operation = ItemPathPrefetchOperation(item)
-                item.filePathOperation = operation
-                itemPathPrefetchOperationQueue.addOperation(operation)
-            })
-        }
-        if postGatheringUpdates || isFinished {
+        if postsGatheringUpdates || isFinished {
             didPostFinished = isFinished
             updateResults(post: true)
+        } else {
+            (resultsUpdate.added + resultsUpdate.changed).forEach({ item in
+                item.filePath = nil
+                item.filePathOperation?.cancel()
+                prefetchItemPath(for: item)
+            })
         }
     }
             
@@ -580,7 +593,7 @@ open class MetadataQuery: NSObject {
         guard !query.isStopped else { return }
         Self.maxResults = maxResults
         Self.options = options
-        Self.batchingParameters = resultsUpdateOptions
+        Self.batchingParameters = resultUpdateOptions
     }
         
     /**
@@ -619,12 +632,6 @@ extension MetadataQuery {
     }
 }
 
-extension Notification {
-    var resultsUpdate: MetadataQuery.ResultsDifference {
-        .init(added: userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [], removed: userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [], changed: userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [])
-    }
-}
-
 class ItemPathPrefetchOperation: Operation {
     weak var item: MetadataItem?
     
@@ -633,7 +640,6 @@ class ItemPathPrefetchOperation: Operation {
     }
     
     override func main() {
-       
         guard !isCancelled else { return }
         if let item = item, item.filePath == nil {
             item.filePath = item.value(for: .path)
@@ -666,4 +672,4 @@ func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!,
     Swift.print("MDQuery")
     return MDQueryCreate(allocator, queryString, valueListAttrs, sortingAttrs)
 }
- */
+*/

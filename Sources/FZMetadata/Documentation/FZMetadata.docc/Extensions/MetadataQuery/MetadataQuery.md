@@ -26,8 +26,8 @@
 
 ### Configuring query results updates
 
-- ``resultsUpdateInterval``
-- ``resultsUpdateThreshold``
+- ``resultUpdateInterval``
+- ``resultUpdateThreshold``
 
 ### Getting query results
 
@@ -38,10 +38,10 @@
 - ``monitorResults``
 - ``resultsHandler``
 - ``ResultGroup``
-- ``ResultsDifference``
+- ``ResultDifference``
 - ``postGatheringUpdates``
 - ``hierarchicalResults``
-- ``HierarchicalResults``
+- ``HierarchicalResult``
 
 ### Sorting query results
 

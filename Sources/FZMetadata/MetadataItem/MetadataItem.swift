@@ -57,9 +57,8 @@ open class MetadataItem: Identifiable {
     
     /// Attribute values fetched by a query.
     var values: [String: Any] = [:]
-            
-    /// Previous attribute values fetched by a query.
-    var previousValues: [String: Any]? = nil
+    
+    var changes = Changes()
     
     /// Cached file path.
     var filePath: String?
@@ -119,11 +118,11 @@ open class MetadataItem: Identifiable {
     }
     
     /**
-     Attributes that were updated as part of a metadata query results.
-
-     The array contains attributes that are part of a metadata query and that have changed since the last query results update.
+     The attributes that have changed since the last metadata query results update.
      
-     It lists updates to the ones used by `MetadataQuery`'s ``MetadataQuery/attributes``, ``MetadataQuery/groupingAttributes`` and ``MetadataQuery/sortedBy``.
+     If the item is part of the query results, the property lists the attributes that have changed between each query results update.
+     
+     It lists changes for attributes specified by the query's ``MetadataQuery/attributes``, ``MetadataQuery/groupingAttributes``, and ``MetadataQuery/sortedBy`` properties.
      
      In the following example the query is gathering files and attributes. Because `monitorResults` is enabled, the handler is called subsequently whenever the available files or their attributes change. 
      
@@ -144,16 +143,14 @@ open class MetadataItem: Identifiable {
      ```
      */
     open var updatedAttributes: [Attribute] {
-        if let previous = previousValues {
-            let changed = values.keysChanged(from: previous)
-            _updatedAttributes = (changed.added + changed.removed + changed.changed).compactMap({ Attribute(rawValue: $0) })
-            previousValues = nil
-        }
-        return _updatedAttributes
+        changes.changedAttributes
     }
     
-    var _updatedAttributes: [Attribute] = []
-
+    /// A Boolean value indicating whether the specified attribute has changed between the current and previous item state.
+    open func didUpdate(_ attribute: Attribute) -> Bool {
+        changes.didChange(attribute)
+    }
+    
     // MARK: - File
 
     /// The url of the file.
@@ -173,10 +170,7 @@ open class MetadataItem: Identifiable {
      */
     open var path: String? { 
         filePathOperation?.cancel()
-        if let filePath = filePath {
-            return filePath
-        }
-        filePath = value(for: .path)
+        filePath = filePath ?? value(for: .path)
         return filePath
     }
 
@@ -254,10 +248,34 @@ open class MetadataItem: Identifiable {
     /// The content type tree identifiers (`UTI`) of the file.
     open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
 
-    /// The date that the file was created.
+    /// The date the file was created on the file system.
     open var creationDate: Date? {
         get { value(for: .creationDate) }
         set { setExplicity(.creationDate, urlResources: \.creationDate, to: newValue) }
+    }
+    
+    /// The last date that the item's data on the file system was modified.
+    open var modificationDate: Date? {
+        get { value(for: .modificationDate) }
+        set { setExplicity(.modificationDate, to: newValue) }
+    }
+    
+    /// The date that the content of the file was created.
+    open var contentCreationDate: Date? {
+        get { value(for: .contentCreationDate) }
+        set { setExplicity(.contentCreationDate, to: newValue) }
+    }
+
+    /// The last date that the content of the file was modified.
+    open var contentModificationDate: Date? {
+        get { value(for: .contentModificationDate) }
+        set { setExplicity(.contentModificationDate, urlResources: \.contentModificationDate, to: newValue) }
+    }
+    
+    /// The last date that the attributes of the file were changed.
+    open var attributeModificationDate: Date? {
+        get { value(for: .attributeModificationDate) }
+        set { setExplicity(.attributeModificationDate, to: newValue) }
     }
 
     /// The last date that the file was used.
@@ -270,30 +288,6 @@ open class MetadataItem: Identifiable {
     open var lastUsageDates: [Date]? {
         get { value(for: .lastUsageDates) }
         set { setExplicity(.lastUsageDates, to: newValue) }
-    }
-
-    /// The last date that the attributes of the file were changed.
-    open var attributeModificationDate: Date? {
-        get { value(for: .attributeModificationDate) }
-        set { setExplicity(.attributeModificationDate, to: newValue) }
-    }
-
-    /// The date that the content of the file was created.
-    open var contentCreationDate: Date? {
-        get { value(for: .contentCreationDate) }
-        set { setExplicity(.contentCreationDate, to: newValue) }
-    }
-
-    /// The last date that the content of the file was changed.
-    open var contentChangeDate: Date? {
-        get { value(for: .contentChangeDate) }
-        set { setExplicity(.contentChangeDate, to: newValue) }
-    }
-
-    /// The last date that the content of the file was modified.
-    open var contentModificationDate: Date? {
-        get { value(for: .contentModificationDate) }
-        set { setExplicity(.contentModificationDate, urlResources: \.contentModificationDate, to: newValue) }
     }
 
     /// The date the file was created, or renamed into or within its parent directory.

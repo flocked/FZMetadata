@@ -89,14 +89,3 @@ extension MetadataItem {
         }
     }
 }
-
-/*
- #if os(macOS)
- extension NSWorkspace {
- /// The available Finder tags.
- var FinderTagColors: [MetadataItem.FinderTagColor] {
- return fileLabels.compactMap({MetadataItem.FinderTagColor(rawValue: $0)})
- }
- }
- #endif
- */

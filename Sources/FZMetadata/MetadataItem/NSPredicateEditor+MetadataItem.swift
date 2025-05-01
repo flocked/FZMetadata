@@ -35,7 +35,7 @@ extension MetadataItem.Attribute {
     
     var valueType: ValueType {
         switch self {
-        case .dueDate, .addedDate, .creationDate, .purchaseDate, .receivedDates, .recordingDate, .downloadedDate, .lastUsedDate, .lastUsageDates, .contentChangeDate, .contentCreationDate, .contentModificationDate, .attributeModificationDate, .timestamp, .gpsDateStamp:
+        case .dueDate, .addedDate, .creationDate, .purchaseDate, .receivedDates, .recordingDate, .downloadedDate, .lastUsedDate, .lastUsageDates, .modificationDate, .contentCreationDate, .contentModificationDate, .attributeModificationDate, .timestamp, .gpsDateStamp:
             return .date
         case .isLikelyJunk, .isScreenCapture, .isApplicationManaged, .isGeneralMidiSequence, .fileIsInvisible, .fileExtensionIsHidden, .hasCustomIcon, .hasAlphaChannel, .streamable, .isFlashOn, .redEyeOnOff:
             return .bool

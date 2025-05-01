@@ -426,32 +426,32 @@ public extension MetadataQuery.PredicateComponent where T: QueryCollection, T.El
 
 public extension MetadataQuery.PredicateComponent where T == DataSize? {
     /// Bytes.
-    var bytes: MetadataQuery.PredicateComponent<Int> {
+    var bytes: MetadataQuery.PredicateComponent<Int?> {
         .init(mdKeys)
     }
     
     /// Kilobytes.
-    var kilobytes: MetadataQuery.PredicateComponent<Double> {
+    var kilobytes: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, DataSize.Unit.kilobyte)
     }
     
     /// Megabytes.
-    var megabytes: MetadataQuery.PredicateComponent<Double> {
+    var megabytes: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, DataSize.Unit.megabyte)
     }
     
     /// Gigabytes.
-    var gigabytes: MetadataQuery.PredicateComponent<Double> {
+    var gigabytes: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, DataSize.Unit.gigabyte)
     }
     
     /// Terabytes.
-    var terabytes: MetadataQuery.PredicateComponent<Double> {
+    var terabytes: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, DataSize.Unit.terabyte)
     }
     
     /// Petabytes.
-    var petabytes: MetadataQuery.PredicateComponent<Double> {
+    var petabytes: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, DataSize.Unit.petabyte)
     }
 }
@@ -460,37 +460,37 @@ public extension MetadataQuery.PredicateComponent where T == DataSize? {
 
 public extension MetadataQuery.PredicateComponent where T == TimeDuration? {
     /// Seconds.
-    var seconds: MetadataQuery.PredicateComponent<Double> {
+    var seconds: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.second)
     }
     
     /// Minutes.
-    var minutes: MetadataQuery.PredicateComponent<Double> {
+    var minutes: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.minute)
     }
     
     /// Hours.
-    var hours: MetadataQuery.PredicateComponent<Double> {
+    var hours: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.hour)
     }
     
     /// Days.
-    var days: MetadataQuery.PredicateComponent<Double> {
+    var days: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.day)
     }
     
     /// weeks.
-    var weeks: MetadataQuery.PredicateComponent<Double> {
+    var weeks: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.week)
     }
     
     /// Months.
-    var months: MetadataQuery.PredicateComponent<Double> {
+    var months: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.month)
     }
     
     /// Years.
-    var years: MetadataQuery.PredicateComponent<Double> {
+    var years: MetadataQuery.PredicateComponent<Double?> {
         .init(mdKeys, TimeDuration.Unit.year)
     }
 }

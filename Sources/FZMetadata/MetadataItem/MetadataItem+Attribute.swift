@@ -48,7 +48,7 @@ public extension MetadataItem {
         /// The date that the content of the file was created.
         case contentCreationDate = "kMDItemContentCreationDate"
         /// The last date that the content of the file was changed.
-        case contentChangeDate = "kMDItemFSContentChangeDate"
+        case modificationDate = "kMDItemFSmodificationDate"
         /// The last date that the content of the file was modified.
         case contentModificationDate = "kMDItemContentModificationDate"
         /// The date the file was created, or renamed into or within its parent directory.
@@ -437,7 +437,7 @@ public extension MetadataItem {
         case queryContentRelevance = "NSMetadataQueryResultContentRelevanceAttribute"
         
         public var description: String {
-            rawValue.replacingOccurrences(of: "kMDItem", with: "").replacingOccurrences(of: "FS", with: "File").lowercasedFirst()
+            rawValue.replacingOccurrences(of: ["kMDItem", "Key"], with: "").replacingOccurrences(of: "FS", with: "File").lowercasedFirst()
         }
         
         static func values(for mdKeys: [String]) -> [Self] {
@@ -495,7 +495,7 @@ public extension MetadataItem {
             case .lastUsageDates: return \.lastUsageDates
             case .attributeModificationDate: return \.attributeModificationDate
             case .contentCreationDate: return \.contentCreationDate
-            case .contentChangeDate: return \.contentChangeDate
+            case .modificationDate: return \.modificationDate
             case .contentModificationDate: return \.contentModificationDate
             case .addedDate: return \.addedDate
             case .downloadedDate: return \.downloadedDate
@@ -692,9 +692,15 @@ public extension MetadataItem {
             case .ubiquitousSharedItemMostRecentEditorNameComponents: return \.ubiquitousSharedItemMostRecentEditorNameComponents
             case .ubiquitousSharedItemOwnerNameComponents: return \.ubiquitousSharedItemOwnerNameComponents
                 
-                // MARK: - Query Content Relevance
-                case .queryContentRelevance: return \.queryContentRelevance }
+            // MARK: - Query Content Relevance
+            case .queryContentRelevance: return \.queryContentRelevance }
         }
+    }
+}
+
+extension MetadataItem.Attribute {
+    init?(_ rawValue: String) {
+        self.init(rawValue: rawValue)
     }
 }
 
