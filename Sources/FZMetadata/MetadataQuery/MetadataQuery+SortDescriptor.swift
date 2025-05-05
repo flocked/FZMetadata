@@ -23,9 +23,14 @@ extension MetadataQuery {
         /// A Boolean value that indicates whether the sort descriptor specifies sorting in ascending order.
         let isAscending: Bool
         
-        init(_ attribute: MetadataItem.Attribute, ascending: Bool = true) {
+        var stringOptions: NSString.CompareOptions = []
+        var stringSortingLocale: Locale?
+        
+        init(_ attribute: MetadataItem.Attribute, ascending: Bool = true, _ stringOptions: NSString.CompareOptions = [], _ stringSortingLocale: Locale? = nil) {
             self.attribute = attribute
-            self.isAscending = ascending            
+            self.isAscending = ascending
+            self.stringOptions = stringOptions
+            self.stringSortingLocale = stringSortingLocale
         }
         
         /**
@@ -46,28 +51,41 @@ extension MetadataQuery {
             SortDescriptor(attribute, ascending: false)
         }
         
+        /// Sorts attribute values ascending.
         public var ascending: Self {
-            Self(attribute, ascending: true)
+            Self(attribute, ascending: true, stringOptions, stringSortingLocale)
         }
         
-        /// Sorts the items from largest to smallest for the attribute value.
+        /// Sorts attribute values descending.
         public var descending: Self {
-            Self(attribute, ascending: false)
+            Self(attribute, ascending: false, stringOptions, stringSortingLocale)
+        }
+        
+        /// Sorts strings with the specified comparison options.
+        public func stringOptions(_ options: NSString.CompareOptions, locale: Locale? = nil) -> Self {
+            SortDescriptor(attribute, ascending: isAscending, options, locale)
         }
         
         var sortDescriptor: NSSortDescriptor {
-            NSSortDescriptor(key: attribute.rawValue, ascending: isAscending)
+            if !stringOptions.isEmpty, stringAttributes.contains(attribute) {
+                return StringSortDescriptor(key: attribute.rawValue, ascending: isAscending).options(stringOptions, stringSortingLocale)
+            }
+            return NSSortDescriptor(key: attribute.rawValue, ascending: isAscending)
+        }
+    }
+}
+
+private extension ComparisonResult {
+    func reversed() -> ComparisonResult {
+        switch self {
+        case .orderedAscending: return .orderedDescending
+        case .orderedDescending: return .orderedAscending
+        case .orderedSame: return .orderedSame
         }
     }
 }
 
 extension MetadataQuery.SortDescriptor {
-    /// The url of the file.
-    public static let url = Self(.url)
-
-    /// The full path of the file.
-    public static let path = Self(.path)
-
     /// The name of the file including the extension.
     public static let filename = Self(.fileName)
 
@@ -676,3 +694,35 @@ extension MetadataQuery.SortDescriptor {
      */
     public static let queryContentRelevance = Self(.queryContentRelevance)
 }
+
+class StringSortDescriptor: NSSortDescriptor {
+    var options: NSString.CompareOptions = []
+    var locale: Locale?
+    
+    public func options(_ options: NSString.CompareOptions, _ locale: Locale?) -> Self {
+        self.options = options
+        self.locale = locale
+        return self
+    }
+    
+    override func compare(_ object1: Any, to object2: Any) -> ComparisonResult {
+            guard let key = self.key else { return .orderedSame }
+
+            let value1 = (object1 as AnyObject).value(forKeyPath: key) as? String
+            let value2 = (object2 as AnyObject).value(forKeyPath: key) as? String
+
+            switch (value1, value2) {
+            case let (lhs?, rhs?):
+                let result = lhs.compare(rhs, options: options, locale: locale)
+                return ascending ? result : result.reversed()
+            case (nil, nil):
+                return .orderedSame
+            case (nil, _):
+                return ascending ? .orderedAscending : .orderedDescending
+            case (_, nil):
+                return ascending ? .orderedDescending : .orderedAscending
+            }
+        }
+}
+
+fileprivate let stringAttributes: [MetadataItem.Attribute] = [.url, .path, .fileName, .displayName, .alternateNames, .fileExtension, .fileType, .contentType, .contentTypeTree, .description, .kind, .information, .identifier, .keywords, .title, .album, .authors, .version, .comment, .whereFroms, .finderComment, .finderTags, .bundleIdentifier, .executablePlatform, .encodingApplications, .applicationCategories, .appstoreCategory, .appstoreCategoryType, .textContent, .subject, .theme, .headline, .creator, .instructions, .editors, .audiences, .coverage, .projects, .copyright, .fonts, .fontFamilyName, .contactKeywords, .languages, .rights, .organizations, .publishers, .emailAddresses, .phoneNumbers, .contributors, .securityMethod, .country, .city, .stateOrProvince, .areaInformation, .namedLocation, .gpsStatus, .gpsMeasureMode, .gpsMapDatum, .gpsProcessingMethod, .appleLoopsRootKey, .appleLoopsKeyFilterType, .appleLoopsLoopMode, .appleLoopDescriptors, .musicalInstrumentCategory, .musicalInstrumentName, .mediaTypes, .codecs, .mediaDeliveryType, .originalFormat, .originalSource, .director, .producer, .genre, .performers, .participants, .colorSpace, .exposureMode, .exifVersion, .cameraOwner, .lensModel, .meteringMode, .exposureProgram, .exposureTimeString, .whiteBalance, .authorEmailAddresses, .authorAddresses, .recipients, .recipientEmailAddresses, .recipientAddresses, .instantMessageAddresses, .receivedRecipients, .receivedRecipientHandles, .receivedSenders, .receivedSenderHandles, .receivedTypes, .ubiquitousItemContainerDisplayName, .ubiquitousItemDownloadingStatus, .ubiquitousItemDownloadingError, .ubiquitousItemUploadingError, .ubiquitousSharedItemCurrentUserPermissions, .ubiquitousSharedItemCurrentUserRole, .ubiquitousSharedItemMostRecentEditorNameComponents, .ubiquitousSharedItemOwnerNameComponents]

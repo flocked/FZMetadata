@@ -171,13 +171,15 @@ open class MetadataQuery: NSObject {
     }
     
     var predicateFormat: String {
-        query.predicate?.predicateFormat ?? ""
+        query.predicate?.predicateFormat ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey).predicateFormat
     }
     
     /**
      An array of URLs whose metadata attributes are gathered by the query.
      
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
+     
+     Alternative use ``searchScopes`` or ``searchLocations`` tp scope the query to collect URLs at the specific locations.
      
      - Note: Setting this property while a query is running stops the query, discards the current results and immediately starts a new query.
      */
@@ -238,7 +240,7 @@ open class MetadataQuery: NSObject {
      query.sortedBy = [.fileSize, .creationDate.descending]
      ```
      
-     The results can also be sorted by item relevance via ``MetadataItem/Attribute/queryContentRelevance``:
+     The results can also be sorted by item relevance via ``MetadataQuery/SortDescriptor/queryContentRelevance``:
      
      ```swift
      query.sortedBy = [.queryRelevance]
