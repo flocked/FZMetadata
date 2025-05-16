@@ -156,7 +156,6 @@ open class MetadataQuery: NSObject {
         didSet {
             runWithOperationQueue {
                 self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
-                Swift.print(self.predicateFormat)
             }
         }
     }
