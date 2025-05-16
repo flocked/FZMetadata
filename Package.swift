@@ -16,10 +16,9 @@ let package = Package(
         .package(url: "https://github.com/flocked/FZSwiftUtils.git", branch: "main"),
     ],
     targets: [
-        .target(name: "_MDQueryInterposer", path: "Sources/FZMetadata+ObjC/MDQueryInterposer"),
         .target(
             name: "FZMetadata",
-            dependencies: ["FZSwiftUtils", "_MDQueryInterposer"]
+            dependencies: ["FZSwiftUtils"]
         ),
     ]
 )

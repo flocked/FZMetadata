@@ -7,7 +7,6 @@
 
 import Foundation
 import FZSwiftUtils
-import _MDQueryInterposer
 
 /**
  A query object that can search and observe file system items and fetch large batches of metadata attributes.
@@ -89,10 +88,6 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    static var maxResults: Int?
-    static var batchingParameters: ResultUpdateOptions?
-    static var options: Options?
-    
     let query = NSMetadataQuery()
     var resumeState: State = .isPaused
     let delegate = Delegate()
@@ -124,10 +119,7 @@ open class MetadataQuery: NSObject {
     open var attributes: [MetadataItem.Attribute] {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
         set {
-            runWithOperationQueue {
-                self.interceptMDQuery()
-                self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued()
-            }
+            runWithOperationQueue { self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued() }
         }
     }
     
@@ -163,7 +155,6 @@ open class MetadataQuery: NSObject {
     open var predicate: ((PredicateItem) -> (PredicateResult))? {
         didSet {
             runWithOperationQueue {
-                self.interceptMDQuery()
                 self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
                 Swift.print(self.predicateFormat)
             }
@@ -186,10 +177,7 @@ open class MetadataQuery: NSObject {
     open var urls: [URL] {
         get { query.searchItems as? [URL] ?? [] }
         set {
-            runWithOperationQueue {
-                self.interceptMDQuery()
-                self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL]
-            }
+            runWithOperationQueue { self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL] }
         }
     }
     
@@ -204,11 +192,7 @@ open class MetadataQuery: NSObject {
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
-        set {
-            runWithOperationQueue {
-                self.interceptMDQuery()
-                self.query.searchScopes = newValue
-            }
+        set { runWithOperationQueue { self.query.searchScopes = newValue }
         }
     }
     
@@ -224,10 +208,7 @@ open class MetadataQuery: NSObject {
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
         set {
-            runWithOperationQueue{
-                self.interceptMDQuery()
-                self.query.searchScopes = newValue.compactMap(\.rawValue)
-            }
+            runWithOperationQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue) }
         }
     }
     
@@ -252,7 +233,6 @@ open class MetadataQuery: NSObject {
     open var sortedBy: [SortDescriptor] = [] {
         didSet {
             runWithOperationQueue{
-                self.interceptMDQuery()
                 self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor })
             }
         }
@@ -285,10 +265,7 @@ open class MetadataQuery: NSObject {
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
         set {
-            runWithOperationQueue{
-                self.interceptMDQuery()
-                self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued()
-            }
+            runWithOperationQueue{ self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued() }
         }
     }
     
@@ -336,69 +313,6 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     The maximum number of results.
-     
-     The property must be set before the query is executed else the value is ignored.
-     */
-    open var maxResults: Int?
-        
-    /**
-     The interval (in seconds) at which the results gets updated with accumulated changes.
-     
-     This value is advisory, in that the update will be triggered at some point after the specified seconds passed since the last update.
-     */
-    open var resultUpdateInterval: TimeInterval {
-        get { resultUpdateOptions.gatheringInterval }
-        set {
-            resultUpdateOptions.gatheringInterval = newValue
-            resultUpdateOptions.monitoringInterval = newValue
-        }
-    }
-    
-    /// The maximum number of changes that can accumulate before updating the results.
-    open var resultUpdateThreshold: Int {
-        get { resultUpdateOptions.gatheringThreshold }
-        set {
-            resultUpdateOptions.gatheringThreshold = newValue
-            resultUpdateOptions.monitoringThreshold = newValue
-        }
-    }
-    
-    /**
-     Options for when the metadata query updates it's results with accumulated changes.
-     
-     This provides more granular configuration options compared to ``resultUpdateInterval`` and ``resultUpdateThreshold``.
-     */
-    var resultUpdateOptions = ResultUpdateOptions() {
-        didSet {
-            guard oldValue != resultUpdateOptions, !query.isStopped else { return }
-            Self.batchingParameters = resultUpdateOptions
-            Self.options = options
-            Self.maxResults = maxResults
-            query.notificationBatchingInterval = Double.random(max: 100.0)
-        }
-    }
-    
-    /**
-     A Boolean value indicating whether the query blocks during the initial gathering phase.
-     
-     It’s run loop will run in the default mode.
-     
-     The default value is `false`.
-     */
-    public var isSynchronous: Bool {
-        get { options.contains(.synchronous) }
-        set { options[.synchronous] = newValue }
-    }
-    
-    /**
-     Execution options for the query.
-     
-     The default value is `wantsUpdates`.
-     */
-    var options: Options = [.wantsUpdates]
-    
-    /**
      A Boolean value indicating whether changes to the results are posted while gathering the initial results.
      
      The default value is `false`.
@@ -415,9 +329,6 @@ open class MetadataQuery: NSObject {
         } else {
             runWithOperationQueue {
                 guard self.state == .isStopped else { return }
-                Self.batchingParameters = self.resultUpdateOptions
-                Self.options = self.options
-                Self.maxResults = self.maxResults
                 self.runWithOperationQueue {
                     self.query.enableUpdates()
                     self.query.start()
@@ -590,13 +501,6 @@ open class MetadataQuery: NSObject {
         guard debug else { return }
         Swift.print(string)
     }
-    
-    func interceptMDQuery() {
-        guard !query.isStopped else { return }
-        Self.maxResults = maxResults
-        Self.options = options
-        Self.batchingParameters = resultUpdateOptions
-    }
         
     /**
      Creates a metadata query with the specified operation queue.
@@ -648,30 +552,3 @@ class ItemPathPrefetchOperation: Operation {
         }
     }
 }
-
-@_cdecl("swizzled_MDQueryExecute")
-func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
-) -> Bool {
-    let optionFlags = MetadataQuery.options?.rawValue ?? optionFlags
-    MetadataQuery.options = nil
-    if let maxResults = MetadataQuery.maxResults {
-        MetadataQuery.maxResults = nil
-        MDQuerySetMaxCount(query, CFIndex(maxResults))
-    }
-    return MDQueryExecute(query, optionFlags)
-}
-
-@_cdecl("swizzled_MDQuerySetBatchingParameters")
-func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
-    let params = MetadataQuery.batchingParameters?.batching ?? params
-    MetadataQuery.batchingParameters = nil
-    MDQuerySetBatchingParameters(query, params)
-}
-
-/*
-@_cdecl("swizzled_MDQueryCreate")
-func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!, _ valueListAttrs: CFArray!, _ sortingAttrs: CFArray!) -> MDQuery! {
-    Swift.print("MDQuery")
-    return MDQueryCreate(allocator, queryString, valueListAttrs, sortingAttrs)
-}
-*/
