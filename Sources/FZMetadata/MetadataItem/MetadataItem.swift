@@ -9,32 +9,30 @@ import Foundation
 import FZSwiftUtils
 
 #if os(macOS)
-    import AppKit
+import AppKit
 #else
-    import UIKit
+import UIKit
 #endif
 
-#if canImport(UniformTypeIdentifiers)
-    import UniformTypeIdentifiers
-#endif
+import UniformTypeIdentifiers
 
 #if os(macOS)
-    public extension URL {
-        /**
-         The metadata for the file at this url.
+public extension URL {
+    /**
+     The metadata for the file at this url.
 
-         - Returns: The metadata, or `nil` if the file isn't available or can't be accessed.
-         */
-        var metadata: MetadataItem? {
-            MetadataItem(url: self)
-        }
+     - Returns: The metadata, or `nil` if the file isn't available or can't be accessed.
+     */
+    var metadata: MetadataItem? {
+        MetadataItem(url: self)
     }
+}
 #endif
 
 /**
  The metadata associated with a file.
 
- You either access the metadata by using a file url's ``Foundation/URL/metadata`` property or create it using ``init(url:)``.
+ You either access the metadata by using the ``Foundation/URL/metadata`` property of a file URL or create it using ``init(url:)``.
 
  ```swift
  if let metadata = fileURL.metadata {
@@ -49,7 +47,7 @@ import FZSwiftUtils
  metadata.contentModificationDate = Date.now
  ```
  */
-open class MetadataItem: Identifiable {
+open class MetadataItem: NSObject, Identifiable {
     /// The identifier of the item.
     public let id = UUID()
     
@@ -76,27 +74,26 @@ open class MetadataItem: Identifiable {
     }
 
     #if os(macOS)
-        /**
-         Initializes a metadata item with a given URL.
+    /**
+     Initializes a metadata item with a given URL.
 
-         Example usage:
+     Example usage:
 
-         ```swift
-         if let metadata = MetadataItem(url: fileURL) {
-            metadata.creationDate // The creation date of the file
-            metadata.contentModificationDate = Date()
-         }
-         ```
+     ```swift
+     if let metadata = MetadataItem(url: fileURL) {
+        metadata.creationDate // The creation date of the file
+        metadata.contentModificationDate = Date()
+     }
+     ```
 
-         - Parameter url: The URL for the metadata
-         - Returns: A metadata item for the file at the url, or `nil` if the file isn't available or can't be accessed.
-         */
-        public init?(url: URL) {
-            guard let item = NSMetadataItem(url: url) else { return nil }
-            self.item = item
-            self.filePath = url.path
-        }
-
+     - Parameter url: The URL for the metadata
+     - Returns: A metadata item for the file at the url, or `nil` if the file isn't available or can't be accessed.
+     */
+    public init?(url: URL) {
+        guard let item = NSMetadataItem(url: url) else { return nil }
+        self.item = item
+        self.filePath = url.path
+    }
     #endif
     
     // MARK: - Attributes
@@ -210,36 +207,26 @@ open class MetadataItem: Identifiable {
     open var fileExtensionIsHidden: Bool? { value(for: .fileExtensionIsHidden) }
 
     /// The file type. For example: `video`, `document` or `directory`
-    open var fileType: FileType? { 
-        if let contentTypeTree: [String] = value(for: .contentTypeTree) {
-            return FileType(contentTypeTree: contentTypeTree)
-        }
-        return nil
+    open var fileType: FileType? {
+        guard let identifiers = contentTypeIdentifierTree else { return nil }
+        return FileType(contentTypeTree: identifiers)
     }
     
-    #if (os(macOS) && compiler(>=5.3.1)) || (!os(macOS) && compiler(>=5.3))
     /// The content type of the file.
-    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentType: UTType? {
-        if let type: String = value(for: .contentType) {
-            return UTType(type)
-        }
-        return nil
+        guard let contentType: String = value(for: .contentType) else { return nil }
+        return UTType(contentType)
     }
     
     /// The content type tree of the file.
-    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentTypeTree: [UTType]? {
-        guard let identifiers: [String] = value(for: .contentTypeTree) else { return nil }
+        guard let identifiers = contentTypeIdentifierTree else { return nil }
         return identifiers.compactMap { UTType($0) }
     }
-    #else
-    /// The content type identifier (`UTI`) of the file.
-    open var contentTypeIdentifier: String? { value(for: .contentType) }
     
-    /// The content type tree identifiers (`UTI`) of the file.
-    open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
-    #endif
+    private var contentTypeIdentifierTree: [String]? {
+        value(for: .contentTypeTree)
+    }
 
     /// The date the file was created on the file system.
     open var creationDate: Date? {
@@ -308,7 +295,7 @@ open class MetadataItem: Identifiable {
     open var directoryFilesCount: Int? { value(for: .directoryFilesCount) }
 
     ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
-    open var description: String? { value(for: .description) }
+    open var contentDescription: String? { value(for: .contentDescription) }
 
     /// A description of the kind of item the file represents.
     open var kind: [String]? { value(for: .kind) }
@@ -640,11 +627,17 @@ open class MetadataItem: Identifiable {
         return nil
     }
 
-    /// The media types (video, sound) present in the content.
-    open var mediaTypes: [String]? { value(for: .mediaTypes) }
-
+    /// The media content types (video and sound) present in the file.
+    open var mediaTypes: [UTType]? {
+        guard let contentTypes: [String] = value(for: .mediaTypes) else { return nil }
+        return contentTypes.compactMap({ UTType($0) })
+    }
+    
     /// The codecs used to encode/decode the media.
-    open var codecs: [String]? { value(for: .codecs) }
+    open var codecs: [MediaCodec]? {
+        guard let codecs: [String] = value(for: .codecs) else { return nil }
+        return codecs.map({ MediaCodec($0) })
+    }
 
     /// The total bit rate, audio and video combined, of the media.
     open var totalBitRate: Double? { value(for: .totalBitRate) }
@@ -723,43 +716,11 @@ open class MetadataItem: Identifiable {
     /// The orientation of the contents.
     open var orientation: Orientation? { value(for: .orientation) }
 
-    /// The orientation of a contents.
-    public enum Orientation: Int, QueryRawRepresentable, CustomStringConvertible {
-        /// Horizontal orientation.
-        case horizontal = 0
-
-        /// Vertical orientation.
-        case vertical = 1
-        
-        public var description: String {
-            switch self {
-            case .horizontal: return "Horizontal"
-            case .vertical: return "Vertical"
-            }
-        }
-    }
-
     /// The names of the layers in the file.
     open var layerNames: [String]? { value(for: .layerNames) }
 
     /// The white balance setting of the camera when the picture was taken.
     open var whiteBalance: WhiteBalance? { value(for: .whiteBalance) }
-
-    /// The white balance setting of a camera.
-    public enum WhiteBalance: Int, QueryRawRepresentable, CustomStringConvertible {
-        /// Automatic white balance.
-        case auto = 0
-
-        /// White balance is off.
-        case off = 1
-        
-        public var description: String {
-            switch self {
-            case .auto: return "Auto"
-            case .off: return "Off"
-            }
-        }
-    }
 
     /// The aperture setting used to acquire the document contents. This unit is the APEX value.
     open var aperture: Double? { value(for: .aperture) }
@@ -780,7 +741,9 @@ open class MetadataItem: Identifiable {
     }
 
     /// The exposure mode used to acquire the contents.
-    open var exposureMode: Double? { value(for: .exposureMode) }
+    open var exposureMode: ExposureMode? {
+        ExposureMode(rawValue: value(for: .exposureMode) ?? -1)
+    }
 
     /// The exposure time, in seconds, used to acquire the contents.
     open var exposureTimeSeconds: Double? { value(for: .exposureTimeSeconds) }
@@ -807,7 +770,7 @@ open class MetadataItem: Identifiable {
     open var redEyeOnOff: Bool? { value(for: .redEyeOnOff) }
 
     /// The metering mode used to take the image.
-    open var meteringMode: String? { value(for: .meteringMode) }
+    open var meteringMode: MeteringMode? { value(for: .meteringMode) }
 
     /// The smallest f-number of the lens. Ordinarily it is given in the range of 00.00 to 99.99.
     open var maxAperture: Double? { value(for: .maxAperture) }
@@ -827,33 +790,10 @@ open class MetadataItem: Identifiable {
     /// The screen capture type of the file.
     open var screenCaptureType: ScreenCaptureType? { value(for: .screenCaptureType) }
 
-    /// The screen capture type of a file.
-    public enum ScreenCaptureType: String, QueryRawRepresentable, CustomStringConvertible {
-        /// A screen capture of a display.
-        case display
-
-        /// a screen capture of a window.
-        case window
-
-        /// A screen capture of a selection.
-        case selection
-        
-        public var description: String {
-            switch self {
-            case .display: return "Display"
-            case .window: return "Window"
-            case .selection: return "Selection"
-            }
-        }
-    }
-
     /// The screen capture rect of the file.
     open var screenCaptureRect: CGRect? {
-        let kp: PartialKeyPath<MetadataItem> = \.screenCaptureRect
-        if let values: [Double] = value(for: kp.mdItemKey), values.count == 4 {
-            return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
-        }
-        return nil
+        guard let values: [Double] = value(for: .screenCaptureRect), values.count == 4 else { return nil }
+        return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
     }
 
     // MARK: - Messages / Mail
@@ -1010,6 +950,148 @@ open class MetadataItem: Identifiable {
 }
 
 extension MetadataItem {
+    /// The exposure mode of an image.
+    public enum ExposureMode: Int, CustomStringConvertible, Hashable, QueryRawRepresentable {
+        /// Automatic.
+        case auto
+        /// Manual.
+        case manual
+        /// Automatic bracket.
+        case autoBracket
+        
+        public var description: String {
+            switch self {
+            case .auto: return "automatic"
+            case .manual: return "manual"
+            case .autoBracket: return "automaticBracket"
+            }
+        }
+    }
+    
+    /// A media codec.
+    public struct MediaCodec: ExpressibleByStringLiteral, RawRepresentable, CustomStringConvertible, Hashable {
+        /// H.264 video codec.
+        public static let h264 = Self("H.264")
+        /// HEVC video codec.
+        public static let hevc = Self("HEVC")
+        /// AAC audio codec.
+        public static let aac = Self("MPEG-4 AAC")
+        /// AAC audio codec variant optimized for low-bitrate streaming.
+        public static let aacHe = Self("MPEG-4 HE AAC")
+        /// Subtitle track.
+        public static let subtitle = Self("Subtitle")
+        /// Track containing time information for syncing or reference.
+        public static let timecode = Self("Timecode")
+        /// Text based subtitle track.
+        public static let quickTimeText = Self("QuickTime Text")
+        /// Metadata track used for streaming optimization in QuickTime/MP4.
+        public static let quickTimeHint = Self("Hint")
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public init(_ rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public init(stringLiteral value: String) {
+            rawValue = value
+        }
+        
+        public let rawValue: String
+        
+        public var description: String {
+            rawValue
+        }
+    }
+    
+    /// The orientation of a contents.
+    public enum Orientation: Int, CustomStringConvertible, Hashable, QueryRawRepresentable {
+        /// Horizontal orientation.
+        case horizontal = 0
+        /// Vertical orientation.
+        case vertical = 1
+        
+        public var description: String {
+            switch self {
+            case .horizontal: return "Horizontal"
+            case .vertical: return "Vertical"
+            }
+        }
+    }
+    
+    /// The white balance setting of a camera.
+    public enum WhiteBalance: Int, CustomStringConvertible, Hashable, QueryRawRepresentable {
+        /// Automatic white balance.
+        case auto = 0
+        /// White balance is off.
+        case off = 1
+        
+        public var description: String {
+            switch self {
+            case .auto: return "Auto"
+            case .off: return "Off"
+            }
+        }
+    }
+    
+    /// The metering mode used to take an image.
+    public struct MeteringMode: RawRepresentable, ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
+        /// Average.
+        public static let average = Self("Average")
+        /// Center weighted average.
+        public static let centerWeightedAverage = Self("CenterWeightedAverage")
+        /// Spot.
+        public static let spot = Self("Spot")
+        /// Multi spot..
+        public static let multiSpot = Self("MultiSpot")
+        /// Pattern..
+        public static let pattern = Self("Pattern")
+        /// Partial..
+        public static let partial = Self("Partial")
+        /// Unknown.
+        public static let unknown = Self("Unknown")
+        
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public init(_ rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public init(stringLiteral value: String) {
+            self.rawValue = value
+        }
+        
+        public let rawValue: String
+        
+        public var description: String {
+            rawValue
+        }
+    }
+    
+    /// The screen capture type of a file.
+    public enum ScreenCaptureType: String, CustomStringConvertible, QueryRawRepresentable {
+        /// A screen capture of a display.
+        case display
+        /// a screen capture of a window.
+        case window
+        /// A screen capture of a selection.
+        case selection
+        
+        public var description: String {
+            switch self {
+            case .display: return "display"
+            case .window: return "window"
+            case .selection: return "selection"
+            }
+        }
+    }
+}
+
+extension MetadataItem {
     func value<T>(for attribute: String, save: Bool = false) -> T? {
         let value = values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
         if save && values[attribute] == nil {
@@ -1042,15 +1124,5 @@ extension MetadataItem {
         } else {
             url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = value
         }
-    }
-}
-
-extension MetadataItem: Hashable {
-    public static func == (lhs: MetadataItem, rhs: MetadataItem) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
     }
 }

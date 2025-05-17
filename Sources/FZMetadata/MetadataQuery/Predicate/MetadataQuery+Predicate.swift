@@ -272,7 +272,8 @@ extension UTType: QueryRawRepresentable {
 
 extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
 extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
-
+extension MetadataItem.MediaCodec: QueryRawRepresentable { }
+extension MetadataItem.MeteringMode: QueryRawRepresentable { }
 
 protocol QueryPredicate {
     var mdKeys: [String] { get }

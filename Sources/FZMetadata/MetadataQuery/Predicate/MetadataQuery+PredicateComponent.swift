@@ -511,3 +511,13 @@ public extension MetadataQuery.PredicateComponent where T == TimeDuration? {
         .init(mdKeys, TimeDuration.Unit.year)
     }
 }
+
+public extension MetadataQuery.PredicateComponent where T == CGSize? {
+    var width: MetadataQuery.PredicateComponent<Double?> {
+        .init([mdKeys.first!.replacingOccurrences(of: "Size", with: "Width").replacingOccurrences(of: "_", with: "")], valueConverter, stringOptions)
+    }
+    
+    var height: MetadataQuery.PredicateComponent<Double?> {
+        .init([mdKeys.first!.replacingOccurrences(of: "Size", with: "Height").replacingOccurrences(of: "_", with: "")], valueConverter, stringOptions)
+    }
+}

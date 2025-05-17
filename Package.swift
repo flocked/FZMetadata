@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "FZMetadata",
-    platforms: [.macOS(.v10_15), .iOS(.v14), .macCatalyst(.v14), .tvOS(.v14), .watchOS(.v7)],
+    platforms: [.macOS(.v11), .iOS(.v14), .macCatalyst(.v14), .tvOS(.v14), .watchOS(.v7)],
     products: [
         .library(
             name: "FZMetadata",

@@ -488,7 +488,11 @@ open class MetadataQuery: NSObject {
         pendingResultsUpdate = .init()
         pending.added.forEach({ updateResult($0, isInital: true) })
         pending.changed.forEach({ updateResult($0) })
-        _results.synchronized = results
+        if !pending.isEmpty {
+          //  willChangeValue(for: \.results)
+            _results.synchronized = results
+          //  didChangeValue(for: \.results)
+        }
         query.enableUpdates()
         resultsUpdateLock.unlock()
         if post {
@@ -518,7 +522,9 @@ open class MetadataQuery: NSObject {
     
     @objc func gatheringStarted(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringStarted")
+      //  willChangeValue(for: \.results)
         _results.removeAll()
+     //   didChangeValue(for: \.results)
         itemPathPrefetchOperationQueue.cancelAllOperations()
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.attribute.rawValue) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()

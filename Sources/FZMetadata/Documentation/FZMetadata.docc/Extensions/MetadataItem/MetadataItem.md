@@ -30,9 +30,7 @@
 - ``fileIsInvisible``
 - ``fileExtensionIsHidden``
 - ``contentType``
-- ``contentTypeIdentifier``
 - ``contentTypeTree``
-- ``contentTypeTreeIdentifiers``
 
 ### Date Attributes
 

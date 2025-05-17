@@ -62,7 +62,7 @@ public extension MetadataItem {
         /// The number of files in a directory.
         case directoryFilesCount = "kMDItemFSNodeCount"
         ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
-        case description = "kMDItemDescription"
+        case contentDescription = "kMDItemDescription"
         /// A description of the kind of item the file represents.
         case kind = "kMDItemKind"
         /// Information of this item.
@@ -478,18 +478,8 @@ public extension MetadataItem {
             case .fileIsInvisible: return \.fileIsInvisible
             case .fileExtensionIsHidden: return \.fileExtensionIsHidden
             case .fileType: return \.fileType
-            case .contentType:
-                if  #available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *) {
-                    return \.contentType
-                } else {
-                    return \.fileName
-                }
-            case .contentTypeTree:
-                if  #available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *) {
-                    return \.contentTypeTree
-                } else {
-                    return \.fileName
-                }
+            case .contentType: return \.contentType
+            case .contentTypeTree: return \.contentTypeTree
             case .creationDate: return \.creationDate
             case .lastUsedDate: return \.lastUsedDate
             case .lastUsageDates: return \.lastUsageDates
@@ -502,7 +492,7 @@ public extension MetadataItem {
             case .purchaseDate: return \.purchaseDate
             case .dueDate: return \.dueDate
             case .directoryFilesCount: return \.directoryFilesCount
-            case .description: return \.description
+            case .contentDescription: return \.contentDescription
             case .kind: return \.kind
             case .information: return \.information
             case .identifier: return \.identifier
@@ -707,13 +697,6 @@ extension MetadataItem.Attribute {
 extension PartialKeyPath where Root == MetadataItem {
     /// The metadata query key for the attribute at the key path.
     var mdItemKey: String {
-        #if (os(macOS) && compiler(<5.3.1)) || (!os(macOS) && compiler(<5.3))
-        if self == \.contentTypeIdentifier {
-            return "kMDItemContentType"
-        } else if self == \.contentTypeTreeIdentifiers {
-            return "kMDItemContentTypeTree"
-        }
-        #endif
         var key = MetadataItem.Attribute.allCases.first(where: {$0.keyPath == self})?.rawValue ?? MetadataItem.Attribute.fileName.rawValue
         if key.hasPrefix("_") {
             key = String(key.dropFirst())
