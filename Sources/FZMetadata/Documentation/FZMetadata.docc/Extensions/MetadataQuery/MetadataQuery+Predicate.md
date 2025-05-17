@@ -1,4 +1,4 @@
-# ``MetadataQuery/Predicate``
+# ``MetadataQuery/PredicateItem``
 
 ## Topics
 
@@ -50,9 +50,13 @@
 
 ### String
 
-- ``caseSensitive``
-- ``diacriticSensitive``
-- ``wordBased``
+- ``MetadataQuery/PredicateComponent/caseSensitive-419ud``
+- ``MetadataQuery/PredicateComponent/diacriticSensitive-ldq4``
+- ``MetadataQuery/PredicateComponent/wordBased-1d75h``
+
+- ``MetadataQuery/PredicateComponent/starts(with:)``
+- ``MetadataQuery/PredicateComponent/ends(with:)``
+- ``MetadataQuery/PredicateComponent/contains(_:)-914nr``
 
 - ``starts(with:)``
 - ``starts(withAny:)``
@@ -69,12 +73,25 @@
 
 ### Date
 
-- ``DateValue``
-- ``between(_:)-7axbv``
-- ``isBefore(_:)``
-- ``isAfter(_:)``
-- ``MetadataQuery/PredicateDateValue``
-- ``==(_:_:)-8wvp5``
+- ``MetadataQuery/PredicateComponent/isNow``
+- ``MetadataQuery/PredicateComponent/isThisMinute``
+- ``MetadataQuery/PredicateComponent/isLastMinute``
+- ``MetadataQuery/PredicateComponent/isThisHour``
+- ``MetadataQuery/PredicateComponent/isLastHour``
+- ``MetadataQuery/PredicateComponent/isSameHour(as:)``
+- ``MetadataQuery/PredicateComponent/isToday``
+- ``MetadataQuery/PredicateComponent/isYesterday``
+- ``MetadataQuery/PredicateComponent/isSameDay(as:)``
+- ``MetadataQuery/PredicateComponent/isThisWeek``
+- ``MetadataQuery/PredicateComponent/isLastWeek``
+- ``MetadataQuery/PredicateComponent/isSameWeek(as:)``
+- ``MetadataQuery/PredicateComponent/isThisMonth``
+- ``MetadataQuery/PredicateComponent/isLastMonth``
+- ``MetadataQuery/PredicateComponent/isSameMonth(as:)``
+- ``MetadataQuery/PredicateComponent/isThisYear``
+- ``MetadataQuery/PredicateComponent/isLastYear``
+- ``MetadataQuery/PredicateComponent/isSameYear(as:)``
+- ``MetadataQuery/PredicateComponent/isWithin(_:_:)``
 
 ### Collection
 
@@ -102,3 +119,8 @@
 - ``Swift/Optional``
 - ``FZSwiftUtils/DataSize``
 - ``FZSwiftUtils/TimeDuration``
+
+### Result
+
+- ``MetadataQuery/PredicateResult``
+- ``MetadataQuery/PredicateComponent``
