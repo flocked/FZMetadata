@@ -165,7 +165,7 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     An array of URLs whose metadata attributes are gathered by the query.
+     An array of URLs to use for the predicate.
      
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
      
@@ -181,7 +181,7 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     An array of file-system directory URLs.
+     An array of file-system directory URLs to search at.
      
      The query searches for items at these search locations. An empty array indicates that there is no limitation on where the query searches.
      
@@ -191,12 +191,12 @@ open class MetadataQuery: NSObject {
      */
     open var searchLocations: [URL] {
         get { query.searchScopes.compactMap { $0 as? URL } }
-        set { runWithOperationQueue { self.query.searchScopes = newValue }
+        set { runWithOperationQueue { self.query.searchScopes = newValue.uniqued() }
         }
     }
     
     /**
-     An array containing the seatch scopes.
+     An array of search scopes to search at.
      
      The query searches for items at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
      
@@ -207,7 +207,7 @@ open class MetadataQuery: NSObject {
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
         set {
-            runWithOperationQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue) }
+            runWithOperationQueue{ self.query.searchScopes = newValue.compactMap(\.rawValue).uniqued() }
         }
     }
     
@@ -269,7 +269,7 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     The queue on which the results gets gathered and the results handler gets called.
+     The operation queue on which results are updated and the results handler is called.
      
      Use this property to decouple the processing of results from the thread used to execute the query. This makes it easier to synchronize query result processing with other related operations—such as updating the data model or user interface—which you might want to perform on the main queue.
      */
@@ -319,6 +319,18 @@ open class MetadataQuery: NSObject {
      - Note: Enabling gathering updates can have a significant performance impact. You should define an operation queue via ``operationQueue`` as otherwise any updates can cause lag on the main thread.
      */
     open var postsGatheringUpdates: Bool = false
+    
+    /**
+     The interval (in seconds) at which the results gets updated with accumulated changes and the results handler gets called.
+     
+     This value is advisory, in that the update will be triggered at some point after the specified seconds passed since the last update.
+     
+     The default value is `1.0`.
+     */
+    open var resultUpdateInterval: TimeInterval {
+        get { query.notificationBatchingInterval }
+        set { query.notificationBatchingInterval = newValue }
+    }
     
     /// Starts the query, discarding any previous results, or resumes a paused query.
     open func start() {
@@ -400,7 +412,7 @@ open class MetadataQuery: NSObject {
         query.enableUpdates()
         resultsUpdateLock.unlock()
         if post {
-            pending.changes = Changes(pending.changed)
+            pending.changes = .init(pending.changed)
             resultsHandler?(results, pending)
         }
     }

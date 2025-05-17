@@ -10,7 +10,7 @@ import FZSwiftUtils
 
 extension MetadataQuery {
     /**
-     A dictionary containing the unique values and their occurrences for each queried metadata uten attribute.
+     A dictionary containing the unique values and their occurrences for each queried metadata item attribute.
      
      Each ``AttributeValueTuple`` contains the attribute value, and the occurrences of that value that exist for the attribute name.
      
@@ -18,10 +18,10 @@ extension MetadataQuery {
      
      ```swift
      /// This returns [MappedAttributeValue<Date?>]
-     let mappedValues = query.valueList[\.creationDate]
+     let mappedValues = query.resultValueLists[\.creationDate]
      ```
      */
-    public var valueLists: [MetadataItem.Attribute: [AttributeValueTuple]] {
+    public var resultValueLists: [MetadataItem.Attribute: [AttributeValueTuple]] {
         query.valueLists.reduce(into: [:], { partialResult, val in
             guard let attribute = MetadataItem.Attribute(rawValue: val.key) else { return }
             partialResult[attribute] = val.value.map({ AttributeValueTuple(attribute, $0.value, $0.count)  })

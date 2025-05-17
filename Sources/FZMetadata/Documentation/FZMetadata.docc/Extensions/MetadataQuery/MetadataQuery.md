@@ -2,48 +2,55 @@
 
 ## Topics
 
-### Creating a metadata query
+### Creating a Query
 
 - ``init()``
+- ``init(queue:)``
 
-### Getting the state
-
-- ``state``
-- ``State``
-
-### Configuring the query
+### Configuring the Query
 
 - ``attributes``
 - ``groupingAttributes``
 - ``predicate``
-- ``Predicate``
-- ``predicateFormat``
+- ``PredicateItem``
+
+### Configuring Search Scopes
+
 - ``urls``
 - ``searchLocations``
 - ``searchScopes``
 - ``SearchScope``
-- ``operationQueue``
 
-### Configuring query results updates
-
-- ``resultUpdateInterval``
-- ``resultUpdateThreshold``
-
-### Getting query results
-
-- ``start()``
-- ``stop()``
-- ``results``
-- ``groupedResults``
-- ``monitorResults``
-- ``resultsHandler``
-- ``ResultGroup``
-- ``ResultDifference``
-- ``postGatheringUpdates``
-- ``hierarchicalResults``
-- ``HierarchicalResult``
-
-### Sorting query results
+### Configuring Result Sorting
 
 - ``sortedBy``
 - ``SortDescriptor``
+
+### Configuring Result Updates
+
+- ``resultsHandler``
+- ``postsGatheringUpdates``
+- ``monitorResults``
+- ``resultUpdateInterval``
+- ``resultUpdateThreshold``
+- ``operationQueue``
+
+### Controlling the Query State
+
+- ``start()``
+- ``pause()``
+- ``stop()``
+- ``state``
+- ``State``
+
+### Accessing Results
+
+- ``results``
+- ``ResultDifference``
+- ``groupedResults``
+- ``ResultGroup``
+- ``hierarchicalResult-swift.property``
+- ``HierarchicalResult-swift.class``
+- ``resultValueLists``
+- ``AttributeValueTuple``
+- ``MappedAttributeValueTuple``

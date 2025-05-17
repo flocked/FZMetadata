@@ -2,8 +2,17 @@
 
 ## Topics
 
-### Getting Query Results
+### Result Item Difference
 
 - ``added``
-- ``changed``
 - ``removed``
+- ``changed``
+
+### Result Changes
+
+- ``changes-swift.property``
+- ``Changes-swift.class``
+
+### Description
+
+- ``description``

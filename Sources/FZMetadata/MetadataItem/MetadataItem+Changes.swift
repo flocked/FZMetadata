@@ -117,10 +117,10 @@ extension MetadataItem {
     }
 }
 
-extension MetadataQuery {
+extension MetadataQuery.ResultDifference {
     /// The changes between two query results.
     public class Changes: Hashable {
-        private var changes: [MetadataItem: MetadataItem.Changes] = [:]
+        private let changes: [MetadataItem: MetadataItem.Changes]
         private let id = UUID()
         
         /// The attributes that have changed.
@@ -153,17 +153,22 @@ extension MetadataQuery {
             changedItems(for: attribute)
         }
         
-        static let empty = Changes()
+        /// Returns the items and values that have changed for the specified attribute.
+        public subscript<V>(keyPath: KeyPath<MetadataItem, V>) -> [(item: MetadataItem, value: V, previousValue: V)] {
+            changedValues(for: keyPath)
+        }
         
-        init(_ items: [MetadataItem] = []) {
-            items.forEach({ changes[$0] = $0.changes.copy()  })
+        static let empty = Changes([])
+        
+        init(_ items: [MetadataItem]) {
+            changes = Dictionary(uniqueKeysWithValues: items.map { ($0, $0.changes.copy()) })
         }
         
         public func hash(into hasher: inout Hasher) {
             hasher.combine(id)
         }
         
-        public static func == (lhs: MetadataQuery.Changes, rhs: MetadataQuery.Changes) -> Bool {
+        public static func == (lhs: Changes, rhs: Changes) -> Bool {
             lhs.id == rhs.id
         }
     }
