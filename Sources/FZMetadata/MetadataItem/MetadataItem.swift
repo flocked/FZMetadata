@@ -216,11 +216,12 @@ open class MetadataItem: Identifiable {
         }
         return nil
     }
-
+    
+    #if (os(macOS) && compiler(>=5.3.1)) || (!os(macOS) && compiler(>=5.3.0))
     /// The content type of the file.
     @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentType: UTType? {
-        if let type = contentTypeIdentifier {
+        if let type: String = value(for: .contentType) {
             return UTType(type)
         }
         return nil
@@ -229,24 +230,16 @@ open class MetadataItem: Identifiable {
     /// The content type tree of the file.
     @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentTypeTree: [UTType]? {
-        contentTypeTreeIdentifiers?.compactMap { UTType($0) }
+        guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
+        return contentTypeTree.compactMap { UTType($0) }
     }
-    
-    @available(macOS, obsoleted: 11.0, message: "Use contentType instead")
-    @available(iOS, obsoleted: 14.0, message: "Use contentType instead")
-    @available(macCatalyst, obsoleted: 14.0, message: "Use contentType instead")
-    @available(tvOS, obsoleted: 14.0, message: "Use contentType instead")
-    @available(watchOS, obsoleted: 7.0, message: "Use contentType instead")
+    #else
     /// The content type identifier (`UTI`) of the file.
     open var contentTypeIdentifier: String? { value(for: .contentType) }
-
-    @available(macOS, obsoleted: 11.0, message: "Use contentType instead")
-    @available(iOS, obsoleted: 14.0, message: "Use contentType instead")
-    @available(macCatalyst, obsoleted: 14.0, message: "Use contentType instead")
-    @available(tvOS, obsoleted: 14.0, message: "Use contentType instead")
-    @available(watchOS, obsoleted: 7.0, message: "Use contentType instead")
+    
     /// The content type tree identifiers (`UTI`) of the file.
     open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
+    #endif
 
     /// The date the file was created on the file system.
     open var creationDate: Date? {

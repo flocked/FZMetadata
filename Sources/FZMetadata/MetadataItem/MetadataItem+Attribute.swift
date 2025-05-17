@@ -707,11 +707,13 @@ extension MetadataItem.Attribute {
 extension PartialKeyPath where Root == MetadataItem {
     /// The metadata query key for the attribute at the key path.
     var mdItemKey: String {
+        #if (os(macOS) && compiler(<5.3.1)) || (!os(macOS) && compiler(<5.3.0))
         if self == \.contentTypeIdentifier {
             return "kMDItemContentType"
         } else if self == \.contentTypeTreeIdentifiers {
             return "kMDItemContentTypeTree"
         }
+        #endif
         var key = MetadataItem.Attribute.allCases.first(where: {$0.keyPath == self})?.rawValue ?? MetadataItem.Attribute.fileName.rawValue
         if key.hasPrefix("_") {
             key = String(key.dropFirst())
