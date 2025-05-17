@@ -5,7 +5,7 @@
 //  Created by Florian Zand on 14.04.25.
 //
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX || (!defined(TARGET_OS_OSX) && !(TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_WATCH))
 #import <CoreServices/CoreServices.h>
 
 extern Boolean swizzled_MDQueryExecute(MDQueryRef, CFOptionFlags);

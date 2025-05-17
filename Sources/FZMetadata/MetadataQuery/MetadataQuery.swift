@@ -89,13 +89,7 @@ open class MetadataQuery: NSObject {
             }
         }
     }
-    
-    #if os(macOS)
-    static var maxResults: Int?
-    static var batchingParameters: ResultUpdateOptions?
-    static var options: Options?
-    #endif
-    
+
     let query = NSMetadataQuery()
     var resumeState: State = .isPaused
     let delegate = Delegate()
@@ -342,12 +336,12 @@ open class MetadataQuery: NSObject {
     /**
      The maximum number of results.
      
-     The property must be set before the query is executed else the value is ignored.
+     The property must be set before the query is started else the value is ignored.
      */
     open var maxResults: Int?
-    #endif
-       
-    #if os(macOS)
+    
+    static var maxResults: Int?
+
     /**
      The interval (in seconds) at which the results gets updated with accumulated changes.
      
@@ -378,12 +372,14 @@ open class MetadataQuery: NSObject {
     var resultUpdateOptions = ResultUpdateOptions() {
         didSet {
             guard oldValue != resultUpdateOptions, !query.isStopped else { return }
-            Self.batchingParameters = resultUpdateOptions
+            Self.resultUpdateOptions = resultUpdateOptions
             Self.options = options
             Self.maxResults = maxResults
             query.notificationBatchingInterval = Double.random(max: 100.0)
         }
     }
+    
+    static var resultUpdateOptions: ResultUpdateOptions?
     
     /**
      A Boolean value indicating whether the query blocks during the initial gathering phase.
@@ -403,6 +399,8 @@ open class MetadataQuery: NSObject {
      The default value is `wantsUpdates`.
      */
     var options: Options = [.wantsUpdates]
+    
+    static var options: Options?
     #else
     /**
      The interval (in seconds) at which the results gets updated with accumulated changes.
@@ -433,7 +431,7 @@ open class MetadataQuery: NSObject {
             runWithOperationQueue {
                 guard self.state == .isStopped else { return }
                 #if os(macOS)
-                Self.batchingParameters = self.resultUpdateOptions
+                Self.resultUpdateOptions = self.resultUpdateOptions
                 Self.options = self.options
                 Self.maxResults = self.maxResults
                 #endif
@@ -615,7 +613,7 @@ open class MetadataQuery: NSObject {
         guard !query.isStopped else { return }
         Self.maxResults = maxResults
         Self.options = options
-        Self.batchingParameters = resultUpdateOptions
+        Self.resultUpdateOptions = resultUpdateOptions
         #endif
     }
         
@@ -685,8 +683,8 @@ func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
 
 @_cdecl("swizzled_MDQuerySetBatchingParameters")
 func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
-    let params = MetadataQuery.batchingParameters?.batching ?? params
-    MetadataQuery.batchingParameters = nil
+    let params = MetadataQuery.resultUpdateOptions?.batching ?? params
+    MetadataQuery.resultUpdateOptions = nil
     MDQuerySetBatchingParameters(query, params)
 }
 #endif
