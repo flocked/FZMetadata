@@ -122,7 +122,6 @@ open class MetadataQuery: NSObject {
         get { MetadataItem.Attribute.values(for: query.valueListAttributes) }
         set {
             runWithOperationQueue {
-                self.interceptMDQuery()
                 self.query.valueListAttributes = (newValue + .path).flatMap(\.mdKeys).uniqued()
             }
         }
@@ -160,8 +159,8 @@ open class MetadataQuery: NSObject {
     open var predicate: ((PredicateItem) -> (PredicateResult))? {
         didSet {
             runWithOperationQueue {
-                self.interceptMDQuery()
                 self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
+                Swift.print(self.predicateFormat)
             }
         }
     }
@@ -183,7 +182,6 @@ open class MetadataQuery: NSObject {
         get { query.searchItems as? [URL] ?? [] }
         set {
             runWithOperationQueue {
-                self.interceptMDQuery()
                 self.query.searchItems = newValue.isEmpty ? nil : newValue as [NSURL]
             }
         }
@@ -202,7 +200,6 @@ open class MetadataQuery: NSObject {
         get { query.searchScopes.compactMap { $0 as? URL } }
         set {
             runWithOperationQueue {
-                self.interceptMDQuery()
                 self.query.searchScopes = newValue.uniqued()
             }
         }
@@ -220,8 +217,7 @@ open class MetadataQuery: NSObject {
     open var searchScopes: [SearchScope] {
         get { query.searchScopes.compactMap { $0 as? String }.compactMap { SearchScope(rawValue: $0) } }
         set {
-            runWithOperationQueue{
-                self.interceptMDQuery()
+            runWithOperationQueue {
                 self.query.searchScopes = newValue.compactMap(\.rawValue).uniqued()
             }
         }
@@ -248,8 +244,7 @@ open class MetadataQuery: NSObject {
     open var sortedBy: [SortDescriptor] = [] {
         didSet {
             sortedBy = sortedBy.uniqued(by: \.attribute)
-            runWithOperationQueue{
-                self.interceptMDQuery()
+            runWithOperationQueue {
                 self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor })
             }
         }
@@ -282,8 +277,7 @@ open class MetadataQuery: NSObject {
     open var groupingAttributes: [MetadataItem.Attribute] {
         get { query.groupingAttributes?.compactMap { MetadataItem.Attribute(rawValue: $0) } ?? [] }
         set {
-            runWithOperationQueue{
-                self.interceptMDQuery()
+            runWithOperationQueue {
                 self.query.groupingAttributes = newValue.flatMap(\.mdKeys).uniqued()
             }
         }
@@ -296,22 +290,22 @@ open class MetadataQuery: NSObject {
      */
     open var operationQueue: OperationQueue? {
         get { query.operationQueue }
-        set { runWithOperationQueue{ self.query.operationQueue = newValue } }
+        set { runWithOperationQueue(false) { self.query.operationQueue = newValue } }
     }
     
     /**
      A Boolean value indicating whether the monitoring of changes to the results is enabled.
-     
-     Updates are triggered during the live-update phase when a file starts or stops matching the ``predicate-swift.property``, or when a file changes one of it's attributes specified in ``attributes``.
-     
-     Files that begin to match the query are added to ``results``, while files that no longer match are removed.
+               
+     If set to `true`, updates are triggered after gathering the initial results, when…
+     - …an item starts or stops matching the ``predicate``
+     - …an item changes of it's attributes specified in ``attributes``, ``groupingAttributes`` or ``sortedBy``.
+          
+     Items that begin to match the query are added to ``results``, while items that no longer match are removed.
      
      The ``resultsHandler`` gets called for any changes.
      
-     The default value is `false`, which specifies that the ``resultsHandler`` gets called whenever the results changes. The query also monitors for changes to the given ``attributes``.
-     
-     ``resultUpdateInterval`` specifies the interval at which results changes are posted.
-     
+     The default value is `false`,
+          
      In the following example the result handler is called whenever a screenshot is captured or deleted.
      
      ```swift
@@ -322,8 +316,6 @@ open class MetadataQuery: NSObject {
      }
      query.start()
      ```
-     
-     - Note: Enabling monitoring can have a significant performance impact. You should define a operation queue via ``operationQueue`` as otherwise any updates can cause a log on the main thread.
      */
     open var monitorResults = false {
         didSet {
@@ -424,22 +416,16 @@ open class MetadataQuery: NSObject {
     
     /// Starts the query, discarding any previous results, or resumes a paused query.
     open func start() {
-        if state == .isPaused {
-            state = resumeState
-            query.enableUpdates()
-        } else {
-            runWithOperationQueue {
-                guard self.state == .isStopped else { return }
-                #if os(macOS)
-                Self.resultUpdateOptions = self.resultUpdateOptions
-                Self.options = self.options
-                Self.maxResults = self.maxResults
-                #endif
-                self.runWithOperationQueue {
-                    self.query.enableUpdates()
-                    self.query.start()
-                }
+        switch self.state {
+        case .isStopped:
+            runWithOperationQueue(true) {
+                self.query.enableUpdates()
+                self.query.start()
             }
+        case .isPaused:
+            self.state = self.resumeState
+            self.query.enableUpdates()
+        default: break
         }
     }
     
@@ -457,8 +443,7 @@ open class MetadataQuery: NSObject {
      Once the query is stopped, the query can't monitor and update the results for changes. Calling ``start()`` will discard the current results and start a new query.
      */
     open func stop() {
-        runWithOperationQueue {
-            self.itemPathPrefetchOperationQueue.cancelAllOperations()
+        runWithOperationQueue(false) {
             self.state = .isStopped
             self.query.stop()
         }
@@ -587,34 +572,34 @@ open class MetadataQuery: NSObject {
             state = .isMonitoring
         } else {
             query.disableUpdates()
-            state = .isStopped
+            state = .isPaused
         }
     }
     
-    func runWithOperationQueue(_ block: @escaping () -> Void) {
+    func runWithOperationQueue(_ intercept: Bool? = nil, _ block: @escaping () -> Void) {
         if let operationQueue = operationQueue {
-            operationQueue.addOperation {
-                self.itemPathPrefetchOperationQueue.cancelAllOperations()
-                block()
+            operationQueue.addOperation { [weak self] in
+                self?.run(intercept, block)
             }
         } else {
-            itemPathPrefetchOperationQueue.cancelAllOperations()
-            block()
+            run(intercept, block)
         }
     }
     
+    func run(_ intercept: Bool? = nil, _ block: @escaping () -> Void) {
+        itemPathPrefetchOperationQueue.cancelAllOperations()
+        #if os(macOS)
+        if intercept ?? !query.isStopped {
+            Self.maxResults = maxResults
+            Self.options = options
+            Self.resultUpdateOptions = resultUpdateOptions
+        }
+        #endif
+        block()
+    }
     func debugPrint(_ string: String) {
         guard debug else { return }
         Swift.print(string)
-    }
-    
-    func interceptMDQuery() {
-        #if os(macOS)
-        guard !query.isStopped else { return }
-        Self.maxResults = maxResults
-        Self.options = options
-        Self.resultUpdateOptions = resultUpdateOptions
-        #endif
     }
         
     /**

@@ -10,7 +10,8 @@ import FZSwiftUtils
 import UniformTypeIdentifiers
 
 extension MetadataQuery {
-    public struct PredicateComponent<T>: _Predicate {
+    /// Component of a metadata query predicate.
+    public struct PredicateComponent<T>: QueryPredicate {
         let mdKeys: [String]
         var stringOptions: PredicateStringOptions = []
         var valueConverter: PredicateValueConverter? = nil
@@ -27,7 +28,7 @@ extension MetadataQuery {
     }
 }
 
-public extension MetadataQuery.PredicateComponent where T: QueryEquatable {
+public extension MetadataQuery.PredicateComponent where T: OptionalProtocol, T.Wrapped: Equatable {
     /// Checks if an element equals a given value.
     static func == (_ lhs: Self, _ rhs: T.Wrapped?) -> MetadataQuery.PredicateResult where T: OptionalProtocol {
         if let rhs = rhs {
@@ -47,178 +48,178 @@ public extension MetadataQuery.PredicateComponent where T: QueryEquatable {
     }
 
     /// Checks if an element equals any given values.
-    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == T {
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == T.Wrapped {
         .comparisonOr(lhs, .equalTo, Array(rhs))
     }
 
     /// Checks if an element doesn't equal given values.
-    static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == T {
+    static func != <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == T.Wrapped {
         .comparisonAnd(lhs, .notEqualTo, Array(rhs))
     }
 
     /// Checks if an element equals any given values.
-    func `in`<C>(_ collection: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == T {
+    func `in`<C>(_ collection: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == T.Wrapped {
         .comparisonOr(self, .equalTo, Array(collection))
     }
 }
 
-public extension MetadataQuery.PredicateComponent where T: QueryComparable {
+public extension MetadataQuery.PredicateComponent where T: OptionalProtocol, T.Wrapped: Comparable {
     /// Checks if an element is greater than a given value.
-    static func > (_ lhs: Self, _ rhs: T) -> MetadataQuery.PredicateResult {
+    static func > (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.PredicateResult {
         .comparison(lhs, .greaterThan, rhs)
     }
 
     /// Checks if an element is greater than or equal to given value.
-    static func >= (_ lhs: Self, _ rhs: T) -> MetadataQuery.PredicateResult {
+    static func >= (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.PredicateResult {
         .comparison(lhs, .greaterThanOrEqualTo, rhs)
     }
 
     /// Checks if an element is less than a given value.
-    static func < (_ lhs: Self, _ rhs: T) -> MetadataQuery.PredicateResult {
+    static func < (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.PredicateResult {
         .comparison(lhs, .lessThan, rhs)
     }
 
     /// Checks if an element is less than or equal to given value.
-    static func <= (_ lhs: Self, _ rhs: T) -> MetadataQuery.PredicateResult {
+    static func <= (_ lhs: Self, _ rhs: T.Wrapped) -> MetadataQuery.PredicateResult {
         .comparison(lhs, .lessThanOrEqualTo, rhs)
     }
 
     /// Checks if an element is between a given range.
-    func isBetween(_ range: Range<T>) -> MetadataQuery.PredicateResult {
+    func isBetween(_ range: Range<T.Wrapped>) -> MetadataQuery.PredicateResult {
         .between(self, value1: range.lowerBound, value2: range.upperBound)
     }
 
     /// Checks if an element is between a given range.
-    static func == (_ lhs: Self, _ rhs: Range<T>) -> MetadataQuery.PredicateResult {
+    static func == (_ lhs: Self, _ rhs: Range<T.Wrapped>) -> MetadataQuery.PredicateResult {
         .between(lhs, value1: rhs.lowerBound, value2: rhs.upperBound)
     }
 
     /// Checks if an element is between a given range.
-    func isBetween(_ range: ClosedRange<T>) -> MetadataQuery.PredicateResult {
+    func isBetween(_ range: ClosedRange<T.Wrapped>) -> MetadataQuery.PredicateResult {
         .between(self, value1: range.lowerBound, value2: range.upperBound)
     }
 
     /// Checks if an element is between a given range.
-    static func == (_ lhs: Self, _ rhs: ClosedRange<T>) -> MetadataQuery.PredicateResult {
+    static func == (_ lhs: Self, _ rhs: ClosedRange<T.Wrapped>) -> MetadataQuery.PredicateResult {
         .between(lhs, value1: rhs.lowerBound, value2: rhs.upperBound)
     }
 
     /// Checks if an element is between any given range.
-    func isBetween<C>(any ranges: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == Range<T> {
+    func isBetween<C>(any ranges: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == Range<T.Wrapped> {
         .between(self, values: ranges.compactMap({($0.lowerBound, $0.upperBound)}))
     }
 
     /// Checks if an element is between any given range.
-    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == Range<T> {
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == Range<T.Wrapped> {
         .between(lhs, values: rhs.compactMap({($0.lowerBound, $0.upperBound)}))
     }
 
     /// Checks if an element is between any given range.
-    func isBetween<C>(any ranges: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == ClosedRange<T> {
+    func isBetween<C>(any ranges: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == ClosedRange<T.Wrapped> {
         .between(self, values: ranges.compactMap({($0.lowerBound, $0.upperBound)}))
     }
 
     /// Checks if an element is between any given range.
-    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == ClosedRange<T> {
+    static func == <C>(_ lhs: Self, _ rhs: C) -> MetadataQuery.PredicateResult where C: Collection, C.Element == ClosedRange<T.Wrapped> {
         .between(lhs, values: rhs.compactMap({($0.lowerBound, $0.upperBound)}))
     }
 }
 
 // MARK: Date
 
-public extension MetadataQuery.PredicateComponent where T: QueryDate {
+public extension MetadataQuery.PredicateComponent where T == Optional<Date> {
     /// Checks if a date is now.
     var isNow: MetadataQuery.PredicateResult {
-        self == .now
+        .between(self, value1: "$time.now(-10)", value2: "$time.now(+10)")
     }
     
     /// Checks if a date is this Minute.
     var isThisMinute: MetadataQuery.PredicateResult {
-        self == .thisMinute
+        isWithin(next: 1, .minute)
     }
     
     /// Checks if a date is last minute.
     var isLastMinute: MetadataQuery.PredicateResult {
-        self == .lastMinute
+        isWithin(1, .minute)
     }
     
     /// Checks if a date is this hour.
     var isThisHour: MetadataQuery.PredicateResult {
-        self == .thisHour
+        isWithin(next: 1, .hour)
     }
     
     /// Checks if a date is last hour.
     var isLastHour: MetadataQuery.PredicateResult {
-        self == .lastHour
+        isWithin(1, .hour)
     }
     
     /// Checks if a date is same hour as the specified date.
     func isSameHour(as date: Date) -> MetadataQuery.PredicateResult {
-        self == .sameHour(date)
+        same(.hour, date)
     }
     
     /// Checks if a date is today.
     var isToday: MetadataQuery.PredicateResult {
-        self == .today
+        isWithin(next: 1, .day)
     }
     
     /// Checks if a date is yesterday.
     var isYesterday: MetadataQuery.PredicateResult {
-        self == .yesterday
+        isWithin(1, .day)
     }
     
     /// Checks if a date is same day as the specified date.
     func isSameDay(as date: Date) -> MetadataQuery.PredicateResult {
-        self == .sameDay(date)
+        same(.day, date)
     }
     
     /// Checks if a date is this week.
     var isThisWeek: MetadataQuery.PredicateResult {
-        self == .thisWeek
+        isWithin(next: 1, .week)
     }
     
     /// Checks if a date is last week.
     var isLastWeek: MetadataQuery.PredicateResult {
-        self == .lastWeek
+        isWithin(1, .week)
     }
     
     /// Checks if a date is same week as the specified date.
     func isSameWeek(as date: Date) -> MetadataQuery.PredicateResult {
-        self == .sameWeek(date)
+        same(.weekOfYear, date)
     }
     
     /// Checks if a date is this month.
     var isThisMonth: MetadataQuery.PredicateResult {
-        self == .thisMonth
+        isWithin(next: 1, .month)
     }
     
     /// Checks if a date is last month.
     var isLastMonth: MetadataQuery.PredicateResult {
-        self == .lastMonth
+        isWithin(1, .month)
     }
     
     /// Checks if a date is same month as the specified date.
     func isSameMonth(as date: Date) -> MetadataQuery.PredicateResult {
-        self == .sameMonth(date)
+        same(.month, date)
     }
     
     /// Checks if a date is this year.
     var isThisYear: MetadataQuery.PredicateResult {
-        self == .thisYear
+        isWithin(next: 1, .year)
     }
     
     /// Checks if a date is last year.
     var isLastYear: MetadataQuery.PredicateResult {
-        self == .lastYear
+        isWithin(1, .year)
     }
     
     /// Checks if a date is same year as the specified date.
     func isSameYear(as date: Date) -> MetadataQuery.PredicateResult {
-        self == .sameYear(date)
+        same(.year, date)
     }
     
     /**
-     Checks if a date is within the last specified amount of  calendar units.
+     Checks if a date is within the last specified amount of calendar units from now.
      
      Example:
      ```swift
@@ -230,9 +231,14 @@ public extension MetadataQuery.PredicateComponent where T: QueryDate {
      ```
      */
     func isWithin(_ amount: Int, _ unit: DateComponent) -> MetadataQuery.PredicateResult {
-        self == .within(amount, unit)
+        .between(self, value1: unit.value(-abs(amount)), value2: unit.value)
     }
     
+    /// Checks if a date is within the next specified amount of the given calendar unit from now.
+    internal func isWithin(next amount: Int, _ unit: DateComponent) -> MetadataQuery.PredicateResult {
+        .between(self, value1: unit.value, value2: unit.value(abs(amount)))
+    }
+            
     /// Checks if a date is before the specified date.
     func isBefore(_ date: Date) -> MetadataQuery.PredicateResult {
         .comparison(self, .lessThan, date)
@@ -248,65 +254,59 @@ public extension MetadataQuery.PredicateComponent where T: QueryDate {
         .between(lhs, value1: rhs.start, value2: rhs.end)
     }
     
-    /// Checks if a date matches the specified date value.
-    internal static func == (lhs: Self, rhs: DateValue) -> MetadataQuery.PredicateResult {
-        let values = rhs.values
-        return .between(lhs, value1: values[0], value2: values[1])
+    private func same(_ unit: Calendar.Component, _ date: Date) -> MetadataQuery.PredicateResult{
+        self == date.dateInterval(for: unit) ?? DateInterval(start: date, end: date)
     }
 }
 
 // MARK: UTType
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-public extension MetadataQuery.PredicateComponent where T: QueryUTType {
+public extension MetadataQuery.PredicateComponent where T == Optional<UTType> {
+    /// The identifier of the content type.
+    var identifier: MetadataQuery.PredicateComponent<String?> {
+        .init("_kMDItemContentType")
+    }
+    
+    /*
     /// Checks iif the content type is a subtype of a given type.
-    func isSubtype(of type: UTType) -> MetadataQuery.PredicateResult {
-        .comparison("kMDItemContentTypeTree", .equalTo, type.identifier)
+    func conforms(to contentType: UTType) -> MetadataQuery.PredicateResult {
+        .comparison("kMDItemContentTypeTree", .equalTo, contentType.identifier)
     }
 
     /// Checks if the content type is a subtype of any given type.
-    func isSubtype<C: Collection<UTType>>(of anyTypes: C) -> MetadataQuery.PredicateResult {
-        .comparisonOr("kMDItemContentTypeTree", .equalTo, Array(anyTypes))
+    func conforms<C: Collection<UTType>>(toAny contentTypes: C) -> MetadataQuery.PredicateResult {
+        .comparisonOr("kMDItemContentTypeTree", .equalTo, Array(contentTypes))
     }
 
     /// Checks iif the content type is equal to a given type.
     static func == (_: Self, _ rhs: UTType) -> MetadataQuery.PredicateResult {
-        .comparison("kMDItemContentType", .equalTo, rhs.identifier)
+        .comparison("kMDItemContentTypeTree", .equalTo, rhs.identifier)
     }
 
     /// Checks iif the content type is equal to any given type.
     static func == <C: Collection<UTType>>(_: Self, _ rhs: C) -> MetadataQuery.PredicateResult {
         .comparisonOr("kMDItemContentType", .equalTo, Array(rhs))
     }
-    
-    /// The identifier of the content type.
-    var identifier: MetadataQuery.PredicateComponent<String?> {
-        .init("kMDItemContentType")
-    }
+    */
 }
 
 // MARK: String
 
-public extension MetadataQuery.PredicateComponent where T: QueryString {
+public extension MetadataQuery.PredicateComponent where T == Optional<String> {
     /// Case-sensitive string comparison.
     var caseSensitive: Self {
-        var predicate = self
-        predicate.stringOptions.insert(.caseSensitive)
-        return predicate
+        Self(mdKeys, valueConverter, stringOptions + .caseSensitive)
     }
     
     /// Diacritic-sensitive string comparison.
     var diacriticSensitive: Self {
-        var predicate = self
-        predicate.stringOptions.insert(.diacriticSensitive)
-        return predicate
+        Self(mdKeys, valueConverter, stringOptions + .diacriticSensitive)
     }
     
     /// Word based string comparison.
     var wordBased: Self {
-        var predicate = self
-        predicate.stringOptions.insert(.wordBased)
-        return predicate
+        Self(mdKeys, valueConverter, stringOptions + .wordBased)
     }
     
     /// Checks if a string contains the specified string.
@@ -338,87 +338,104 @@ public extension MetadataQuery.PredicateComponent where T: QueryString {
     func ends<C: Collection<String>>(withAny values: C) -> MetadataQuery.PredicateResult {
         .comparisonOr(self, .endsWith, Array(values))
     }
+    
+    /*
+    func like(_ value: String) -> MetadataQuery.PredicateResult {
+        .comparison(self, .like, value)
+    }
+     */
 
     /// Checks if a string begins with a given string.
-    static func *== (_ lhs: MetadataQuery.PredicateComponent<T>, _ value: String) -> MetadataQuery.PredicateResult {
+    static func *== (_ lhs: Self, _ value: String) -> MetadataQuery.PredicateResult {
         lhs.starts(with: value)
     }
 
     /// Checks if a string begins with any of the given strings.
-    static func *== <C: Collection<String>>(_ lhs: MetadataQuery.PredicateComponent<T>, _ values: C) -> MetadataQuery.PredicateResult {
+    static func *== <C: Collection<String>>(_ lhs: Self, _ values: C) -> MetadataQuery.PredicateResult {
         lhs.starts(withAny: values)
 
     }
 
     /// Checks if a string contains a given string.
-    static func *=* (_ lhs: MetadataQuery.PredicateComponent<T>, _ value: String) -> MetadataQuery.PredicateResult {
+    static func *=* (_ lhs: Self, _ value: String) -> MetadataQuery.PredicateResult {
         lhs.contains(value)
     }
 
     /// Checks if a string contains any of the given strings.
-    static func *=* <C: Collection<String>>(_ lhs: MetadataQuery.PredicateComponent<T>, _ values: C) -> MetadataQuery.PredicateResult {
+    static func *=* <C: Collection<String>>(_ lhs: Self, _ values: C) -> MetadataQuery.PredicateResult {
         lhs.contains(any: values)
     }
 
     /// Checks if a string ends with a given string.
-    static func ==* (_ lhs: MetadataQuery.PredicateComponent<T>, _ value: String) -> MetadataQuery.PredicateResult {
+    static func ==* (_ lhs: Self, _ value: String) -> MetadataQuery.PredicateResult {
         lhs.ends(with: value)
     }
 
     /// Checks if a string ends with any of the given strings.
-    static func ==* <C: Collection<String>>(_ lhs: MetadataQuery.PredicateComponent<T>, _ values: C) -> MetadataQuery.PredicateResult {
+    static func ==* <C: Collection<String>>(_ lhs: Self, _ values: C) -> MetadataQuery.PredicateResult {
         lhs.ends(withAny: values)
     }
 }
 
 // MARK: Collection
 
-public extension MetadataQuery.PredicateComponent where T: QueryCollection {
+public extension MetadataQuery.PredicateComponent where T: OptionalProtocol, T.Wrapped: Collection {
     /// Checks if the collection contains the given value.
-    func contains(_ value: T.Element) -> MetadataQuery.PredicateResult {
+    func contains(_ value: T.Wrapped.Element) -> MetadataQuery.PredicateResult {
         .comparison(self, .equalTo, value)
     }
 
     /// Checks if the collection doesn't contain the given value.
-    func containsNot(_ value: T.Element) -> MetadataQuery.PredicateResult {
+    func doesNotContain(_ value: T.Wrapped.Element) -> MetadataQuery.PredicateResult {
         .comparison(self, .notEqualTo, value)
     }
 
     /// Checks if the collection contains any of the given elements.
-    func contains<U: Sequence>(any collection: U) -> MetadataQuery.PredicateResult where U.Element == T.Element {
+    func doesNotContain<U: Sequence>(any collection: U) -> MetadataQuery.PredicateResult where U.Element == T.Wrapped.Element {
         .comparisonOr(self, .equalTo, Array(collection))
     }
 
     /// Checks if the collection doesn't contain any of the given elements.
-    func containsNot<U: Sequence>(any collection: U) -> MetadataQuery.PredicateResult where U.Element == T.Element {
+    func containsNot<U: Sequence>(any collection: U) -> MetadataQuery.PredicateResult where U.Element == T.Wrapped.Element {
         .comparisonAnd(self, .notEqualTo, Array(collection))
     }
+    
+    /// Checks if the collection is empty.
+    var isEmpty: MetadataQuery.PredicateResult {
+        .not(.comparison(self, .like, "*"))
+    }
+    
+    /*
+    var count: MetadataQuery.PredicateComponent<Int?> {
+        .init("\(mdKeys.first!).@count")
+    }
+     */
 
     /// Checks if the collection contains the given value.
-    static func == (_ lhs: MetadataQuery.PredicateComponent<T>, _ rhs: T.Element) -> MetadataQuery.PredicateResult {
+    static func == (_ lhs: Self, _ rhs: T.Wrapped.Element) -> MetadataQuery.PredicateResult {
         .comparison(lhs, .equalTo, rhs)
     }
 
     /// Checks if the collection doesn't contain the given value.
-    static func != (_ lhs: MetadataQuery.PredicateComponent<T>, _ rhs: T.Element) -> MetadataQuery.PredicateResult {
+    static func != (_ lhs: Self, _ rhs: T.Wrapped.Element) -> MetadataQuery.PredicateResult {
         .comparison(lhs, .notEqualTo, rhs)
     }
 }
 
-public extension MetadataQuery.PredicateComponent where T: QueryCollection, T.Element: QueryString {
+public extension MetadataQuery.PredicateComponent where T: OptionalProtocol, T.Wrapped: Collection, T.Wrapped.Element == String {
     /// Case-sensitive string comparison.
     var caseSensitive: Self {
-        Self(mdKeys, nil, stringOptions + .caseSensitive)
+        Self(mdKeys, valueConverter, stringOptions + .caseSensitive)
     }
     
     /// Diacritic-sensitive string comparison.
     var diacriticSensitive: Self {
-        Self(mdKeys, nil, stringOptions + .diacriticSensitive)
+        Self(mdKeys, valueConverter, stringOptions + .diacriticSensitive)
     }
     
     /// Word based string comparison.
     var wordBased: Self {
-        Self(mdKeys, nil, stringOptions + .wordBased)
+        Self(mdKeys, valueConverter, stringOptions + .wordBased)
     }
 }
 

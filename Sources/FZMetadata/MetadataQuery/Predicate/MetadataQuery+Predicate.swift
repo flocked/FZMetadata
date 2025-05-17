@@ -76,7 +76,7 @@ public extension MetadataQuery {
      
      - ``MetadataQuery/PredicateComponent/starts(with:)`` OR  `*== String`
      - ``MetadataQuery/PredicateComponent/ends(with:)`` OR  `==* String`
-     - ``MetadataQuery/PredicateComponent/contains(_:)-914nr`` OR `*=* String`
+     - ``MetadataQuery/PredicateComponent/contains(_:)-2gaiw`` OR `*=* String`
 
      ```swift
      // fileName ends with ".doc"
@@ -90,7 +90,7 @@ public extension MetadataQuery {
 
      By default string predicates are case- and diacritic-insensitive.
 
-     Use ``MetadataQuery/PredicateComponent/caseSensitive-419ud`` for case-sensitive, ``MetadataQuery/PredicateComponent/diacriticSensitive-ldq4``, for diacritic-sensitve and ``MetadataQuery/PredicateComponent/wordBased-1d75h`` for word-based string comparsion.
+     Use ``MetadataQuery/PredicateComponent/casesensitive-njwr`` for case-sensitive, ``MetadataQuery/PredicateComponent/diacriticsensitive-94n3a``, for diacritic-sensitve and ``MetadataQuery/PredicateComponent/wordbased-6czl1`` for word-based string comparsion.
 
      ```swift
      // case-sensitive
@@ -134,12 +134,54 @@ public extension MetadataQuery {
      // is within 4 weeks
      { $0.creationDate.isWithin(4, .week) }
      ```
+     
+     ## FileSize
+    
+     You can either compare the file size to another FileSize, or use the following for comparison:
+     
+     - ``MetadataQuery/PredicateComponent/bytes``
+     - ``MetadataQuery/PredicateComponent/kilobytes``
+     - ``MetadataQuery/PredicateComponent/megabytes``
+     - ``MetadataQuery/PredicateComponent/gigabytes``
+     - ``MetadataQuery/PredicateComponent/terabytes``
+     - ``MetadataQuery/PredicateComponent/petabytes``
+     
+     ```swift
+     // File size is larger than 100.0 megabytes
+     { $0.fileSize.megabytes > 100.0 }
+
+     // File size is larger or equal to someFileSize
+     { $0.fileSize >= someFileSize }
+     ```
+     
+     ## TimeDuration
+    
+     You can either compare the duration to another TimeDuration, or use the following for comparison:
+     
+     - ``MetadataQuery/PredicateComponent/seconds``
+     - ``MetadataQuery/PredicateComponent/minutes``
+     - ``MetadataQuery/PredicateComponent/hours``
+     - ``MetadataQuery/PredicateComponent/days``
+     - ``MetadataQuery/PredicateComponent/weeks``
+     - ``MetadataQuery/PredicateComponent/months``
+     - ``MetadataQuery/PredicateComponent/years``
+     
+     ```swift
+     // duration is longer than 50.0 minutes
+     { $0.duration.minutes > 50.0 }
+
+     // duration is longer or equal to someTimeDuration
+     { $0.duration >= someTimeDuration }
+     ```
 
      ## Collection
-     - ``MetadataQuery/PredicateComponent/contains(_:)-3yy8y``  OR `== Element`
-     - ``MetadataQuery/PredicateComponent/containsNot(_:)``  OR `!= Element`
-     - ``MetadataQuery/PredicateComponent/contains(any:)-92ca0``
-     - ``MetadataQuery/PredicateComponent/containsNot(any:)``
+     
+     - ``MetadataQuery/PredicateComponent/contains(_:)-45d6d``  OR `== Element`
+     - ``MetadataQuery/PredicateComponent/doesNotContain(_:)``  OR `!= Element`
+     - ``MetadataQuery/PredicateComponent/contains(any:)``
+     - ``MetadataQuery/PredicateComponent/doesNotContain(any:)``
+     - ``MetadataQuery/PredicateComponent/isEmpty``
+
 
      ```swift
      // finderTags contains "red"
@@ -147,51 +189,54 @@ public extension MetadataQuery {
      { $0.finderTags == "red" }
 
      // finderTags doesn't contain "red"
-     { $0.finderTags.containsNot("blue") }
+     { $0.finderTags.doesNotContain("blue") }
      { $0.finderTags != "red" }
 
      // finderTags contains "red", "yellow" or `green`.
      { $0.finderTags.contains(any: ["red", "yellow", "green"]) }
 
-     // finderTags doesn't contain "red", "yellow" or `green`.
-     { $0.finderTags.containsNot(any: ["red", "yellow", "green"]) }
+     // finderTags doesn't contain "red", "yellow" and `green`.
+     { $0.finderTags.doesNotContain(any: ["red", "yellow", "green"]) }
+     
+     // finderTags is empty (or nil)
+     { $0.finderTags.isEmpty }
      ```
      */
     @dynamicMemberLookup
     struct PredicateItem {
         
         /// Returns the metadata attribute for the specified `MetadataItem` keypath.
-        public subscript(dynamicMember member: KeyPath<MetadataItem, Bool?>) -> MetadataQuery.PredicateResult {
+        public subscript(dynamicMember member: KeyPath<MetadataItem, Bool?>) -> PredicateResult {
             .comparison(member.mdItemKey, .equalTo, true)
         }
 
         /// Returns the metadata attribute for the specified `MetadataItem` keypath.
-        public subscript<V>(dynamicMember member: KeyPath<MetadataItem, V>) -> MetadataQuery.PredicateComponent<V> {
+        public subscript<V>(dynamicMember member: KeyPath<MetadataItem, V>) -> PredicateComponent<V> {
             .init(member.mdItemKey)
         }
         
         /// Matches for ``MetadataItem/Attribute/fileName`` and ``MetadataItem/Attribute/textContent``.
-        public var any: MetadataQuery.PredicateComponent<String?> {
+        public var any: PredicateComponent<String?> {
             .init("*")
         }
 
         /// The item is a file.
-        public var isFile: MetadataQuery.PredicateResult {
+        public var isFile: PredicateResult {
             .comparison("kMDItemContentTypeTree", .equalTo, "public.data")
         }
 
         /// The item is a folder.
-        public var isFolder: MetadataQuery.PredicateResult {
+        public var isFolder: PredicateResult {
             .comparison("kMDItemContentTypeTree", .equalTo, "public.folder")
         }
 
         /// The item is a volume.
-        public var isVolume: MetadataQuery.PredicateResult {
+        public var isVolume: PredicateResult {
             .comparison("kMDItemContentTypeTree", .equalTo, "public.volume")
         }
 
         /// The item is an alias file.
-        public var isAlias: MetadataQuery.PredicateResult {
+        public var isAlias: PredicateResult {
             .comparison("kMDItemContentTypeTree", .equalTo, "com.apple.alias-file")
         }
         
@@ -203,107 +248,45 @@ public extension MetadataQuery {
 
 // MARK: Protocols
 
-/// Conforms equatable to be used in a metadata query predicate.
-public protocol QueryEquatable { }
-extension Optional: QueryEquatable where Wrapped: QueryEquatable { }
-
-/// Conforms comparable to be used in a metadata query predicate.
-public protocol QueryComparable: Comparable { }
-extension Optional: QueryComparable where Wrapped: QueryComparable { }
-extension Optional: Comparable where Wrapped: Comparable {
-    public static func < (lhs: Optional, rhs: Optional) -> Bool {
-        if let lhs = lhs, let rhs = rhs { return lhs < rhs }
-        return false
-    }
-}
-
-protocol QueryRawRepresentable: QueryEquatable {
+protocol QueryRawRepresentable {
     associatedtype RawValue
     var rawValue: RawValue { get }
 }
 
 extension DataSize: QueryRawRepresentable {
-    public var rawValue: Int { bytes }
+    var rawValue: Int { bytes }
 }
 
-extension TimeDuration: QueryRawRepresentable, QueryComparable {
-    public var rawValue: Double { seconds }
+extension TimeDuration: QueryRawRepresentable {
+    var rawValue: Double { seconds }
 }
 
-extension FileType: QueryRawRepresentable, QueryEquatable {
-    public var rawValue: String { identifier ?? "other" }
+extension FileType: QueryRawRepresentable {
+    var rawValue: String { identifier ?? "other" }
 }
-
-/// Conforms `String` to be used in a metadata query predicate.
-public protocol QueryString: QueryEquatable { }
-extension String: QueryString { }
-extension Optional: QueryString where Wrapped: QueryString { }
-
-
-/// Conforms `Date` to be used in a metadata query predicate.
-public protocol QueryDate: QueryComparable, QueryEquatable { }
-extension Date: QueryDate {}
-extension Optional: QueryDate where Wrapped: QueryDate { }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension UTType: QueryRawRepresentable {
-    public var rawValue: String { identifier }
+    var rawValue: String { identifier }
 }
-
-/// Conforms `UTType` to be used in a metadata query predicate.
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-public protocol QueryUTType {}
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-extension UTType: QueryUTType {}
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
-extension Optional: QueryUTType where Wrapped == UTType {}
-
-/// Conforms `Collection` to be used in a metadata query predicate.
-public protocol QueryCollection: QueryEquatable { associatedtype Element }
-extension Array: QueryCollection { }
-extension Set: QueryCollection { }
-extension Optional: QueryCollection where Wrapped: QueryCollection {
-    public typealias Element = Wrapped.Element
-}
-
-extension Int: QueryComparable, QueryEquatable { }
-extension Int8: QueryComparable, QueryEquatable { }
-extension Int16: QueryComparable, QueryEquatable { }
-extension Int32: QueryComparable, QueryEquatable { }
-extension Int64: QueryComparable, QueryEquatable { }
-extension UInt: QueryComparable, QueryEquatable { }
-extension UInt8: QueryComparable, QueryEquatable { }
-extension UInt16: QueryComparable, QueryEquatable { }
-extension UInt32: QueryComparable, QueryEquatable { }
-extension UInt64: QueryComparable, QueryEquatable { }
-extension Float: QueryComparable, QueryEquatable { }
-extension Double: QueryComparable, QueryEquatable { }
-extension CGFloat: QueryComparable, QueryEquatable { }
-extension DataSize: QueryComparable, QueryEquatable { }
-
-protocol AnyRange {
-    associatedtype Bound
-    var lowerBound: Bound { get }
-    var upperBound: Bound { get }
-}
-
-extension Range: AnyRange {}
-extension ClosedRange: AnyRange {}
 
 extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
 extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
 
-protocol _Predicate {
+
+protocol QueryPredicate {
     var mdKeys: [String] { get }
     var stringOptions: MetadataQuery.PredicateStringOptions { get }
     var valueConverter: PredicateValueConverter? { get }
 }
 
-extension String: _Predicate {
-    var mdKey: String { self }
-    var mdKeys: [String] { [self] }
+extension QueryPredicate {
     var stringOptions: MetadataQuery.PredicateStringOptions { return [] }
     var valueConverter: PredicateValueConverter? { return nil }
+}
+
+extension String: QueryPredicate {
+    var mdKeys: [String] { [self] }
 }
 
 protocol PredicateValueConverter {
@@ -336,19 +319,26 @@ extension DataSize.Unit: PredicateValueConverter {
     }
 }
 
-
-// MARK: FileType + Predicate
+extension MetadataQuery.PredicateItem {
+    func group(_ type: FileType) -> MetadataQuery.PredicateResult {
+        let value = type.metadataQuery
+        return .init(value.predicate, [value.mdKey])
+    }
+}
 
 extension FileType {
-    internal var metadataPredicate: NSPredicate {
+    var metadataQuery: (predicate: NSPredicate, mdKey: String) {
+        let mdKey: String
         let key: NSExpression
         let type: NSComparisonPredicate.Operator
         switch self {
         case .executable, .folder, .image, .video, .audio, .pdf, .presentation:
-            key = NSExpression(forKeyPath: "_kMDItemGroupId")
+            key = .keyPath("_kMDItemGroupId")
+            mdKey = "_kMDItemGroupId"
             type = .equalTo
         default:
-            key = NSExpression(forKeyPath: "kMDItemContentTypeTree")
+            key = .keyPath("kMDItemContentTypeTree")
+            mdKey = "kMDItemContentTypeTree"
             type = .like
         }
         let value: NSExpression
@@ -371,6 +361,6 @@ extension FileType {
         default:
             modifier = .direct
         }
-        return NSComparisonPredicate(leftExpression: key, rightExpression: value, modifier: modifier, type: type)
+        return (NSComparisonPredicate(left: key, right: value, modifier: modifier, type: type), mdKey)
     }
 }

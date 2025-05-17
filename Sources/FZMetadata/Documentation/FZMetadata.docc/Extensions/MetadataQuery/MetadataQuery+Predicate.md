@@ -4,8 +4,8 @@
 
 ### Accessing Metadata attributes
 
-- ``subscript(dynamicMember:)-4qgjn``
-- ``subscript(dynamicMember:)-1qiyu``
+- ``subscript(dynamicmember:)-na9l``
+- ``subscript(dynamicmember:)-41pew``
 
 ### General
 
@@ -17,10 +17,12 @@
 
 ### Equatable
 
-- ``in(_:)``
-- ``&&(_:_:)``
-- ``||(_:_:)``
-- ``!(_:)``
+- ``MetadataQuery/PredicateComponent/in(_:)``
+- ``MetadataQuery/PredicateResult/&&(_:_:)``
+- ``MetadataQuery/PredicateResult/||(_:_:)``
+- ``MetadataQuery/PredicateResult/!(_:)``
+- ``MetadataQuery/PredicateResult/==(_:_:)``
+
 - ``==(_:_:)-3tdn8``
 - ``==(_:_:)-5kf3l``
 - ``==(_:_:)-7sug5``
@@ -36,12 +38,13 @@
 
 ### Comparable
 
+
 - ``==(_:_:)-1hl1w``
 - ``==(_:_:)-1q5o9``
-- ``>(_:_:)``
-- ``>=(_:_:)``
-- ``<(_:_:)``
-- ``<=(_:_:)``
+- ``MetadataQuery/PredicateComponent/>(_:_:)``
+- ``MetadataQuery/PredicateComponent/>=(_:_:)``
+- ``MetadataQuery/PredicateComponent/<(_:_:)``
+- ``MetadataQuery/PredicateComponent/<=(_:_:)``
 - ``between(_:)-3u294``
 - ``between(_:)-51xg1``
 - ``between(any:)-38gco``
@@ -55,15 +58,12 @@
 - ``MetadataQuery/PredicateComponent/wordBased-1d75h``
 
 - ``MetadataQuery/PredicateComponent/starts(with:)``
+- ``MetadataQuery/PredicateComponent/starts(withAny:)``
 - ``MetadataQuery/PredicateComponent/ends(with:)``
-- ``MetadataQuery/PredicateComponent/contains(_:)-914nr``
+- ``MetadataQuery/PredicateComponent/ends(withAny:)``
+- ``MetadataQuery/PredicateComponent/contains(_:)-2gaiw``
+- ``MetadataQuery/PredicateComponent/contains(any:)``
 
-- ``starts(with:)``
-- ``starts(withAny:)``
-- ``ends(with:)``
-- ``ends(withAny:)``
-- ``contains(_:)-5iysw``
-- ``contains(any:)-99ivy``
 - ``*==(_:_:)-2ws0t``
 - ``*==(_:_:)-7xntd``
 - ``==*(_:_:)-8zg0a``
@@ -101,24 +101,6 @@
 - ``containsNot(any:)``
 - ``==(_:_:)-9m89j``
 - ``!=(_:_:)-8cjp0``
-
-### UTType
-
-- ``subtype(of:)-91z0u``
-- ``subtype(of:)-9vizg``
-
-### Type Conformances
-
-- ``FZMetadata/QueryCollection``
-- ``FZMetadata/QueryComparable``
-- ``FZMetadata/QueryDate``
-- ``FZMetadata/QueryEquatable``
-- ``FZMetadata/QueryString``
-- ``FZMetadata/QueryUTType``
-- ``UniformTypeIdentifiers/UTType``
-- ``Swift/Optional``
-- ``FZSwiftUtils/DataSize``
-- ``FZSwiftUtils/TimeDuration``
 
 ### Result
 
