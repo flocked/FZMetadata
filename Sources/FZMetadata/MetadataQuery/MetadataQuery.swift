@@ -489,7 +489,7 @@ open class MetadataQuery: NSObject {
         query.enableUpdates()
         resultsUpdateLock.unlock()
         if post {
-            pending.changes = Changes(pending.changed)
+            pending.changes = .init(pending.changed)
             resultsHandler?(results, pending)
         }
     }

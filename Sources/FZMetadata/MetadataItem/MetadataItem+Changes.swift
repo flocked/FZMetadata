@@ -117,7 +117,7 @@ extension MetadataItem {
     }
 }
 
-extension MetadataQuery {
+extension MetadataQuery.ResultDifference {
     /// The changes between two query results.
     public class Changes: Hashable {
         private var changes: [MetadataItem: MetadataItem.Changes] = [:]
@@ -153,6 +153,11 @@ extension MetadataQuery {
             changedItems(for: attribute)
         }
         
+        /// Returns the items and values that have changed for the specified attribute.
+        public subscript<V>(keyPath: KeyPath<MetadataItem, V>) -> [(item: MetadataItem, value: V, previousValue: V)] {
+            changedValues(for: keyPath)
+        }
+        
         static let empty = Changes()
         
         init(_ items: [MetadataItem] = []) {
@@ -163,7 +168,7 @@ extension MetadataQuery {
             hasher.combine(id)
         }
         
-        public static func == (lhs: MetadataQuery.Changes, rhs: MetadataQuery.Changes) -> Bool {
+        public static func == (lhs: Changes, rhs: Changes) -> Bool {
             lhs.id == rhs.id
         }
     }
