@@ -10,7 +10,7 @@ import FZSwiftUtils
 
 extension MetadataQuery {
     /**
-     A dictionary containing the unique values and their occurrences for each queried metadata uten attribute.
+     A dictionary containing the unique values and their occurrences for each queried metadata item attribute.
      
      Each ``AttributeValueTuple`` contains the attribute value, and the occurrences of that value that exist for the attribute name.
      
