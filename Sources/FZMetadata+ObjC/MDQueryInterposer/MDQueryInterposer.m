@@ -5,6 +5,7 @@
 //  Created by Florian Zand on 14.04.25.
 //
 
+#if TARGET_OS_OSX
 #import <CoreServices/CoreServices.h>
 
 extern Boolean swizzled_MDQueryExecute(MDQueryRef, CFOptionFlags);
@@ -35,3 +36,4 @@ __attribute__((used)) static struct {
     { (const void *)my_MDQueryExecute, (const void *)MDQueryExecute },
     // { (const void *)my_MDQueryCreate, (const void *)MDQueryCreate },
 };
+#endif

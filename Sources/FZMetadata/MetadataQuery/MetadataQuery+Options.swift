@@ -7,6 +7,7 @@
 
 import Foundation
 
+#if os(macOS)
 extension MetadataQuery {
     /// Options for when the metadata query updates it's results with accumulated changes.
     struct ResultUpdateOptions: Hashable {
@@ -90,3 +91,4 @@ extension MetadataQuery {
         public let rawValue: UInt
     }
 }
+#endif

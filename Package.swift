@@ -19,7 +19,7 @@ let package = Package(
         .target(name: "_MDQueryInterposer", path: "Sources/FZMetadata+ObjC/MDQueryInterposer"),
         .target(
             name: "FZMetadata",
-            dependencies: ["FZSwiftUtils", "_MDQueryInterposer"]
+            dependencies: ["FZSwiftUtils", .target(name: "_MDQueryInterposer", condition: .when(platforms: [.macOS]))]
         ),
     ]
 )
