@@ -49,33 +49,6 @@ public extension MetadataQuery {
     }
 }
 
-/*
- /// The attributes that have changed.
- public lazy var changedAttributes: [MetadataItem.Attribute] = {
-     changes.values.reduce(into: []) {
-         $0 += $1.changedAttributes(excluding: $0)
-     }.uniqued()
- }()
- 
- /// A Boolean value indicating whether the value of the specified attribute of an item has changed.
- public func didChange(_ attribute: MetadataItem.Attribute) -> Bool {
-     changes.contains(where: { $0.value.didChange(attribute) })
- }
-         
- /// Returns the items that have changed for the specified attribute.
- public func changedItems(for attribute: MetadataItem.Attribute) -> [MetadataItem] {
-     changes.filter({ $0.value[attribute] }).compactMap({ $0.key })
- }
- 
- /// Returns the items and values that have changed for the specified attribute.
- public func changedValues<V>(for keyPath: KeyPath<MetadataItem, V>) -> [(item: MetadataItem, value: V, previousValue: V)] {
-     return changes.reduce(into: []) {
-         guard let change = $1.value.change(for: keyPath) else { return }
-         $0 += ($1.key, change.value, change.previous)
-     }
- }
- */
-
 extension Notification {
     var resultsUpdate: MetadataQuery.ResultDifference {
         .init(added: userInfo?[NSMetadataQueryUpdateAddedItemsKey] as? [MetadataItem] ?? [], removed: userInfo?[NSMetadataQueryUpdateRemovedItemsKey] as? [MetadataItem] ?? [], changed: userInfo?[NSMetadataQueryUpdateChangedItemsKey] as? [MetadataItem] ?? [])
