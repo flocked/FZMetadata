@@ -174,7 +174,7 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     An array of URLs whose metadata attributes are gathered by the query.
+     An array of URLs to use for the predicate.
      
      Use this property to scope the metadata query to a collection of existing URLs. The query will gather metadata attributes for these urls.
      
@@ -193,7 +193,7 @@ open class MetadataQuery: NSObject {
     }
     
     /**
-     An array of file-system directory URLs.
+     An array of file-system directory URLs to search at.
      
      The query searches for items at these search locations. An empty array indicates that there is no limitation on where the query searches.
      
@@ -206,13 +206,13 @@ open class MetadataQuery: NSObject {
         set {
             runWithOperationQueue {
                 self.interceptMDQuery()
-                self.query.searchScopes = newValue
+                self.query.searchScopes = newValue.uniqued()
             }
         }
     }
     
     /**
-     An array containing the seatch scopes.
+     An array of search scopes to search at.
      
      The query searches for items at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
      
@@ -225,7 +225,7 @@ open class MetadataQuery: NSObject {
         set {
             runWithOperationQueue{
                 self.interceptMDQuery()
-                self.query.searchScopes = newValue.compactMap(\.rawValue)
+                self.query.searchScopes = newValue.compactMap(\.rawValue).uniqued()
             }
         }
     }
@@ -250,6 +250,7 @@ open class MetadataQuery: NSObject {
      */
     open var sortedBy: [SortDescriptor] = [] {
         didSet {
+            sortedBy = sortedBy.uniqued(by: \.attribute)
             runWithOperationQueue{
                 self.interceptMDQuery()
                 self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor })
