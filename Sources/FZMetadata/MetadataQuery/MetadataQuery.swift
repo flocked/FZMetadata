@@ -231,6 +231,7 @@ open class MetadataQuery: NSObject {
      */
     open var sortedBy: [SortDescriptor] = [] {
         didSet {
+            sortedBy = sortedBy.uniqued(by: \.attribute)
             runWithOperationQueue{
                 self.query.sortDescriptors = self.sortedBy.compactMap({ $0.sortDescriptor })
             }
