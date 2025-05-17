@@ -275,6 +275,14 @@ extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
 extension MetadataItem.MediaCodec: QueryRawRepresentable { }
 extension MetadataItem.MeteringMode: QueryRawRepresentable { }
 
+protocol QueryNumeric { }
+extension Int: QueryNumeric { }
+extension Double: QueryNumeric { }
+extension Float: QueryNumeric { }
+extension CGFloat: QueryNumeric { }
+extension DataSize: QueryNumeric { }
+extension TimeDuration: QueryNumeric { }
+
 protocol QueryPredicate {
     var mdKeys: [String] { get }
     var stringOptions: MetadataQuery.PredicateStringOptions { get }

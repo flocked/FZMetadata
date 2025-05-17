@@ -21,11 +21,13 @@ extension MetadataQuery {
         }
         
         static func and(_ predicates: [Self]) -> Self {
-            .init(NSCompoundPredicate(and: predicates.map(\.predicate)), predicates)
+            let nsPredicate = predicates.count == 1 ? predicates[0].predicate : NSCompoundPredicate(and: predicates.map(\.predicate))
+            return .init(nsPredicate, predicates)
         }
 
         static func or(_ predicates: [Self]) -> Self {
-            .init(NSCompoundPredicate(or: predicates.map(\.predicate)), predicates)
+            let nsPredicate = predicates.count == 1 ? predicates[0].predicate : NSCompoundPredicate(or: predicates.map(\.predicate))
+            return .init(nsPredicate, predicates)
         }
 
         static func not(_ predicate: Self) -> Self {
@@ -34,14 +36,6 @@ extension MetadataQuery {
         
         static func comparison(_ predicate: QueryPredicate, _ type: NSComparisonPredicate.Operator = .equalTo, _ value: Any) -> Self {
             .init(nsPredicate(predicate, type, value), [predicate])
-        }
-        
-        static func comparisonAnd(_ predicate: QueryPredicate, _ type: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> Self {
-            .init(nsPredicate(predicate, values, type, .and), [predicate])
-        }
-        
-        static func comparisonOr(_ predicate: QueryPredicate, _ type: NSComparisonPredicate.Operator = .equalTo, _ values: [Any]) -> Self {
-            .init(nsPredicate(predicate, values, type, .or), [predicate])
         }
         
         static func between(_ predicate: QueryPredicate, value1: Any, value2: Any) -> Self {
@@ -76,7 +70,22 @@ extension MetadataQuery.PredicateResult {
     static func nsPredicate(_ predicate: QueryPredicate, _ type: NSComparisonPredicate.Operator, _ value: Any) -> NSPredicate {
         var mdKey = predicate.mdKeys.first!
         let options = predicate.stringOptions
-        var value = predicate.valueConverter?.value(for: value) ?? value
+        var value = value
+        if type == .between, let array = value as? [Any], array.count == 2 {
+            var from = array[0]
+            var to = array[1]
+            if let converter = predicate.valueConverter {
+                from = converter.value(for: from)
+                to = converter.value(for: to)
+            }
+            if let array = array as? [QueryRawRepresentable] {
+                from = array[0].rawValue
+                to = array[1].rawValue
+            }
+            value = [from, to]
+        } else {
+            value = predicate.valueConverter?.value(for: value) ?? value
+        }
         var comparisonOptions: NSComparisonPredicate.Options = []
         if mdKey == "_kMDItemContentType" {
             mdKey = "kMDItemContentType"
@@ -100,10 +109,5 @@ extension MetadataQuery.PredicateResult {
         default: break
         }
         return NSComparisonPredicate(left: .keyPath(mdKey), right: .constant(value),  type: type, options: comparisonOptions)
-    }
-
-    static func nsPredicate(_ predicate: QueryPredicate, _ values: [Any], _ type: NSComparisonPredicate.Operator, _ join: NSCompoundPredicate.LogicalType) -> NSPredicate {
-        let predicates = values.map { nsPredicate(predicate, type, $0) }
-        return predicates.count == 1 ? predicates.first! : NSCompoundPredicate(type: join, subpredicates: predicates)
     }
 }
