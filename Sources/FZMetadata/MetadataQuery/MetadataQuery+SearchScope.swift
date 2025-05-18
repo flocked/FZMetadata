@@ -11,32 +11,39 @@ public extension MetadataQuery {
     /// Search scopes for where the metadata query searches files.
     enum SearchScope: String, Hashable {
         #if os(macOS)
-        /// Search the user’s home directory.
+        /// Searches the user’s home directory.
         case home
         
-        /// Search all local mounted volumes, including the user home directory. The user’s home directory is searched even if it is a remote volume.
+        /**
+         Searches all local mounted volumes, including the user's home directory.
+         
+         The user’s home directory is searched even if it is a remote volume.
+         */
         case local
         
-        /// Search all indexed local mounted volumes including the current user’s home directory (even if the home directory is remote).
+        /**
+         Searches all indexed local mounted volumes including the user’s home directory.
+         
+         The user’s home directory is searched even if it is a remote volume.
+         */
         case localIndexed
         
-        /// Search all user-mounted remote volumes.
+        /// Searches all user-mounted remote volumes.
         case network
         
-        /// Search all indexed user-mounted remote volumes.
+        /// Searches all indexed user-mounted remote volumes.
         case networkIndexed
         #endif
         
-        /// Search all files in the Documents directories of the app’s iCloud container directories.
+        /// Searches all files in the Documents directories of the app’s iCloud container directories.
         case ubiquitousDocuments
         
-        /// Search all files not in the Documents directories of the app’s iCloud container directories.
+        /// Searches all files not in the Documents directories of the app’s iCloud container directories.
         case ubiquitousData
         
-        /// Search for documents outside the app’s container. This search can locate iCloud documents that the user previously opened using a document picker view controller. This lets your app access the documents again without requiring direct user interaction. The result’s metadata items return a security-scoped URL for their url property.
+        /// Searches for documents outside the app’s container. This search can locate iCloud documents that the user previously opened using a document picker view controller. This lets your app access the documents again without requiring direct user interaction. The result’s metadata items return a security-scoped URL for their url property.
         case accessibleUbiquitousExternalDocuments
         
-        /// The corresponding value of the raw type.
         public var rawValue: String {
             switch self {
             #if os(macOS)

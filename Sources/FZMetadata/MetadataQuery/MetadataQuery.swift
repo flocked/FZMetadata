@@ -91,13 +91,12 @@ open class MetadataQuery: NSObject {
     }
 
     let query = NSMetadataQuery()
-    var resumeState: State = .isPaused
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultDifference()
     var queryAttributes: [String] = []
     var resultCount: Int = 0
-    var isFinished = false
+    var didFinishGathering = false
     var didPostFinished = false
     var delayedPostFinishedResults: DispatchWorkItem?
     var prefetchesItemPathsInBackground = true
@@ -160,7 +159,6 @@ open class MetadataQuery: NSObject {
         didSet {
             runWithOperationQueue {
                 self.query.predicate = self.predicate?(.root).predicate ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
-                Swift.print(self.predicateFormat)
             }
         }
     }
@@ -208,7 +206,7 @@ open class MetadataQuery: NSObject {
     /**
      An array of search scopes to search at.
      
-     The query searches for items at the search scropes. The default value is an empty array which indicates that there is no limitation on where the query searches.
+     The query searches for items at the search scopes. The default value is an empty array which indicates that there is no limitation on where the query searches.
      
      The query can alternativly also search at specific file-system directories via ``searchLocations``.
      
@@ -365,8 +363,6 @@ open class MetadataQuery: NSObject {
         didSet {
             guard oldValue != resultUpdateOptions, !query.isStopped else { return }
             Self.resultUpdateOptions = resultUpdateOptions
-            Self.options = options
-            Self.maxResults = maxResults
             query.notificationBatchingInterval = Double.random(max: 100.0)
         }
     }
@@ -416,15 +412,15 @@ open class MetadataQuery: NSObject {
     
     /// Starts the query, discarding any previous results, or resumes a paused query.
     open func start() {
-        switch self.state {
+        switch state {
         case .isStopped:
             runWithOperationQueue(true) {
                 self.query.enableUpdates()
                 self.query.start()
             }
         case .isPaused:
-            self.state = self.resumeState
-            self.query.enableUpdates()
+            state = didFinishGathering ? .isMonitoring : .isGathering
+            query.enableUpdates()
         default: break
         }
     }
@@ -433,7 +429,6 @@ open class MetadataQuery: NSObject {
     open func pause() {
         guard state == .isGathering || state == .isMonitoring else { return }
         query.disableUpdates()
-        resumeState = state
         state = .isPaused
     }
     
@@ -495,9 +490,9 @@ open class MetadataQuery: NSObject {
         }
         query.enableUpdates()
         resultsUpdateLock.unlock()
-        if post {
+        if post, let resultsHandler = resultsHandler {
             pending.changes = .init(pending.changed)
-            resultsHandler?(results, pending)
+            resultsHandler(results, pending)
         }
     }
     
@@ -529,7 +524,7 @@ open class MetadataQuery: NSObject {
         pendingResultsUpdate = .init()
         queryAttributes = (query.valueListAttributes + sortedBy.compactMap(\.attribute.rawValue) + (query.groupingAttributes ?? []) + MetadataItem.Attribute.path.mdKeys).uniqued()
         state = .isGathering
-        isFinished = false
+        didFinishGathering = false
         didPostFinished = false
         delayedPostFinishedResults?.cancel()
     }
@@ -538,8 +533,8 @@ open class MetadataQuery: NSObject {
         let resultsUpdate = notification.resultsUpdate
         pendingResultsUpdate = pendingResultsUpdate + resultsUpdate
         debugPrint("MetadataQuery gatheringProgressed, results: \(_results.count) \(pendingResultsUpdate._description)")
-        if postsGatheringUpdates || isFinished {
-            didPostFinished = isFinished
+        if postsGatheringUpdates || didFinishGathering {
+            didPostFinished = didFinishGathering
             updateResults(post: true)
         } else {
             (resultsUpdate.added + resultsUpdate.changed).forEach({ item in
@@ -552,13 +547,13 @@ open class MetadataQuery: NSObject {
             
     @objc func gatheringFinished(_ notification: Notification) {
         debugPrint("MetadataQuery gatheringFinished, results: \(_results.count) \(pendingResultsUpdate._description)")
-        isFinished = true
+        didFinishGathering = true
         updateMonitoring()
         if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || (query.resultCount == _results.count && !monitorResults) {
             updateResults(post: true)
         } else if !monitorResults {
             delayedPostFinishedResults = .init { [weak self] in
-                guard let self = self, self.isFinished, !self.didPostFinished else { return }
+                guard let self = self, self.didFinishGathering, !self.didPostFinished else { return }
                 self.debugPrint("MetadataQuery delayedPostFinishResults")
                 self.resultsHandler?(results, .init())
             }.perform(after: 0.1)
@@ -572,7 +567,7 @@ open class MetadataQuery: NSObject {
     }
     
     func updateMonitoring() {
-        guard isFinished else { return }
+        guard didFinishGathering else { return }
         if monitorResults {
             query.enableUpdates()
             state = .isMonitoring
@@ -622,8 +617,7 @@ open class MetadataQuery: NSObject {
     override public init() {
         super.init()
         query.delegate = delegate
-        query.predicate = NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
-        query.enableUpdates()
+        predicate = { $0.contentType == .item }
 
         NotificationCenter.default.addObserver(self, selector: #selector(gatheringStarted(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(gatheringProgressed(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
@@ -673,7 +667,7 @@ func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
 }
 
 @_cdecl("swizzled_MDQuerySetBatchingParameters")
-func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
+public func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
     let params = MetadataQuery.resultUpdateOptions?.batching ?? params
     MetadataQuery.resultUpdateOptions = nil
     MDQuerySetBatchingParameters(query, params)
