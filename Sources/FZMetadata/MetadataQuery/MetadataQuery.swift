@@ -98,7 +98,6 @@ open class MetadataQuery: NSObject {
     var resultCount: Int = 0
     var didFinishGathering = false
     var didPostFinished = false
-    var delayedPostFinishedResults: DispatchWorkItem?
     var prefetchesItemPathsInBackground = true
     let itemPathPrefetchOperationQueue = OperationQueue(maxConcurrentOperationCount: 80)
     var resultsUpdateLock = NSLock()
@@ -163,7 +162,7 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    var predicateFormat: String {
+    public var predicateFormat: String {
         query.predicate?.predicateFormat ?? NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey).predicateFormat
     }
     
@@ -503,12 +502,12 @@ open class MetadataQuery: NSObject {
         if !isInital {
             result.changes.update(with: result.values)
         }
-        result.filePath = nil
-        result.filePathOperation?.cancel()
         prefetchItemPath(for: result)
     }
     
     func prefetchItemPath(for item: MetadataItem) {
+        item.filePath = nil
+        item.filePathOperation?.cancel()
         guard prefetchesItemPathsInBackground else { return }
         let operation = ItemPathPrefetchOperation(item)
         item.filePathOperation = operation
@@ -526,7 +525,6 @@ open class MetadataQuery: NSObject {
         state = .isGathering
         didFinishGathering = false
         didPostFinished = false
-        delayedPostFinishedResults?.cancel()
     }
 
     @objc func gatheringProgressed(_ notification: Notification) {
@@ -538,8 +536,6 @@ open class MetadataQuery: NSObject {
             updateResults(post: true)
         } else {
             (resultsUpdate.added + resultsUpdate.changed).forEach({ item in
-                item.filePath = nil
-                item.filePathOperation?.cancel()
                 prefetchItemPath(for: item)
             })
         }
@@ -552,11 +548,11 @@ open class MetadataQuery: NSObject {
         if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || (query.resultCount == _results.count && !monitorResults) {
             updateResults(post: true)
         } else if !monitorResults {
-            delayedPostFinishedResults = .init { [weak self] in
-                guard let self = self, self.didFinishGathering, !self.didPostFinished else { return }
+            DispatchQueue.main.asyncAfter(0.1) {
+                guard self.didFinishGathering, !self.didPostFinished else { return }
                 self.debugPrint("MetadataQuery delayedPostFinishResults")
-                self.resultsHandler?(results, .init())
-            }.perform(after: 0.1)
+                self.resultsHandler?(self.results, .init())
+            }
         }
     }
     

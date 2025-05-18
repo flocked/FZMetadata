@@ -295,7 +295,10 @@ open class MetadataItem: NSObject, Identifiable {
     open var directoryFilesCount: Int? { value(for: .directoryFilesCount) }
 
     ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
-    open var contentDescription: String? { value(for: .contentDescription) }
+    open var contentDescription: String? {
+        get { value(for: .contentDescription) }
+        set { setExplicity(.contentDescription, to: newValue) }
+    }
 
     /// A description of the kind of item the file represents.
     open var kind: [String]? { value(for: .kind) }
@@ -322,7 +325,10 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The title for a collection of media. This is analagous to a record album, or photo album.
-    open var album: String? { value(for: .album) }
+    open var album: String? {
+        get { value(for: .album) }
+        set { setExplicity(.album, to: newValue) }
+    }
 
     /// The authors, artists, etc. of the contents of the file.
     open var authors: [String]? { value(for: .authors) }
@@ -391,7 +397,10 @@ open class MetadataItem: NSObject, Identifiable {
     open var isApplicationManaged: Bool? { value(for: .isApplicationManaged) }
 
     /// The application used to convert the original content into it's current form. For example, a PDF file might have an encoding application set to "Distiller".
-    open var encodingApplications: [String]? { value(for: .encodingApplications) }
+    open var encodingApplications: [String]? {
+        get { value(for: .encodingApplications) }
+        set { setExplicity(.encodingApplications, to: newValue) }
+    }
 
     /// The categories the application is a member of.
     open var applicationCategories: [String]? { value(for: .applicationCategories) }
@@ -416,7 +425,10 @@ open class MetadataItem: NSObject, Identifiable {
     open var theme: String? { value(for: .theme) }
 
     /// A publishable summary of the contents of the item.
-    open var headline: String? { value(for: .headline) }
+    open var headline: String? {
+        get { value(for: .headline) }
+        set { setExplicity(.headline, to: newValue) }
+    }
 
     /// the application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
     open var creator: String? { value(for: .creator) }
@@ -446,7 +458,10 @@ open class MetadataItem: NSObject, Identifiable {
     open var pageHeight: Double? { value(for: .pageHeight) }
 
     /// The copyright owner of the file contents.
-    open var copyright: String? { value(for: .copyright) }
+    open var copyright: String? {
+        get { value(for: .copyright) }
+        set { setExplicity(.copyright, to: newValue) }
+    }
 
     /// The names of the fonts used in his document.
     open var fonts: [String]? { value(for: .fonts) }
@@ -576,25 +591,46 @@ open class MetadataItem: NSObject, Identifiable {
     open var keySignature: String? { value(for: .keySignature) }
 
     /// The time signature of the musical composition contained in the audio/MIDI file. For example: `4/4`, `7/8`.
-    open var timeSignature: String? { value(for: .timeSignature) }
+    open var timeSignature: String? {
+        get { value(for: .timeSignature) }
+        set { setExplicity(.timeSignature, to: newValue) }
+    }
 
     /// The track number of a song or composition when it is part of an album.
-    open var trackNumber: Int? { value(for: .trackNumber) }
+    open var trackNumber: Int? {
+        get { value(for: .trackNumber) }
+        set { setExplicity(.trackNumber, to: newValue) }
+    }
 
     /// The composer of the music contained in the audio file.
-    open var composer: String? { value(for: .composer) }
+    open var composer: String? {
+        get { value(for: .composer) }
+        set { setExplicity(.composer, to: newValue) }
+    }
 
     /// The lyricist, or text writer, of the music contained in the audio file.
-    open var lyricist: String? { value(for: .lyricist) }
+    open var lyricist: String? {
+        get { value(for: .lyricist) }
+        set { setExplicity(.lyricist, to: newValue) }
+    }
 
     /// The recording date of the song or composition.
-    open var recordingDate: Date? { value(for: .recordingDate) }
+    open var recordingDate: Date? {
+        get { value(for: .recordingDate) }
+        set { setExplicity(.recordingDate, to: newValue) }
+    }
 
     /// Indicates the year this item was recorded. For example: `1964`, `2003`.
-    open var recordingYear: Double? { value(for: .recordingYear) }
+    open var recordingYear: Double? {
+        get { value(for: .recordingYear) }
+        set { setExplicity(.recordingYear, to: newValue) }
+    }
 
     /// The musical genre of the song or composition contained in the audio file. For example: `Jazz`, `Pop`, `Rock`, `Classical`.
-    open var musicalGenre: String? { value(for: .musicalGenre) }
+    open var musicalGenre: String? {
+        get { value(for: .musicalGenre) }
+        set { setExplicity(.musicalGenre, to: newValue) }
+    }
 
     /// A Boolean value that indicates whether the MIDI sequence contained in the file is setup for use with a General MIDI device.
     open var isGeneralMidiSequence: Bool? { value(for: .isGeneralMidiSequence) }
@@ -628,9 +664,8 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The media content types (video and sound) present in the file.
-    open var mediaTypes: [UTType]? {
-        guard let contentTypes: [String] = value(for: .mediaTypes) else { return nil }
-        return contentTypes.compactMap({ UTType($0) })
+    open var mediaTypes: [String]? {
+        value(for: .mediaTypes)
     }
     
     /// The codecs used to encode/decode the media.
@@ -655,22 +690,40 @@ open class MetadataItem: NSObject, Identifiable {
     open var mediaDeliveryType: String? { value(for: .mediaDeliveryType) }
 
     /// Original format of the media.
-    open var originalFormat: String? { value(for: .originalFormat) }
+    open var originalFormat: String? {
+        get { value(for: .originalFormat) }
+        set { setExplicity(.originalFormat, to: newValue) }
+    }
 
     /// Original source of the media.
-    open var originalSource: String? { value(for: .originalSource) }
+    open var originalSource: String? {
+        get { value(for: .originalSource) }
+        set { setExplicity(.originalSource, to: newValue) }
+    }
 
     /// The genre of the content.
-    open var genre: String? { value(for: .genre) }
+    open var genre: String? {
+        get { value(for: .genre) }
+        set { setExplicity(.genre, to: newValue) }
+    }
 
     /// The director of the content.
-    open var director: String? { value(for: .director) }
+    open var director: String? {
+        get { value(for: .director) }
+        set { setExplicity(.director, to: newValue) }
+    }
 
     /// The producer of the content.
-    open var producer: String? { value(for: .producer) }
+    open var producer: String? {
+        get { value(for: .producer) }
+        set { setExplicity(.producer, to: newValue) }
+    }
 
     /// The performers of the content.
-    open var performers: [String]? { value(for: .performers) }
+    open var performers: [String]? {
+        get { value(for: .performers) }
+        set { setExplicity(.performers, to: newValue) }
+    }
 
     /// The people that are visible in an image or movie or are written about in a document.
     open var participants: [String]? { value(for: .participants) }
@@ -717,7 +770,10 @@ open class MetadataItem: NSObject, Identifiable {
     open var orientation: Orientation? { value(for: .orientation) }
 
     /// The names of the layers in the file.
-    open var layerNames: [String]? { value(for: .layerNames) }
+    open var layerNames: [String]? {
+        get { value(for: .layerNames) }
+        set { setExplicity(.layerNames, to: newValue) }
+    }
 
     /// The white balance setting of the camera when the picture was taken.
     open var whiteBalance: WhiteBalance? { value(for: .whiteBalance) }
@@ -950,6 +1006,46 @@ open class MetadataItem: NSObject, Identifiable {
 }
 
 extension MetadataItem {
+    /// A media type.
+    public struct MediaType: ExpressibleByStringLiteral, RawRepresentable, CustomStringConvertible, Hashable {
+        /// Sound.
+        public static let sound = Self("Sound")
+        /// Video.
+        public static let video = Self("Video")
+        /// Timecode.
+        public static let timecode = Self("Timecode")
+        /// MIDI.
+        public static let midi = Self("MIDI")
+        /// Text.
+        public static let text = Self("Text")
+        /**
+         Indicates that Spotlight inferred the media type heuristically,
+         such as from the file extension or other metadata, rather than
+         from a definitive file content analysis.
+
+         This value acts as a confidence hint, not a specific media type.
+         */
+        public static let hint = Self("hint")
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public init(_ rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public init(stringLiteral value: String) {
+            rawValue = value
+        }
+        
+        public let rawValue: String
+        
+        public var description: String {
+            rawValue
+        }
+    }
+    
     /// The exposure mode of an image.
     public enum ExposureMode: Int, CustomStringConvertible, Hashable, QueryRawRepresentable {
         /// Automatic.
@@ -1116,10 +1212,7 @@ extension MetadataItem {
     }
     
     func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) {
-        if attribute == .pixelSize, let value = value as? CGSize {
-            setExplicity(.pixelWidth, to: Double(value.width))
-            setExplicity(.pixelHeight, to: Double(value.height))
-        } else if let keyPath = urlResources, var resources = url?.resources {
+        if let keyPath = urlResources, var resources = url?.resources {
             resources[keyPath: keyPath] = value
         } else {
             url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = value

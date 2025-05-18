@@ -7,6 +7,7 @@
 
 import Foundation
 import FZSwiftUtils
+import UniformTypeIdentifiers
 
 public extension MetadataItem {
     /// The attribute of metadata item.
@@ -434,23 +435,33 @@ public extension MetadataItem {
          
          The value is a value between `0.0` and `1.0`.
          */
-        case queryContentRelevance = "NSMetadataQueryResultContentRelevanceAttribute"
+        case queryContentRelevance = "kMDQueryResultContentRelevance"
         
         public var description: String {
-            rawValue.replacingOccurrences(of: ["kMDItem", "Key"], with: "").replacingOccurrences(of: "FS", with: "File").lowercasedFirst()
+            rawValue.removingOccurrences(of: ["kMDItem", "NSMetadata"]).replacingOccurrences(of: "FS", with: "File").lowercasedFirst()
+        }
+        
+        /// Localized name of the attribute.
+        public var localizedDisplayName: String? {
+            MDSchemaCopyDisplayNameForAttribute(rawValue as CFString) as? String
+        }
+        
+        /// Localized description of the attribute.
+        public var localizedDisplayDescription: String? {
+            MDSchemaCopyDisplayDescriptionForAttribute(rawValue as CFString) as? String
         }
         
         static func values(for mdKeys: [String]) -> [Self] {
-            var attriutes = mdKeys.compactMap { Self(rawValue: $0) }
-            if attriutes.contains(all: [.pixelWidth, .pixelHeight]) {
-                attriutes.replace(.pixelWidth, with: .pixelSize)
-                attriutes.remove(.pixelHeight)
+            var attributes = mdKeys.compactMap { Self(rawValue: $0) }
+            if attributes.contains(all: [.pixelWidth, .pixelHeight]) {
+                attributes.replace(.pixelWidth, with: .pixelSize)
+                attributes.remove(.pixelHeight)
             }
-            if attriutes.contains(all: [.dpiResolutionWidth, .dpiResolutionHeight]) {
-                attriutes.replace(.dpiResolutionWidth, with: .dpiResolution)
-                attriutes.remove(.dpiResolutionHeight)
+            if attributes.contains(all: [.dpiResolutionWidth, .dpiResolutionHeight]) {
+                attributes.replace(.dpiResolutionWidth, with: .dpiResolution)
+                attributes.remove(.dpiResolutionHeight)
             }
-            return attriutes
+            return attributes
         }
         
         var mdKeys: [String] {
@@ -685,12 +696,65 @@ public extension MetadataItem {
             // MARK: - Query Content Relevance
             case .queryContentRelevance: return \.queryContentRelevance }
         }
+        
+        /// The value type of the attribute.
+        func valueType() -> Any.Type? {
+            guard let dic = MDSchemaCopyMetaAttributesForAttribute(rawValue as CFString) as? [String: Any], let isArray = dic["kMDAttributeMultiValued"] as? Bool, let type = dic["kMDAttributeType"] as? UInt else { return nil }
+            switch type {
+            case CFURLGetTypeID(): return isArray ? [URL].self : URL.self
+            case CFStringGetTypeID(): return isArray ? [String].self : String.self
+            case CFDictionaryGetTypeID(): return isArray ? [NSDictionary].self : NSDictionary.self
+            case CFSetGetTypeID(): return isArray ? [NSSet].self : NSSet.self
+            case CFArrayGetTypeID(): return isArray ? [NSArray].self : NSArray.self
+            case CFBooleanGetTypeID(): return isArray ? [Bool].self : Bool.self
+            case CFDateGetTypeID(): return isArray ? [Date].self : Date.self
+            case CFDataGetTypeID(): return isArray ? [Data].self : Data.self
+            case CFNullGetTypeID(): return isArray ? [NSNull].self : NSNull.self
+            case CFNumberGetTypeID(): return isArray ? [NSNumber].self : NSNumber.self
+            default: return nil
+            }
+        }
     }
 }
 
 extension MetadataItem.Attribute {
     init?(_ rawValue: String) {
         self.init(rawValue: rawValue)
+    }
+}
+
+extension MetadataItem {
+    /// Returns the available attributes for the specified content type.
+    public static func attributes(for contentType: UTType) -> [AttributeInfo]? {
+        guard let dic = MDSchemaCopyAttributesForContentType(contentType.identifier as CFString) as? [String: Any], let displayable = dic["kMDAttributeDisplayValues"] as? [String], let all = dic["kMDAttributeAllValues"] as? [String], let readOnly = dic["kMDAttributeReadOnlyValues"] as? [String] else { return nil }
+        var attributes: [AttributeInfo] = []
+        for value in (all + displayable + readOnly).uniqued().sorted() {
+            guard let attribute = Attribute(value) else { continue }
+            attributes += .init(attribute, readOnly.contains(value), displayable.contains(value))
+        }
+        return attributes
+    }
+    
+    /// Information about a metadata item attribute.
+    public struct AttributeInfo: CustomStringConvertible, Hashable {
+        /// The attribute.
+        public let attribute: Attribute
+        
+        /// A Boolean value indicating whether the attribute can be modified.
+        public let isReadOnly: Bool
+        
+        /// A Boolean value indicating whether the attribute is intended for user display.
+        public let isDisplayable: Bool
+        
+        public var description: String {
+            "[\(attribute), isReadOnly: \(isReadOnly), isDisplayable: \(isDisplayable)]"
+        }
+        
+        init(_ attribute: Attribute, _ isReadOnly: Bool, _ isDisplayable: Bool) {
+            self.attribute = attribute
+            self.isReadOnly = isReadOnly
+            self.isDisplayable = isDisplayable
+        }
     }
 }
 
@@ -704,12 +768,3 @@ extension PartialKeyPath where Root == MetadataItem {
         return key
     }
 }
-
-/*
- "**"                        = "Any Text";
- "kHSMDItemContentKind"        = "Content Kind";
- "kHSMDItemDisplayNames"        = "Name";
- "kHSMDItemFSFileExtension"    = "File Extension";
- "kHSMDItemKeywordsAndTags"    = "Keywords & Tags";
- "kHSMDItemHasAttachment"    = "Has Attachment";x
- */

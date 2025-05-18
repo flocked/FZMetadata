@@ -26,61 +26,65 @@ extension MetadataItem {
 }
 
 extension MetadataItem.Attribute {
-    var rowTemplate: NSPredicateEditorRowTemplate {
+    /// A predicate editor row template for the attribute.
+    public var predicateEditorRowTemplate: NSPredicateEditorRowTemplate? {
+        if let valueType = rowValueType {
+            return .init(leftExpressions: [.keyPath(rawValue)], rightExpressionAttributeType: valueType, operators: rowOperators, options: rowOptions)
+        } else if let values = rowValues {
+            return .init(leftExpressions: [.keyPath(rawValue)], rightExpressions: values.map({ NSExpression.constant($0) }), operators: rowOperators, options: rowOptions)
+        }
+        return nil
+    }
+    
+    var rowValueType: NSAttributeType? {
         switch self {
-        default:
-            return NSPredicateEditorRowTemplate(constant: "Template", values: ["Value"])
+        case .fileName, .displayName, .fileExtension, .contentDescription, .information, .identifier, .title, .album, .version, .comment, .finderComment, .bundleIdentifier, .executablePlatform, .appstoreCategory, .appstoreCategoryType, .textContent, .subject, .theme, .headline, .creator, .instructions, .copyright, .fontFamilyName, .rights, .country, .city, .stateOrProvince, .areaInformation, .namedLocation, .gpsStatus, .gpsMeasureMode, .gpsMapDatum, .gpsProcessingMethod, .audioEncodingApplication, .keySignature, .timeSignature, .composer, .lyricist, .musicalGenre, .appleLoopsRootKey, .appleLoopsKeyFilterType, .appleLoopsLoopMode, .musicalInstrumentCategory, .musicalInstrumentName, .mediaDeliveryType, .originalFormat, .originalSource, .genre, .director, .producer, .colorSpace, .deviceManufacturer, .deviceModel, .colorProfile, .exifVersion, .cameraOwner, .lensModel, .exposureProgram, .exposureTimeString, .ubiquitousItemContainerDisplayName, .contentType, .contentTypeTree:
+            return .stringAttributeType
+        case .alternateNames, .kind, .keywords, .authors, .whereFroms, .finderTags, .executableArchitectures, .encodingApplications, .applicationCategories, .editors, .audiences, .coverage, .projects, .fonts, .contactKeywords, .languages, .organizations, .publishers, .emailAddresses, .phoneNumbers, .contributors, .appleLoopDescriptors, .performers, .participants, .layerNames, .authorEmailAddresses, .authorAddresses, .recipients, .recipientEmailAddresses, .recipientAddresses, .instantMessageAddresses, .receivedRecipients, .receivedRecipientHandles, .receivedSenders, .receivedSenderHandles, .receivedTypes:
+            return .stringAttributeType
+        case .dueDate, .addedDate, .creationDate, .purchaseDate, .receivedDates, .recordingDate, .downloadedDate, .lastUsedDate, .lastUsageDates, .modificationDate, .contentCreationDate, .contentModificationDate, .attributeModificationDate, .timestamp, .gpsDateStamp:
+            return .dateAttributeType
+        case .fileIsInvisible, .fileExtensionIsHidden, .hasCustomIcon, .isApplicationManaged, .isGeneralMidiSequence, .streamable, .isFlashOn, .hasAlphaChannel, .redEyeOnOff, .isScreenCapture, .isLikelyJunk, .isUbiquitousItem, .ubiquitousItemDownloadRequested, .ubiquitousItemIsExternalDocument, .ubiquitousItemHasUnresolvedConflicts, .ubiquitousItemIsDownloaded, .ubiquitousItemIsDownloading, .ubiquitousItemIsUploaded, .ubiquitousItemIsUploading, .ubiquitousItemIsShared:
+            return .booleanAttributeType
+        case .directoryFilesCount, .usageCount, .audioChannelCount, .trackNumber:
+            return .integer32AttributeType
+        case .starRating, .numberOfPages, .pageWidth, .pageHeight, .securityMethod, .altitude, .latitude, .longitude, .speed, .gpsTrack, .gpsDop, .gpsDestLatitude, .gpsDestLongitude, .gpsDestBearing, .gpsDestDistance, .gpsDifferental, .audioSampleRate, .tempo, .recordingYear, .totalBitRate, .videoBitRate, .audioBitRate, .pixelHeight, .pixelWidth, .pixelCount, .bitsPerSample, .focalLength, .isoSpeed, .aperture, .dpiResolutionWidth, .dpiResolutionHeight, .exposureTimeSeconds, .focalLength35Mm, .imageDirection, .maxAperture, .fNumber, .ubiquitousItemPercentDownloaded, .ubiquitousItemPercentUploaded, .queryContentRelevance:
+            return .doubleAttributeType
+        default: return nil
         }
     }
     
-    var valueType: ValueType {
+    var rowValues: [String]? {
         switch self {
-        case .dueDate, .addedDate, .creationDate, .purchaseDate, .receivedDates, .recordingDate, .downloadedDate, .lastUsedDate, .lastUsageDates, .modificationDate, .contentCreationDate, .contentModificationDate, .attributeModificationDate, .timestamp, .gpsDateStamp:
-            return .date
-        case .isLikelyJunk, .isScreenCapture, .isApplicationManaged, .isGeneralMidiSequence, .fileIsInvisible, .fileExtensionIsHidden, .hasCustomIcon, .hasAlphaChannel, .streamable, .isFlashOn, .redEyeOnOff:
-            return .bool
-        case .usageCount, .audioChannelCount, .fileSize, .directoryFilesCount, .finderTagPrimaryColor, .trackNumber:
-            return .integer
-        case .starRating, .numberOfPages, .pageWidth, .pageHeight, .pixelSize, .pixelWidth, .pixelHeight, .dpiResolutionWidth, .dpiResolutionHeight, .dpiResolution, .securityMethod, .altitude, .latitude, .longitude, .gpsDestLatitude, .gpsDestLongitude, .speed, .gpsTrack, .gpsDop, .gpsDestBearing, .gpsDestDistance, .gpsDifferental, .audioSampleRate, .tempo, .recordingYear, .duration, .totalBitRate, .videoBitRate, .audioBitRate, .pixelCount, .bitsPerSample, .focalLength, .isoSpeed, .aperture, .exposureMode, .exposureTimeSeconds, .focalLength35Mm, .imageDirection, .maxAperture, .fNumber, .screenCaptureRect, .queryContentRelevance:
-            return .double
         case .orientation:
-            return .value(["Horizontal", "Vertical"])
+            return ["Horizontal", "Vertical"]
         case .whiteBalance:
-            return .value(["Auto", "Off"])
+            return ["Auto", "Off"]
         case .screenCaptureType:
-            return .value(["Display", "Window", "Selection"])
+            return ["Display", "Window", "Selection"]
         case .fileType:
             let fileTypes: [FileType] = [.archive, .executable, .image, .document, .video, .audio, .folder, .pdf, .presentation, .application, .text]
             let values = ["Any"] + fileTypes.compactMap({$0.description}) + ["Other"]
-            return .value(values)
-        default: return .string
+            return values
+        default: return nil
         }
     }
     
-    enum ValueType {
-        case string
-        case double
-        case integer
-        case bool
-        case date
-        case value([String])
-        
-        var operators: [NSComparisonPredicate.Operator] {
-            switch self {
-            case .string:
-                return [.matches, .contains, .beginsWith, .endsWith, .equalTo, .notEqualTo]
-            case .double, .integer, .date:
-                return [.equalTo, .lessThan, .greaterThan, .notEqualTo]
-            case .bool, .value:
-                return [.equalTo, .notEqualTo]
-            }
+    var rowOperators: [NSComparisonPredicate.Operator] {
+        switch rowValueType {
+        case .stringAttributeType:
+            return [.contains, .beginsWith, .endsWith, .equalTo, .notEqualTo]
+        case .doubleAttributeType, .integer16AttributeType, .integer32AttributeType, .integer64AttributeType, .dateAttributeType:
+            return [.equalTo, .lessThan, .greaterThan, .notEqualTo]
+        default:
+            return [.equalTo, .notEqualTo]
         }
-        
-        var options: NSComparisonPredicate.Options {
-            switch self {
-            case .string: return [.caseInsensitive, .diacriticInsensitive]
-            default: return []
-            }
+    }
+    
+    var rowOptions: NSComparisonPredicate.Options {
+        switch rowValueType {
+        case .stringAttributeType: return [.caseInsensitive, .diacriticInsensitive]
+        default: return []
         }
     }
 }

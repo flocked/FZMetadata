@@ -15,7 +15,7 @@ extension [MetadataItem] {
         let processedFolders = folders.map{ ProcessedFolder($0) }.sorted { $0.componentCount > $1.componentCount }
         let strictMaxAllowedComponents = processedFolders.first?.componentCount ?? 0 + maxDepth
 
-        let collectorQueue = DispatchQueue(label: "urlFilter.collectorQueue")
+        let collectorQueue = DispatchQueue(label: "MetadataItem.FilterQueue")
         let items = indexed()
         var filteredItems: [(Int, MetadataItem)] = []
         DispatchQueue.concurrentPerform(iterations: items.count) { index in
