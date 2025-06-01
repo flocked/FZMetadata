@@ -398,7 +398,7 @@ open class MetadataItem: NSObject, Identifiable {
 
     /// The application used to convert the original content into it's current form. For example, a PDF file might have an encoding application set to "Distiller".
     open var encodingApplications: [String]? {
-        get { alue(for: .encodingApplications) }
+        get { value(for: .encodingApplications) }
         set { setExplicity(.encodingApplications, to: newValue) }
     }
 
@@ -592,13 +592,13 @@ open class MetadataItem: NSObject, Identifiable {
 
     /// The time signature of the musical composition contained in the audio/MIDI file. For example: `4/4`, `7/8`.
     open var timeSignature: String? {
-        get { alue(for: .timeSignature) }
+        get { value(for: .timeSignature) }
         set { setExplicity(.timeSignature, to: newValue) }
     }
 
     /// The track number of a song or composition when it is part of an album.
     open var trackNumber: Int? {
-        get { alue(for: .trackNumber) }
+        get { value(for: .trackNumber) }
         set { setExplicity(.trackNumber, to: newValue) }
     }
 
@@ -628,7 +628,7 @@ open class MetadataItem: NSObject, Identifiable {
 
     /// The musical genre of the song or composition contained in the audio file. For example: `Jazz`, `Pop`, `Rock`, `Classical`.
     open var musicalGenre: String? {
-        get { alue(for: .musicalGenre) }
+        get { value(for: .musicalGenre) }
         set { setExplicity(.musicalGenre, to: newValue) }
     }
 
@@ -691,31 +691,31 @@ open class MetadataItem: NSObject, Identifiable {
 
     /// Original format of the media.
     open var originalFormat: String? {
-        get { alue(for: .originalFormat) }
+        get { value(for: .originalFormat) }
         set { setExplicity(.originalFormat, to: newValue) }
     }
 
     /// Original source of the media.
     open var originalSource: String? {
-        get { alue(for: .originalSource) }
+        get { value(for: .originalSource) }
         set { setExplicity(.originalSource, to: newValue) }
     }
 
     /// The genre of the content.
     open var genre: String? {
-        get { alue(for: .genre) }
+        get { value(for: .genre) }
         set { setExplicity(.genre, to: newValue) }
     }
 
     /// The director of the content.
     open var director: String? {
-        get { alue(for: .director) }
+        get { value(for: .director) }
         set { setExplicity(.director, to: newValue) }
     }
 
     /// The producer of the content.
     open var producer: String? {
-        get { alue(for: .producer) }
+        get { value(for: .producer) }
         set { setExplicity(.producer, to: newValue) }
     }
 
@@ -771,7 +771,7 @@ open class MetadataItem: NSObject, Identifiable {
 
     /// The names of the layers in the file.
     open var layerNames: [String]? {
-        get { alue(for: .layerNames) }
+        get { value(for: .layerNames) }
         set { setExplicity(.layerNames, to: newValue) }
     }
 
