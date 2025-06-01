@@ -78,7 +78,7 @@ extension MetadataQuery.PredicateResult {
                 from = converter.value(for: from)
                 to = converter.value(for: to)
             }
-            if let array = array as? [QueryRawRepresentable] {
+            if let array = array as? [any QueryRawRepresentable] {
                 from = array[0].rawValue
                 to = array[1].rawValue
             }

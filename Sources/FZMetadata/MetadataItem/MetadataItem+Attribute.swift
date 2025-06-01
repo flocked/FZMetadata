@@ -441,6 +441,7 @@ public extension MetadataItem {
             rawValue.removingOccurrences(of: ["kMDItem", "NSMetadata"]).replacingOccurrences(of: "FS", with: "File").lowercasedFirst()
         }
         
+        #if os(macOS)
         /// Localized name of the attribute.
         public var localizedDisplayName: String? {
             MDSchemaCopyDisplayNameForAttribute(rawValue as CFString) as? String
@@ -450,6 +451,7 @@ public extension MetadataItem {
         public var localizedDisplayDescription: String? {
             MDSchemaCopyDisplayDescriptionForAttribute(rawValue as CFString) as? String
         }
+        #endif
         
         static func values(for mdKeys: [String]) -> [Self] {
             var attributes = mdKeys.compactMap { Self(rawValue: $0) }
@@ -697,6 +699,7 @@ public extension MetadataItem {
             case .queryContentRelevance: return \.queryContentRelevance }
         }
         
+        #if os(macOS)
         /// The value type of the attribute.
         func valueType() -> Any.Type? {
             guard let dic = MDSchemaCopyMetaAttributesForAttribute(rawValue as CFString) as? [String: Any], let isArray = dic["kMDAttributeMultiValued"] as? Bool, let type = dic["kMDAttributeType"] as? UInt else { return nil }
@@ -714,6 +717,7 @@ public extension MetadataItem {
             default: return nil
             }
         }
+        #endif
     }
 }
 
@@ -723,6 +727,7 @@ extension MetadataItem.Attribute {
     }
 }
 
+#if os(macOS)
 extension MetadataItem {
     /// Returns the available attributes for the specified content type.
     public static func attributes(for contentType: UTType) -> [AttributeInfo]? {
@@ -757,6 +762,7 @@ extension MetadataItem {
         }
     }
 }
+#endif
 
 extension PartialKeyPath where Root == MetadataItem {
     /// The metadata query key for the attribute at the key path.

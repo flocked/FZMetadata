@@ -56,12 +56,11 @@ extension MetadataItem.Attribute {
     
     var rowValues: [String]? {
         switch self {
-        case .orientation:
-            return ["Horizontal", "Vertical"]
-        case .whiteBalance:
-            return ["Auto", "Off"]
-        case .screenCaptureType:
-            return ["Display", "Window", "Selection"]
+        case .meteringMode: return ["Average", "Center Weighted Average", "Spot", "Multispot", "Pattern", "Partial", "Unknown"]
+        case .exposureMode: return ["Automatic", "Manual", "Automatic Bracket"]
+        case .orientation: return ["Horizontal", "Vertical"]
+        case .whiteBalance: return ["Auto", "Off"]
+        case .screenCaptureType: return ["Display", "Window", "Selection"]
         case .fileType:
             let fileTypes: [FileType] = [.archive, .executable, .image, .document, .video, .audio, .folder, .pdf, .presentation, .application, .text]
             let values = ["Any"] + fileTypes.compactMap({$0.description}) + ["Other"]
