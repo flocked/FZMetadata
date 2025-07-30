@@ -548,7 +548,7 @@ open class MetadataQuery: NSObject {
         if !pendingResultsUpdate.isEmpty || query.resultCount == 0 || (query.resultCount == _results.count && !monitorResults) {
             updateResults(post: true)
         } else if !monitorResults {
-            DispatchQueue.main.asyncAfter(0.1) {
+            DispatchQueue.main.async(after: 0.1) {
                 guard self.didFinishGathering, !self.didPostFinished else { return }
                 self.debugPrint("MetadataQuery delayedPostFinishResults")
                 self.resultsHandler?(self.results, .init())
