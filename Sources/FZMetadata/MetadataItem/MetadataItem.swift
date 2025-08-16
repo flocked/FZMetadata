@@ -296,7 +296,10 @@ open class MetadataItem: Identifiable {
     }
 
     /// The date that the file was purchased.
-    open var purchaseDate: Date? { value(for: .purchaseDate) }
+    open var purchaseDate: Date? {
+        get { value(for: .purchaseDate) }
+        set { setExplicity(.purchaseDate, to: newValue) }
+    }
 
     /// The date that this item is due (e.g. for a calendar event file).
     open var dueDate: Date? {
@@ -308,7 +311,10 @@ open class MetadataItem: Identifiable {
     open var directoryFilesCount: Int? { value(for: .directoryFilesCount) }
 
     ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
-    open var description: String? { value(for: .description) }
+    open var description: String? {
+        get { value(for: .description) }
+        set { setExplicity(.description, to: newValue) }
+    }
 
     /// A description of the kind of item the file represents.
     open var kind: [String]? { value(for: .kind) }
@@ -335,13 +341,22 @@ open class MetadataItem: Identifiable {
     }
 
     /// The title for a collection of media. This is analagous to a record album, or photo album.
-    open var album: String? { value(for: .album) }
+    open var album: String? {
+        get { value(for: .album) }
+        set { setExplicity(.album, to: newValue) }
+    }
 
     /// The authors, artists, etc. of the contents of the file.
-    open var authors: [String]? { value(for: .authors) }
+    open var authors: [String]? {
+        get { value(for: .authors) }
+        set { setExplicity(.authors, to: newValue) }
+    }
 
     /// The version of the file.
-    open var version: String? { value(for: .version) }
+    open var version: String? {
+        get { value(for: .version) }
+        set { setExplicity(.version, to: newValue) }
+    }
 
     /// A comment related to the file. This differs from ``finderComment``.
     open var comment: String? { 
@@ -423,31 +438,58 @@ open class MetadataItem: Identifiable {
     open var textContent: String? { value(for: .textContent) }
 
     /// The subject of the this item
-    open var subject: String? { value(for: .subject) }
+    open var subject: String? {
+        get { value(for: .subject) }
+        set { setExplicity(.subject, to: newValue) }
+    }
 
     /// The theme of the this item.
-    open var theme: String? { value(for: .theme) }
+    open var theme: String? {
+        get { value(for: .theme) }
+        set { setExplicity(.theme, to: newValue) }
+    }
 
     /// A publishable summary of the contents of the item.
-    open var headline: String? { value(for: .headline) }
+    open var headline: String? {
+        get { value(for: .headline) }
+        set { setExplicity(.headline, to: newValue) }
+    }
 
     /// the application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
-    open var creator: String? { value(for: .creator) }
+    open var creator: String? {
+        get { value(for: .creator) }
+        set { setExplicity(.creator, to: newValue) }
+    }
 
     /// Other information concerning this item, such as handling instructions.
-    open var instructions: String? { value(for: .instructions) }
+    open var instructions: String? {
+        get { value(for: .instructions) }
+        set { setExplicity(.instructions, to: newValue) }
+    }
 
     /// The editors of the contents of the file.
-    open var editors: [String]? { value(for: .editors) }
+    open var editors: [String]? {
+        get { value(for: .editors) }
+        set { setExplicity(.editors, to: newValue) }
+    }
 
     /// The audience for which the file is intended. The audience may be determined by the creator or the publisher or by a third party.
-    open var audiences: [String]? { value(for: .audiences) }
+    open var audiences: [String]? {
+        get { value(for: .audiences) }
+        set { setExplicity(.audiences, to: newValue) }
+    }
 
     /// The extent or scope of the content of the document.
-    open var coverage: [String]? { value(for: .coverage) }
+    open var coverage: [String]? {
+        get { value(for: .coverage) }
+        set { setExplicity(.coverage, to: newValue) }
+    }
 
     /// The list of projects that the file is part of. For example, if you were working on a movie all of the files could be marked as belonging to the project `My Movie`.
-    open var projects: [String]? { value(for: .projects) }
+    open var projects: [String]? {
+        get { value(for: .projects) }
+        set { setExplicity(.projects, to: newValue) }
+    }
 
     /// The number of pages in the document.
     open var numberOfPages: Double? { value(for: .numberOfPages) }
@@ -459,37 +501,70 @@ open class MetadataItem: Identifiable {
     open var pageHeight: Double? { value(for: .pageHeight) }
 
     /// The copyright owner of the file contents.
-    open var copyright: String? { value(for: .copyright) }
+    open var copyright: String? {
+        get { value(for: .copyright) }
+        set { setExplicity(.copyright, to: newValue) }
+    }
 
     /// The names of the fonts used in his document.
-    open var fonts: [String]? { value(for: .fonts) }
+    open var fonts: [String]? {
+        get { value(for: .fonts) }
+        set { setExplicity(.fonts, to: newValue) }
+    }
 
     /// The family name of the font used in this document.
-    open var fontFamilyName: String? { value(for: .fontFamilyName) }
+    open var fontFamilyName: String? {
+        get { value(for: .fontFamilyName) }
+        set { setExplicity(.fontFamilyName, to: newValue) }
+    }
 
     /// A list of contacts that are associated with this document, not including the authors.
-    open var contactKeywords: [String]? { value(for: .contactKeywords) }
+    open var contactKeywords: [String]? {
+        get { value(for: .contactKeywords) }
+        set { setExplicity(.contactKeywords, to: newValue) }
+    }
 
     /// The languages of the intellectual content of the resource.
-    open var languages: [String]? { value(for: .languages) }
+    open var languages: [String]? {
+        get { value(for: .languages) }
+        set { setExplicity(.languages, to: newValue) }
+    }
 
     /// A link to information about rights held in and over the resource.
-    open var rights: String? { value(for: .rights) }
+    open var rights: String? {
+        get { value(for: .rights) }
+        set { setExplicity(.rights, to: newValue) }
+    }
 
     /// The company or organization that created the document.
-    open var organizations: [String]? { value(for: .organizations) }
+    open var organizations: [String]? {
+        get { value(for: .organizations) }
+        set { setExplicity(.organizations, to: newValue) }
+    }
 
     /// The entity responsible for making this item available. For example, a person, an organization, or a service. Typically, the name of a publisher should be used to indicate the entity.
-    open var publishers: [String]? { value(for: .publishers) }
+    open var publishers: [String]? {
+        get { value(for: .publishers) }
+        set { setExplicity(.publishers, to: newValue) }
+    }
 
     /// The email Addresses related to this document.
-    open var emailAddresses: [String]? { value(for: .emailAddresses) }
+    open var emailAddresses: [String]? {
+        get { value(for: .emailAddresses) }
+        set { setExplicity(.emailAddresses, to: newValue) }
+    }
 
     /// The phone numbers related to this document.
-    open var phoneNumbers: [String]? { value(for: .phoneNumbers) }
+    open var phoneNumbers: [String]? {
+        get { value(for: .phoneNumbers) }
+        set { setExplicity(.phoneNumbers, to: newValue) }
+    }
 
     /// The people or organizations contributing to the content of the document.
-    open var contributors: [String]? { value(for: .contributors) }
+    open var contributors: [String]? {
+        get { value(for: .contributors) }
+        set { setExplicity(.contributors, to: newValue) }
+    }
 
     /// The security or encryption method used for the document.
     open var securityMethod: Double? { value(for: .securityMethod) }
@@ -515,19 +590,34 @@ open class MetadataItem: Identifiable {
     }
 
     /// The area information of the file.
-    open var areaInformation: String? { value(for: .areaInformation) }
+    open var areaInformation: String? {
+        get { value(for: .areaInformation) }
+        set { setExplicity(.areaInformation, to: newValue) }
+    }
 
     /// The name of the location or point of interest associated with the
-    open var namedLocation: String? { value(for: .namedLocation) }
+    open var namedLocation: String? {
+        get { value(for: .namedLocation) }
+        set { setExplicity(.namedLocation, to: newValue) }
+    }
 
     /// The altitude of this item in meters above sea level, expressed using the WGS84 datum. Negative values lie below sea level.
-    open var altitude: Double? { value(for: .altitude) }
+    open var altitude: Double? {
+        get { value(for: .altitude) }
+        set { setExplicity(.altitude, to: newValue) }
+    }
 
     /// The latitude of this item in degrees north of the equator, expressed using the WGS84 datum. Negative values lie south of the equator.
-    open var latitude: Double? { value(for: .latitude) }
+    open var latitude: Double? {
+        get { value(for: .latitude) }
+        set { setExplicity(.latitude, to: newValue) }
+    }
 
     /// The longitude of this item in degrees east of the prime meridian, expressed using the WGS84 datum. Negative values lie west of the prime meridian.
-    open var longitude: Double? { value(for: .longitude) }
+    open var longitude: Double? {
+        get { value(for: .longitude) }
+        set { setExplicity(.longitude, to: newValue) }
+    }
 
     /// The speed of this item, in kilometers per hour.
     open var speed: Double? { value(for: .speed) }
@@ -583,31 +673,58 @@ open class MetadataItem: Identifiable {
     open var audioEncodingApplication: String? { value(for: .audioEncodingApplication) }
 
     /// The tempo that specifies the beats per minute of the music contained in the audio file.
-    open var tempo: Double? { value(for: .tempo) }
+    open var tempo: Double? {
+        get { value(for: .tempo) }
+        set { setExplicity(.tempo, to: newValue) }
+    }
 
     /// The key of the music contained in the audio file. For example: `C`, `Dm`, `F#, `Bb`.
-    open var keySignature: String? { value(for: .keySignature) }
+    open var keySignature: String? {
+        get { value(for: .keySignature) }
+        set { setExplicity(.keySignature, to: newValue) }
+    }
 
     /// The time signature of the musical composition contained in the audio/MIDI file. For example: `4/4`, `7/8`.
-    open var timeSignature: String? { value(for: .timeSignature) }
+    open var timeSignature: String? {
+        get { value(for: .timeSignature) }
+        set { setExplicity(.timeSignature, to: newValue) }
+    }
 
     /// The track number of a song or composition when it is part of an album.
-    open var trackNumber: Int? { value(for: .trackNumber) }
+    open var trackNumber: Int? {
+        get { value(for: .trackNumber) }
+        set { setExplicity(.trackNumber, to: newValue) }
+    }
 
     /// The composer of the music contained in the audio file.
-    open var composer: String? { value(for: .composer) }
+    open var composer: String? {
+        get { value(for: .composer) }
+        set { setExplicity(.composer, to: newValue) }
+    }
 
     /// The lyricist, or text writer, of the music contained in the audio file.
-    open var lyricist: String? { value(for: .lyricist) }
+    open var lyricist: String? {
+        get { value(for: .lyricist) }
+        set { setExplicity(.lyricist, to: newValue) }
+    }
 
     /// The recording date of the song or composition.
-    open var recordingDate: Date? { value(for: .recordingDate) }
+    open var recordingDate: Date? {
+        get { value(for: .recordingDate) }
+        set { setExplicity(.recordingDate, to: newValue) }
+    }
 
     /// Indicates the year this item was recorded. For example: `1964`, `2003`.
-    open var recordingYear: Double? { value(for: .recordingYear) }
+    open var recordingYear: Double? {
+        get { value(for: .recordingYear) }
+        set { setExplicity(.recordingYear, to: newValue) }
+    }
 
     /// The musical genre of the song or composition contained in the audio file. For example: `Jazz`, `Pop`, `Rock`, `Classical`.
-    open var musicalGenre: String? { value(for: .musicalGenre) }
+    open var musicalGenre: String? {
+        get { value(for: .musicalGenre) }
+        set { setExplicity(.musicalGenre, to: newValue) }
+    }
 
     /// A Boolean value that indicates whether the MIDI sequence contained in the file is setup for use with a General MIDI device.
     open var isGeneralMidiSequence: Bool? { value(for: .isGeneralMidiSequence) }
@@ -665,22 +782,40 @@ open class MetadataItem: Identifiable {
     open var originalFormat: String? { value(for: .originalFormat) }
 
     /// Original source of the media.
-    open var originalSource: String? { value(for: .originalSource) }
+    open var originalSource: String? {
+        get { value(for: .originalSource) }
+        set { setExplicity(.originalSource, to: newValue) }
+    }
 
     /// The genre of the content.
-    open var genre: String? { value(for: .genre) }
+    open var genre: String? {
+        get { value(for: .genre) }
+        set { setExplicity(.genre, to: newValue) }
+    }
 
     /// The director of the content.
-    open var director: String? { value(for: .director) }
+    open var director: String? {
+        get { value(for: .director) }
+        set { setExplicity(.director, to: newValue) }
+    }
 
     /// The producer of the content.
-    open var producer: String? { value(for: .producer) }
+    open var producer: String? {
+        get { value(for: .producer) }
+        set { setExplicity(.producer, to: newValue) }
+    }
 
     /// The performers of the content.
-    open var performers: [String]? { value(for: .performers) }
+    open var performers: [String]? {
+        get { value(for: .performers) }
+        set { setExplicity(.performers, to: newValue) }
+    }
 
     /// The people that are visible in an image or movie or are written about in a document.
-    open var participants: [String]? { value(for: .participants) }
+    open var participants: [String]? {
+        get { value(for: .participants) }
+        set { setExplicity(.participants, to: newValue) }
+    }
 
     // MARK: - Image
 
@@ -780,22 +915,40 @@ open class MetadataItem: Identifiable {
     }
 
     /// The exposure mode used to acquire the contents.
-    open var exposureMode: Double? { value(for: .exposureMode) }
+    open var exposureMode: Double? {
+        get { value(for: .exposureMode) }
+        set { setExplicity(.exposureMode, to: newValue) }
+    }
 
     /// The exposure time, in seconds, used to acquire the contents.
-    open var exposureTimeSeconds: Double? { value(for: .exposureTimeSeconds) }
+    open var exposureTimeSeconds: Double? {
+        get { value(for: .exposureTimeSeconds) }
+        set { setExplicity(.exposureTimeSeconds, to: newValue) }
+    }
 
     /// The version of the EXIF header used to generate the metadata.
-    open var exifVersion: String? { value(for: .exifVersion) }
+    open var exifVersion: String? {
+        get { value(for: .exifVersion) }
+        set { setExplicity(.exifVersion, to: newValue) }
+    }
 
     /// The name of the camera company.
-    open var cameraOwner: String? { value(for: .cameraOwner) }
+    open var cameraOwner: String? {
+        get { value(for: .cameraOwner) }
+        set { setExplicity(.cameraOwner, to: newValue) }
+    }
 
     /// The actual focal length of the lens, in 35 millimeters.
-    open var focalLength35Mm: Double? { value(for: .focalLength35Mm) }
+    open var focalLength35Mm: Double? {
+        get { value(for: .focalLength35Mm) }
+        set { setExplicity(.focalLength35Mm, to: newValue) }
+    }
 
     /// The name of the camera lens model.
-    open var lensModel: String? { value(for: .lensModel) }
+    open var lensModel: String? {
+        get { value(for: .lensModel) }
+        set { setExplicity(.lensModel, to: newValue) }
+    }
 
     /// The direction of the item's image, in degrees from true north.
     open var imageDirection: Double? { value(for: .imageDirection) }
@@ -807,19 +960,34 @@ open class MetadataItem: Identifiable {
     open var redEyeOnOff: Bool? { value(for: .redEyeOnOff) }
 
     /// The metering mode used to take the image.
-    open var meteringMode: String? { value(for: .meteringMode) }
+    open var meteringMode: String? {
+        get { value(for: .meteringMode) }
+        set { setExplicity(.meteringMode, to: newValue) }
+    }
 
     /// The smallest f-number of the lens. Ordinarily it is given in the range of 00.00 to 99.99.
-    open var maxAperture: Double? { value(for: .maxAperture) }
+    open var maxAperture: Double? {
+        get { value(for: .maxAperture) }
+        set { setExplicity(.maxAperture, to: newValue) }
+    }
 
     /// The diameter of the diaphragm aperture in terms of the effective focal length of the lens.
-    open var fNumber: Double? { value(for: .fNumber) }
+    open var fNumber: Double? {
+        get { value(for: .fNumber) }
+        set { setExplicity(.fNumber, to: newValue) }
+    }
 
     /// The class of the exposure program used by the camera to set exposure when the image is taken. Possible values include: Manual, Normal, and Aperture priority.
-    open var exposureProgram: String? { value(for: .exposureProgram) }
+    open var exposureProgram: String? {
+        get { value(for: .exposureProgram) }
+        set { setExplicity(.exposureProgram, to: newValue) }
+    }
 
     /// The time of the exposure of the imge.
-    open var exposureTimeString: String? { value(for: .exposureTimeString) }
+    open var exposureTimeString: String? {
+        get { value(for: .exposureTimeString) }
+        set { setExplicity(.exposureTimeString, to: newValue) }
+    }
 
     /// A Boolean value that indicates whether the file is a screen capture.
     open var isScreenCapture: Bool? { value(for: .isScreenCapture) }
@@ -1027,6 +1195,39 @@ extension MetadataItem {
             return T(rawValue: rawValue)
         }
         return nil
+    }
+    
+    subscript<T: RawRepresentable, U: WritableKeyPath<URLResources, T?>>(attribute: Attribute, urlResources: U? = nil) -> T? {
+        get {
+            if let rawValue: T.RawValue = value(for: attribute.rawValue) {
+                return T(rawValue: rawValue)
+            }
+            return nil
+        }
+        set {
+            if attribute == .pixelSize, let value = newValue as? CGSize {
+                setExplicity(.pixelWidth, to: Double(value.width))
+                setExplicity(.pixelHeight, to: Double(value.height))
+            } else if let keyPath = urlResources, var resources = url?.resources {
+                resources[keyPath: keyPath] = newValue
+            } else {
+                url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = newValue?.rawValue
+            }
+        }
+    }
+    
+    subscript<T, U: WritableKeyPath<URLResources, T?>>(attribute: Attribute, urlResources: U? = nil) -> T? {
+        get { value(for: attribute.rawValue) }
+        set {
+            if attribute == .pixelSize, let value = newValue as? CGSize {
+                setExplicity(.pixelWidth, to: Double(value.width))
+                setExplicity(.pixelHeight, to: Double(value.height))
+            } else if let keyPath = urlResources, var resources = url?.resources {
+                resources[keyPath: keyPath] = newValue
+            } else {
+                url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = newValue
+            }
+        }
     }
     
     func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? {
