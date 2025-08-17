@@ -326,7 +326,10 @@ open class MetadataItem: Identifiable {
     }
 
     /// The formal identifier used to reference the item within a given context.
-    open var identifier: String? { value(for: .identifier) }
+    open var identifier: String? {
+        get { value(for: .identifier) }
+        set { setExplicity(.identifier, to: newValue) }
+    }
 
     /// The keywords associated with the file. For example: `Birthday` or `Important`.
     open var keywords: [String]? { 
