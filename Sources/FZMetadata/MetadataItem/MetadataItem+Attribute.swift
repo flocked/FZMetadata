@@ -63,7 +63,7 @@ public extension MetadataItem {
         /// The number of files in a directory.
         case directoryFilesCount = "kMDItemFSNodeCount"
         ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
-        case contentDescription = "kMDItemDescription"
+        case description = "kMDItemDescription"
         /// A description of the kind of item the file represents.
         case kind = "kMDItemKind"
         /// Information of this item.
@@ -505,7 +505,7 @@ public extension MetadataItem {
             case .purchaseDate: return \.purchaseDate
             case .dueDate: return \.dueDate
             case .directoryFilesCount: return \.directoryFilesCount
-            case .contentDescription: return \.contentDescription
+            case .description: return \.description
             case .kind: return \.kind
             case .information: return \.information
             case .identifier: return \.identifier
