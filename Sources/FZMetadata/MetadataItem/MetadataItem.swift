@@ -207,7 +207,16 @@ open class MetadataItem: Identifiable {
     }
 
     /// A Boolean value that indicates whether the file extension is hidden.
-    open var fileExtensionIsHidden: Bool? { value(for: .fileExtensionIsHidden) }
+    open var fileExtensionIsHidden: Bool? {
+        get { value(for: .fileExtensionIsHidden) }
+        set {
+            if let resources = url?.resources {
+                resources.hasHiddenExtension = newValue ?? resources.hasHiddenExtension
+            } else {
+                setExplicity(.fileExtensionIsHidden, to: newValue)
+            }
+        }
+    }
 
     /// The file type. For example: `video`, `document` or `directory`
     open var fileType: FileType? { 
@@ -380,7 +389,10 @@ open class MetadataItem: Identifiable {
     }
 
     /// The finder comment of the file. This differs from the ``comment``.
-    open var finderComment: String? { value(for: .finderComment) }
+    open var finderComment: String? {
+        get { value(for: .finderComment) }
+        set { setExplicity(.finderComment, to: newValue) }
+    }
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
@@ -432,8 +444,6 @@ open class MetadataItem: Identifiable {
 
     /// The AppStore category type of this item if it's an application from the AppStore.
     open var appstoreCategoryType: String? { value(for: .appstoreCategoryType) }
-
-    // MARK: - Person / Contact
 
     // MARK: - Document
 
@@ -495,13 +505,22 @@ open class MetadataItem: Identifiable {
     }
 
     /// The number of pages in the document.
-    open var numberOfPages: Double? { value(for: .numberOfPages) }
+    open var numberOfPages: Int? {
+        get { value(for: .numberOfPages) }
+        set { setExplicity(.numberOfPages, to: newValue) }
+    }
 
     /// The width of the document page, in points (72 points per inch). For PDF files this indicates the width of the first page only.
-    open var pageWidth: Double? { value(for: .pageWidth) }
+    open var pageWidth: Double? {
+        get { value(for: .pageWidth) }
+        set { setExplicity(.pageWidth, to: newValue) }
+    }
 
     /// The height of the document page, in points (72 points per inch). For PDF files this indicates the height of the first page only.
-    open var pageHeight: Double? { value(for: .pageHeight) }
+    open var pageHeight: Double? {
+        get { value(for: .pageHeight) }
+        set { setExplicity(.pageHeight, to: newValue) }
+    }
 
     /// The copyright owner of the file contents.
     open var copyright: String? {
@@ -623,46 +642,88 @@ open class MetadataItem: Identifiable {
     }
 
     /// The speed of this item, in kilometers per hour.
-    open var speed: Double? { value(for: .speed) }
+    open var speed: Double? {
+        get { value(for: .speed) }
+        set { setExplicity(.speed, to: newValue) }
+    }
 
     /// The timestamp on the item  This generally is used to indicate the time at which the event captured by this item took place.
-    open var timestamp: Date? { value(for: .timestamp) }
+    open var timestamp: Date? {
+        get { value(for: .timestamp) }
+        set { setExplicity(.timestamp, to: newValue) }
+    }
 
     /// The direction of travel of this item, in degrees from true north.
-    open var gpsTrack: Double? { value(for: .gpsTrack) }
+    open var gpsTrack: Double? {
+        get { value(for: .gpsTrack) }
+        set { setExplicity(.gpsTrack, to: newValue) }
+    }
 
     /// The gps status of this item.
-    open var gpsStatus: String? { value(for: .gpsStatus) }
+    open var gpsStatus: String? {
+        get { value(for: .gpsStatus) }
+        set { setExplicity(.gpsStatus, to: newValue) }
+    }
 
     /// The gps measure mode of this item.
-    open var gpsMeasureMode: String? { value(for: .gpsMeasureMode) }
+    open var gpsMeasureMode: String? {
+        get { value(for: .gpsMeasureMode) }
+        set { setExplicity(.gpsMeasureMode, to: newValue) }
+    }
 
     /// The gps dop of this item.
-    open var gpsDop: Double? { value(for: .gpsDop) }
+    open var gpsDop: Double? {
+        get { value(for: .gpsDop) }
+        set { setExplicity(.gpsDop, to: newValue) }
+    }
 
     /// The gps map datum of this item.
-    open var gpsMapDatum: String? { value(for: .gpsMapDatum) }
+    open var gpsMapDatum: String? {
+        get { value(for: .gpsMapDatum) }
+        set { setExplicity(.gpsMapDatum, to: newValue) }
+    }
 
     /// The gps destination latitude of this item.
-    open var gpsDestLatitude: Double? { value(for: .gpsDestLatitude) }
+    open var gpsDestLatitude: Double? {
+        get { value(for: .gpsDestLatitude) }
+        set { setExplicity(.gpsDestLatitude, to: newValue) }
+    }
 
     /// The gps destination longitude of this item.
-    open var gpsDestLongitude: Double? { value(for: .gpsDestLongitude) }
+    open var gpsDestLongitude: Double? {
+        get { value(for: .gpsDestLongitude) }
+        set { setExplicity(.gpsDestLongitude, to: newValue) }
+    }
 
     /// The gps destination bearing of this item.
-    open var gpsDestBearing: Double? { value(for: .gpsDestBearing) }
+    open var gpsDestBearing: Double? {
+        get { value(for: .gpsDestBearing) }
+        set { setExplicity(.gpsDestBearing, to: newValue) }
+    }
 
     /// The gps destination distance of this item.
-    open var gpsDestDistance: Double? { value(for: .gpsDestDistance) }
+    open var gpsDestDistance: Double? {
+        get { value(for: .gpsDestDistance) }
+        set { setExplicity(.gpsDestDistance, to: newValue) }
+    }
 
     /// The gps processing method of this item.
-    open var gpsProcessingMethod: String? { value(for: .gpsProcessingMethod) }
+    open var gpsProcessingMethod: String? {
+        get { value(for: .gpsProcessingMethod) }
+        set { setExplicity(.gpsProcessingMethod, to: newValue) }
+    }
 
     /// The gps date stamp of this item.
-    open var gpsDateStamp: Date? { value(for: .gpsDateStamp) }
+    open var gpsDateStamp: Date? {
+        get { value(for: .gpsDateStamp) }
+        set { setExplicity(.gpsDateStamp, to: newValue) }
+    }
 
     /// The gps differental of this item.
-    open var gpsDifferental: Double? { value(for: .gpsDifferental) }
+    open var gpsDifferental: Double? {
+        get { value(for: .gpsDifferental) }
+        set { setExplicity(.gpsDifferental, to: newValue) }
+    }
 
     // MARK: - Audio
 
@@ -673,7 +734,10 @@ open class MetadataItem: Identifiable {
     open var audioChannelCount: Int? { value(for: .audioChannelCount) }
 
     /// The name of the application that encoded the data of a audio file.
-    open var audioEncodingApplication: String? { value(for: .audioEncodingApplication) }
+    open var audioEncodingApplication: String? {
+        get { value(for: .audioEncodingApplication) }
+        set { setExplicity(.audioEncodingApplication, to: newValue) }
+    }
 
     /// The tempo that specifies the beats per minute of the music contained in the audio file.
     open var tempo: Double? {
@@ -844,19 +908,34 @@ open class MetadataItem: Identifiable {
     open var bitsPerSample: Double? { value(for: .bitsPerSample) }
 
     /// A Boolean value that indicates whether a camera flash was used.
-    open var isFlashOn: Bool? { value(for: .isFlashOn) }
+    open var isFlashOn: Bool?  {
+        get { value(for: .isFlashOn) }
+        set { setExplicity(.isFlashOn, to: newValue) }
+    }
 
     /// The actual focal length of the lens, in millimeters.
-    open var focalLength: Double? { value(for: .focalLength) }
+    open var focalLength: Double?  {
+        get { value(for: .focalLength) }
+        set { setExplicity(.focalLength, to: newValue) }
+    }
 
     /// The manufacturer of the device used for the contents. For example: `Apple`, `Canon`.
-    open var deviceManufacturer: String? { value(for: .deviceManufacturer) }
+    open var deviceManufacturer: String?  {
+        get { value(for: .deviceManufacturer) }
+        set { setExplicity(.deviceManufacturer, to: newValue) }
+    }
 
     /// The model of the device used for the contents. For example: `iPhone 13`.
-    open var deviceModel: String? { value(for: .deviceModel) }
+    open var deviceModel: String?  {
+        get { value(for: .deviceModel) }
+        set { setExplicity(.deviceModel, to: newValue) }
+    }
 
     /// The ISO speed used to acquire the contents.
-    open var isoSpeed: Double? { value(for: .isoSpeed) }
+    open var isoSpeed: Double?  {
+        get { value(for: .isoSpeed) }
+        set { setExplicity(.isoSpeed, to: newValue) }
+    }
 
     /// The orientation of the contents.
     open var orientation: Orientation? { value(for: .orientation) }
@@ -960,7 +1039,10 @@ open class MetadataItem: Identifiable {
     open var hasAlphaChannel: Bool? { value(for: .hasAlphaChannel) }
 
     /// A Boolean value that indicates whether a red-eye reduction was used to take the picture.
-    open var redEyeOnOff: Bool? { value(for: .redEyeOnOff) }
+    open var redEyeOnOff: Bool? {
+        get { value(for: .redEyeOnOff) }
+        set { setExplicity(.redEyeOnOff, to: newValue) }
+    }
 
     /// The metering mode used to take the image.
     open var meteringMode: String? {
