@@ -47,7 +47,7 @@ public extension URL {
  metadata.contentModificationDate = Date.now
  ```
  */
-open class MetadataItem: NSObject, Identifiable {
+open class MetadataItem: Identifiable {
     /// The identifier of the item.
     public let id = UUID()
     
@@ -165,7 +165,7 @@ open class MetadataItem: NSObject, Identifiable {
      
      - Note: The attribute can't be used in a metadata query predicate or to sort query results.
      */
-    open var path: String? { 
+    open var path: String? {
         filePathOperation?.cancel()
         filePath = filePath ?? value(for: .path)
         return filePath
@@ -204,29 +204,48 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// A Boolean value that indicates whether the file extension is hidden.
-    open var fileExtensionIsHidden: Bool? { value(for: .fileExtensionIsHidden) }
+    open var fileExtensionIsHidden: Bool? {
+        get { value(for: .fileExtensionIsHidden) }
+        set {
+            if let resources = url?.resources {
+                resources.hasHiddenExtension = newValue ?? resources.hasHiddenExtension
+            } else {
+                setExplicity(.fileExtensionIsHidden, to: newValue)
+            }
+        }
+    }
 
     /// The file type. For example: `video`, `document` or `directory`
     open var fileType: FileType? {
-        guard let identifiers = contentTypeIdentifierTree else { return nil }
-        return FileType(contentTypeTree: identifiers)
+        if let contentTypeTree: [String] = value(for: .contentTypeTree) {
+            return FileType(contentTypeTree: contentTypeTree)
+        }
+        return nil
     }
     
+    #if (os(macOS) && compiler(>=5.3.1)) || (!os(macOS) && compiler(>=5.3.0))
     /// The content type of the file.
+    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentType: UTType? {
-        guard let contentType: String = value(for: .contentType) else { return nil }
-        return UTType(contentType)
+        if let type: String = value(for: .contentType) {
+            return UTType(type)
+        }
+        return nil
     }
     
     /// The content type tree of the file.
+    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentTypeTree: [UTType]? {
-        guard let identifiers = contentTypeIdentifierTree else { return nil }
-        return identifiers.compactMap { UTType($0) }
+        guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
+        return contentTypeTree.compactMap { UTType($0) }
     }
+    #else
+    /// The content type identifier (`UTI`) of the file.
+    open var contentTypeIdentifier: String? { value(for: .contentType) }
     
-    private var contentTypeIdentifierTree: [String]? {
-        value(for: .contentTypeTree)
-    }
+    /// The content type tree identifiers (`UTI`) of the file.
+    open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
+    #endif
 
     /// The date the file was created on the file system.
     open var creationDate: Date? {
@@ -283,7 +302,10 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The date that the file was purchased.
-    open var purchaseDate: Date? { value(for: .purchaseDate) }
+    open var purchaseDate: Date? {
+        get { value(for: .purchaseDate) }
+        set { setExplicity(.purchaseDate, to: newValue) }
+    }
 
     /// The date that this item is due (e.g. for a calendar event file).
     open var dueDate: Date? {
@@ -295,31 +317,34 @@ open class MetadataItem: NSObject, Identifiable {
     open var directoryFilesCount: Int? { value(for: .directoryFilesCount) }
 
     ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
-    open var contentDescription: String? {
-        get { value(for: .contentDescription) }
-        set { setExplicity(.contentDescription, to: newValue) }
+    open var description: String? {
+        get { value(for: .description) }
+        set { setExplicity(.description, to: newValue) }
     }
 
     /// A description of the kind of item the file represents.
     open var kind: [String]? { value(for: .kind) }
 
     /// Information of this item.
-    open var information: String? { 
+    open var information: String? {
         get { value(for: .information) }
         set { setExplicity(.information, to: newValue) }
     }
 
     /// The formal identifier used to reference the item within a given context.
-    open var identifier: String? { value(for: .identifier) }
+    open var identifier: String? {
+        get { value(for: .identifier) }
+        set { setExplicity(.identifier, to: newValue) }
+    }
 
     /// The keywords associated with the file. For example: `Birthday` or `Important`.
-    open var keywords: [String]? { 
+    open var keywords: [String]? {
         get { value(for: .keywords) }
         set { setExplicity(.keywords, to: newValue) }
     }
 
     /// The title of the file. For example, this could be the title of a document, the name of a song, or the subject of an email message.
-    open var title: String? { 
+    open var title: String? {
         get { value(for: .title) }
         set { setExplicity(.title, to: newValue) }
     }
@@ -331,19 +356,25 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The authors, artists, etc. of the contents of the file.
-    open var authors: [String]? { value(for: .authors) }
+    open var authors: [String]? {
+        get { value(for: .authors) }
+        set { setExplicity(.authors, to: newValue) }
+    }
 
     /// The version of the file.
-    open var version: String? { value(for: .version) }
+    open var version: String? {
+        get { value(for: .version) }
+        set { setExplicity(.version, to: newValue) }
+    }
 
     /// A comment related to the file. This differs from ``finderComment``.
-    open var comment: String? { 
+    open var comment: String? {
         get { value(for: .comment) }
         set { setExplicity(.comment, to: newValue) }
     }
 
     /// The user rating of the file. For example, the stars rating of an iTunes track.
-    open var starRating: Double? { 
+    open var starRating: Double? {
         get { value(for: .starRating) }
         set { setExplicity(.starRating, to: newValue) }
     }
@@ -355,11 +386,14 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The finder comment of the file. This differs from the ``comment``.
-    open var finderComment: String? { value(for: .finderComment) }
+    open var finderComment: String? {
+        get { value(for: .finderComment) }
+        set { setExplicity(.finderComment, to: newValue) }
+    }
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
-        get { 
+        get {
             if let finderTags: [String] = value(for: .finderTags) {
                 return finderTags
             }
@@ -377,7 +411,7 @@ open class MetadataItem: NSObject, Identifiable {
     open var hasCustomIcon: Bool? { value(for: .hasCustomIcon) }
 
     /// The number of usages of the file.
-    open var usageCount: Int? { 
+    open var usageCount: Int? {
         if let useCount: Int = value(for: .usageCount) {
             return useCount - 2
         }
@@ -397,10 +431,7 @@ open class MetadataItem: NSObject, Identifiable {
     open var isApplicationManaged: Bool? { value(for: .isApplicationManaged) }
 
     /// The application used to convert the original content into it's current form. For example, a PDF file might have an encoding application set to "Distiller".
-    open var encodingApplications: [String]? {
-        get { value(for: .encodingApplications) }
-        set { setExplicity(.encodingApplications, to: newValue) }
-    }
+    open var encodingApplications: [String]? { value(for: .encodingApplications) }
 
     /// The categories the application is a member of.
     open var applicationCategories: [String]? { value(for: .applicationCategories) }
@@ -411,18 +442,22 @@ open class MetadataItem: NSObject, Identifiable {
     /// The AppStore category type of this item if it's an application from the AppStore.
     open var appstoreCategoryType: String? { value(for: .appstoreCategoryType) }
 
-    // MARK: - Person / Contact
-
     // MARK: - Document
 
     /// A text representation of the content of the document.
     open var textContent: String? { value(for: .textContent) }
 
     /// The subject of the this item
-    open var subject: String? { value(for: .subject) }
+    open var subject: String? {
+        get { value(for: .subject) }
+        set { setExplicity(.subject, to: newValue) }
+    }
 
     /// The theme of the this item.
-    open var theme: String? { value(for: .theme) }
+    open var theme: String? {
+        get { value(for: .theme) }
+        set { setExplicity(.theme, to: newValue) }
+    }
 
     /// A publishable summary of the contents of the item.
     open var headline: String? {
@@ -431,31 +466,58 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// the application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
-    open var creator: String? { value(for: .creator) }
+    open var creator: String? {
+        get { value(for: .creator) }
+        set { setExplicity(.creator, to: newValue) }
+    }
 
     /// Other information concerning this item, such as handling instructions.
-    open var instructions: String? { value(for: .instructions) }
+    open var instructions: String? {
+        get { value(for: .instructions) }
+        set { setExplicity(.instructions, to: newValue) }
+    }
 
     /// The editors of the contents of the file.
-    open var editors: [String]? { value(for: .editors) }
+    open var editors: [String]? {
+        get { value(for: .editors) }
+        set { setExplicity(.editors, to: newValue) }
+    }
 
     /// The audience for which the file is intended. The audience may be determined by the creator or the publisher or by a third party.
-    open var audiences: [String]? { value(for: .audiences) }
+    open var audiences: [String]? {
+        get { value(for: .audiences) }
+        set { setExplicity(.audiences, to: newValue) }
+    }
 
     /// The extent or scope of the content of the document.
-    open var coverage: [String]? { value(for: .coverage) }
+    open var coverage: [String]? {
+        get { value(for: .coverage) }
+        set { setExplicity(.coverage, to: newValue) }
+    }
 
     /// The list of projects that the file is part of. For example, if you were working on a movie all of the files could be marked as belonging to the project `My Movie`.
-    open var projects: [String]? { value(for: .projects) }
+    open var projects: [String]? {
+        get { value(for: .projects) }
+        set { setExplicity(.projects, to: newValue) }
+    }
 
     /// The number of pages in the document.
-    open var numberOfPages: Double? { value(for: .numberOfPages) }
+    open var numberOfPages: Int? {
+        get { value(for: .numberOfPages) }
+        set { setExplicity(.numberOfPages, to: newValue) }
+    }
 
     /// The width of the document page, in points (72 points per inch). For PDF files this indicates the width of the first page only.
-    open var pageWidth: Double? { value(for: .pageWidth) }
+    open var pageWidth: Double? {
+        get { value(for: .pageWidth) }
+        set { setExplicity(.pageWidth, to: newValue) }
+    }
 
     /// The height of the document page, in points (72 points per inch). For PDF files this indicates the height of the first page only.
-    open var pageHeight: Double? { value(for: .pageHeight) }
+    open var pageHeight: Double? {
+        get { value(for: .pageHeight) }
+        set { setExplicity(.pageHeight, to: newValue) }
+    }
 
     /// The copyright owner of the file contents.
     open var copyright: String? {
@@ -464,34 +526,64 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The names of the fonts used in his document.
-    open var fonts: [String]? { value(for: .fonts) }
+    open var fonts: [String]? {
+        get { value(for: .fonts) }
+        set { setExplicity(.fonts, to: newValue) }
+    }
 
     /// The family name of the font used in this document.
-    open var fontFamilyName: String? { value(for: .fontFamilyName) }
+    open var fontFamilyName: String? {
+        get { value(for: .fontFamilyName) }
+        set { setExplicity(.fontFamilyName, to: newValue) }
+    }
 
     /// A list of contacts that are associated with this document, not including the authors.
-    open var contactKeywords: [String]? { value(for: .contactKeywords) }
+    open var contactKeywords: [String]? {
+        get { value(for: .contactKeywords) }
+        set { setExplicity(.contactKeywords, to: newValue) }
+    }
 
     /// The languages of the intellectual content of the resource.
-    open var languages: [String]? { value(for: .languages) }
+    open var languages: [String]? {
+        get { value(for: .languages) }
+        set { setExplicity(.languages, to: newValue) }
+    }
 
     /// A link to information about rights held in and over the resource.
-    open var rights: String? { value(for: .rights) }
+    open var rights: String? {
+        get { value(for: .rights) }
+        set { setExplicity(.rights, to: newValue) }
+    }
 
     /// The company or organization that created the document.
-    open var organizations: [String]? { value(for: .organizations) }
+    open var organizations: [String]? {
+        get { value(for: .organizations) }
+        set { setExplicity(.organizations, to: newValue) }
+    }
 
     /// The entity responsible for making this item available. For example, a person, an organization, or a service. Typically, the name of a publisher should be used to indicate the entity.
-    open var publishers: [String]? { value(for: .publishers) }
+    open var publishers: [String]? {
+        get { value(for: .publishers) }
+        set { setExplicity(.publishers, to: newValue) }
+    }
 
     /// The email Addresses related to this document.
-    open var emailAddresses: [String]? { value(for: .emailAddresses) }
+    open var emailAddresses: [String]? {
+        get { value(for: .emailAddresses) }
+        set { setExplicity(.emailAddresses, to: newValue) }
+    }
 
     /// The phone numbers related to this document.
-    open var phoneNumbers: [String]? { value(for: .phoneNumbers) }
+    open var phoneNumbers: [String]? {
+        get { value(for: .phoneNumbers) }
+        set { setExplicity(.phoneNumbers, to: newValue) }
+    }
 
     /// The people or organizations contributing to the content of the document.
-    open var contributors: [String]? { value(for: .contributors) }
+    open var contributors: [String]? {
+        get { value(for: .contributors) }
+        set { setExplicity(.contributors, to: newValue) }
+    }
 
     /// The security or encryption method used for the document.
     open var securityMethod: Double? { value(for: .securityMethod) }
@@ -517,61 +609,118 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The area information of the file.
-    open var areaInformation: String? { value(for: .areaInformation) }
+    open var areaInformation: String? {
+        get { value(for: .areaInformation) }
+        set { setExplicity(.areaInformation, to: newValue) }
+    }
 
     /// The name of the location or point of interest associated with the
-    open var namedLocation: String? { value(for: .namedLocation) }
+    open var namedLocation: String? {
+        get { value(for: .namedLocation) }
+        set { setExplicity(.namedLocation, to: newValue) }
+    }
 
     /// The altitude of this item in meters above sea level, expressed using the WGS84 datum. Negative values lie below sea level.
-    open var altitude: Double? { value(for: .altitude) }
+    open var altitude: Double? {
+        get { value(for: .altitude) }
+        set { setExplicity(.altitude, to: newValue) }
+    }
 
     /// The latitude of this item in degrees north of the equator, expressed using the WGS84 datum. Negative values lie south of the equator.
-    open var latitude: Double? { value(for: .latitude) }
+    open var latitude: Double? {
+        get { value(for: .latitude) }
+        set { setExplicity(.latitude, to: newValue) }
+    }
 
     /// The longitude of this item in degrees east of the prime meridian, expressed using the WGS84 datum. Negative values lie west of the prime meridian.
-    open var longitude: Double? { value(for: .longitude) }
+    open var longitude: Double? {
+        get { value(for: .longitude) }
+        set { setExplicity(.longitude, to: newValue) }
+    }
 
     /// The speed of this item, in kilometers per hour.
-    open var speed: Double? { value(for: .speed) }
+    open var speed: Double? {
+        get { value(for: .speed) }
+        set { setExplicity(.speed, to: newValue) }
+    }
 
     /// The timestamp on the item  This generally is used to indicate the time at which the event captured by this item took place.
-    open var timestamp: Date? { value(for: .timestamp) }
+    open var timestamp: Date? {
+        get { value(for: .timestamp) }
+        set { setExplicity(.timestamp, to: newValue) }
+    }
 
     /// The direction of travel of this item, in degrees from true north.
-    open var gpsTrack: Double? { value(for: .gpsTrack) }
+    open var gpsTrack: Double? {
+        get { value(for: .gpsTrack) }
+        set { setExplicity(.gpsTrack, to: newValue) }
+    }
 
     /// The gps status of this item.
-    open var gpsStatus: String? { value(for: .gpsStatus) }
+    open var gpsStatus: String? {
+        get { value(for: .gpsStatus) }
+        set { setExplicity(.gpsStatus, to: newValue) }
+    }
 
     /// The gps measure mode of this item.
-    open var gpsMeasureMode: String? { value(for: .gpsMeasureMode) }
+    open var gpsMeasureMode: String? {
+        get { value(for: .gpsMeasureMode) }
+        set { setExplicity(.gpsMeasureMode, to: newValue) }
+    }
 
     /// The gps dop of this item.
-    open var gpsDop: Double? { value(for: .gpsDop) }
+    open var gpsDop: Double? {
+        get { value(for: .gpsDop) }
+        set { setExplicity(.gpsDop, to: newValue) }
+    }
 
     /// The gps map datum of this item.
-    open var gpsMapDatum: String? { value(for: .gpsMapDatum) }
+    open var gpsMapDatum: String? {
+        get { value(for: .gpsMapDatum) }
+        set { setExplicity(.gpsMapDatum, to: newValue) }
+    }
 
     /// The gps destination latitude of this item.
-    open var gpsDestLatitude: Double? { value(for: .gpsDestLatitude) }
+    open var gpsDestLatitude: Double? {
+        get { value(for: .gpsDestLatitude) }
+        set { setExplicity(.gpsDestLatitude, to: newValue) }
+    }
 
     /// The gps destination longitude of this item.
-    open var gpsDestLongitude: Double? { value(for: .gpsDestLongitude) }
+    open var gpsDestLongitude: Double? {
+        get { value(for: .gpsDestLongitude) }
+        set { setExplicity(.gpsDestLongitude, to: newValue) }
+    }
 
     /// The gps destination bearing of this item.
-    open var gpsDestBearing: Double? { value(for: .gpsDestBearing) }
+    open var gpsDestBearing: Double? {
+        get { value(for: .gpsDestBearing) }
+        set { setExplicity(.gpsDestBearing, to: newValue) }
+    }
 
     /// The gps destination distance of this item.
-    open var gpsDestDistance: Double? { value(for: .gpsDestDistance) }
+    open var gpsDestDistance: Double? {
+        get { value(for: .gpsDestDistance) }
+        set { setExplicity(.gpsDestDistance, to: newValue) }
+    }
 
     /// The gps processing method of this item.
-    open var gpsProcessingMethod: String? { value(for: .gpsProcessingMethod) }
+    open var gpsProcessingMethod: String? {
+        get { value(for: .gpsProcessingMethod) }
+        set { setExplicity(.gpsProcessingMethod, to: newValue) }
+    }
 
     /// The gps date stamp of this item.
-    open var gpsDateStamp: Date? { value(for: .gpsDateStamp) }
+    open var gpsDateStamp: Date? {
+        get { value(for: .gpsDateStamp) }
+        set { setExplicity(.gpsDateStamp, to: newValue) }
+    }
 
     /// The gps differental of this item.
-    open var gpsDifferental: Double? { value(for: .gpsDifferental) }
+    open var gpsDifferental: Double? {
+        get { value(for: .gpsDifferental) }
+        set { setExplicity(.gpsDifferental, to: newValue) }
+    }
 
     // MARK: - Audio
 
@@ -582,13 +731,22 @@ open class MetadataItem: NSObject, Identifiable {
     open var audioChannelCount: Int? { value(for: .audioChannelCount) }
 
     /// The name of the application that encoded the data of a audio file.
-    open var audioEncodingApplication: String? { value(for: .audioEncodingApplication) }
+    open var audioEncodingApplication: String? {
+        get { value(for: .audioEncodingApplication) }
+        set { setExplicity(.audioEncodingApplication, to: newValue) }
+    }
 
     /// The tempo that specifies the beats per minute of the music contained in the audio file.
-    open var tempo: Double? { value(for: .tempo) }
+    open var tempo: Double? {
+        get { value(for: .tempo) }
+        set { setExplicity(.tempo, to: newValue) }
+    }
 
     /// The key of the music contained in the audio file. For example: `C`, `Dm`, `F#, `Bb`.
-    open var keySignature: String? { value(for: .keySignature) }
+    open var keySignature: String? {
+        get { value(for: .keySignature) }
+        set { setExplicity(.keySignature, to: newValue) }
+    }
 
     /// The time signature of the musical composition contained in the audio/MIDI file. For example: `4/4`, `7/8`.
     open var timeSignature: String? {
@@ -663,16 +821,11 @@ open class MetadataItem: NSObject, Identifiable {
         return nil
     }
 
-    /// The media content types (video and sound) present in the file.
-    open var mediaTypes: [String]? {
-        value(for: .mediaTypes)
-    }
-    
+    /// The media types (video, sound) present in the content.
+    open var mediaTypes: [String]? { value(for: .mediaTypes) }
+
     /// The codecs used to encode/decode the media.
-    open var codecs: [MediaCodec]? {
-        guard let codecs: [String] = value(for: .codecs) else { return nil }
-        return codecs.map({ MediaCodec($0) })
-    }
+    open var codecs: [String]? { value(for: .codecs) }
 
     /// The total bit rate, audio and video combined, of the media.
     open var totalBitRate: Double? { value(for: .totalBitRate) }
@@ -690,10 +843,7 @@ open class MetadataItem: NSObject, Identifiable {
     open var mediaDeliveryType: String? { value(for: .mediaDeliveryType) }
 
     /// Original format of the media.
-    open var originalFormat: String? {
-        get { value(for: .originalFormat) }
-        set { setExplicity(.originalFormat, to: newValue) }
-    }
+    open var originalFormat: String? { value(for: .originalFormat) }
 
     /// Original source of the media.
     open var originalSource: String? {
@@ -726,7 +876,10 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The people that are visible in an image or movie or are written about in a document.
-    open var participants: [String]? { value(for: .participants) }
+    open var participants: [String]? {
+        get { value(for: .participants) }
+        set { setExplicity(.participants, to: newValue) }
+    }
 
     // MARK: - Image
 
@@ -752,31 +905,75 @@ open class MetadataItem: NSObject, Identifiable {
     open var bitsPerSample: Double? { value(for: .bitsPerSample) }
 
     /// A Boolean value that indicates whether a camera flash was used.
-    open var isFlashOn: Bool? { value(for: .isFlashOn) }
+    open var isFlashOn: Bool?  {
+        get { value(for: .isFlashOn) }
+        set { setExplicity(.isFlashOn, to: newValue) }
+    }
 
     /// The actual focal length of the lens, in millimeters.
-    open var focalLength: Double? { value(for: .focalLength) }
+    open var focalLength: Double?  {
+        get { value(for: .focalLength) }
+        set { setExplicity(.focalLength, to: newValue) }
+    }
 
     /// The manufacturer of the device used for the contents. For example: `Apple`, `Canon`.
-    open var deviceManufacturer: String? { value(for: .deviceManufacturer) }
+    open var deviceManufacturer: String?  {
+        get { value(for: .deviceManufacturer) }
+        set { setExplicity(.deviceManufacturer, to: newValue) }
+    }
 
     /// The model of the device used for the contents. For example: `iPhone 13`.
-    open var deviceModel: String? { value(for: .deviceModel) }
+    open var deviceModel: String?  {
+        get { value(for: .deviceModel) }
+        set { setExplicity(.deviceModel, to: newValue) }
+    }
 
     /// The ISO speed used to acquire the contents.
-    open var isoSpeed: Double? { value(for: .isoSpeed) }
+    open var isoSpeed: Double?  {
+        get { value(for: .isoSpeed) }
+        set { setExplicity(.isoSpeed, to: newValue) }
+    }
 
     /// The orientation of the contents.
     open var orientation: Orientation? { value(for: .orientation) }
 
-    /// The names of the layers in the file.
-    open var layerNames: [String]? {
-        get { value(for: .layerNames) }
-        set { setExplicity(.layerNames, to: newValue) }
+    /// The orientation of a contents.
+    public enum Orientation: Int, QueryRawRepresentable, CustomStringConvertible {
+        /// Horizontal orientation.
+        case horizontal = 0
+
+        /// Vertical orientation.
+        case vertical = 1
+        
+        public var description: String {
+            switch self {
+            case .horizontal: return "Horizontal"
+            case .vertical: return "Vertical"
+            }
+        }
     }
+
+    /// The names of the layers in the file.
+    open var layerNames: [String]? { value(for: .layerNames) }
 
     /// The white balance setting of the camera when the picture was taken.
     open var whiteBalance: WhiteBalance? { value(for: .whiteBalance) }
+
+    /// The white balance setting of a camera.
+    public enum WhiteBalance: Int, QueryRawRepresentable, CustomStringConvertible {
+        /// Automatic white balance.
+        case auto = 0
+
+        /// White balance is off.
+        case off = 1
+        
+        public var description: String {
+            switch self {
+            case .auto: return "Auto"
+            case .off: return "Off"
+            }
+        }
+    }
 
     /// The aperture setting used to acquire the document contents. This unit is the APEX value.
     open var aperture: Double? { value(for: .aperture) }
@@ -797,24 +994,40 @@ open class MetadataItem: NSObject, Identifiable {
     }
 
     /// The exposure mode used to acquire the contents.
-    open var exposureMode: ExposureMode? {
-        ExposureMode(rawValue: value(for: .exposureMode) ?? -1)
+    open var exposureMode: Double? {
+        get { value(for: .exposureMode) }
+        set { setExplicity(.exposureMode, to: newValue) }
     }
 
     /// The exposure time, in seconds, used to acquire the contents.
-    open var exposureTimeSeconds: Double? { value(for: .exposureTimeSeconds) }
+    open var exposureTimeSeconds: Double? {
+        get { value(for: .exposureTimeSeconds) }
+        set { setExplicity(.exposureTimeSeconds, to: newValue) }
+    }
 
     /// The version of the EXIF header used to generate the metadata.
-    open var exifVersion: String? { value(for: .exifVersion) }
+    open var exifVersion: String? {
+        get { value(for: .exifVersion) }
+        set { setExplicity(.exifVersion, to: newValue) }
+    }
 
     /// The name of the camera company.
-    open var cameraOwner: String? { value(for: .cameraOwner) }
+    open var cameraOwner: String? {
+        get { value(for: .cameraOwner) }
+        set { setExplicity(.cameraOwner, to: newValue) }
+    }
 
     /// The actual focal length of the lens, in 35 millimeters.
-    open var focalLength35Mm: Double? { value(for: .focalLength35Mm) }
+    open var focalLength35Mm: Double? {
+        get { value(for: .focalLength35Mm) }
+        set { setExplicity(.focalLength35Mm, to: newValue) }
+    }
 
     /// The name of the camera lens model.
-    open var lensModel: String? { value(for: .lensModel) }
+    open var lensModel: String? {
+        get { value(for: .lensModel) }
+        set { setExplicity(.lensModel, to: newValue) }
+    }
 
     /// The direction of the item's image, in degrees from true north.
     open var imageDirection: Double? { value(for: .imageDirection) }
@@ -823,22 +1036,40 @@ open class MetadataItem: NSObject, Identifiable {
     open var hasAlphaChannel: Bool? { value(for: .hasAlphaChannel) }
 
     /// A Boolean value that indicates whether a red-eye reduction was used to take the picture.
-    open var redEyeOnOff: Bool? { value(for: .redEyeOnOff) }
+    open var redEyeOnOff: Bool? {
+        get { value(for: .redEyeOnOff) }
+        set { setExplicity(.redEyeOnOff, to: newValue) }
+    }
 
     /// The metering mode used to take the image.
-    open var meteringMode: MeteringMode? { value(for: .meteringMode) }
+    open var meteringMode: String? {
+        get { value(for: .meteringMode) }
+        set { setExplicity(.meteringMode, to: newValue) }
+    }
 
     /// The smallest f-number of the lens. Ordinarily it is given in the range of 00.00 to 99.99.
-    open var maxAperture: Double? { value(for: .maxAperture) }
+    open var maxAperture: Double? {
+        get { value(for: .maxAperture) }
+        set { setExplicity(.maxAperture, to: newValue) }
+    }
 
     /// The diameter of the diaphragm aperture in terms of the effective focal length of the lens.
-    open var fNumber: Double? { value(for: .fNumber) }
+    open var fNumber: Double? {
+        get { value(for: .fNumber) }
+        set { setExplicity(.fNumber, to: newValue) }
+    }
 
     /// The class of the exposure program used by the camera to set exposure when the image is taken. Possible values include: Manual, Normal, and Aperture priority.
-    open var exposureProgram: String? { value(for: .exposureProgram) }
+    open var exposureProgram: String? {
+        get { value(for: .exposureProgram) }
+        set { setExplicity(.exposureProgram, to: newValue) }
+    }
 
     /// The time of the exposure of the imge.
-    open var exposureTimeString: String? { value(for: .exposureTimeString) }
+    open var exposureTimeString: String? {
+        get { value(for: .exposureTimeString) }
+        set { setExplicity(.exposureTimeString, to: newValue) }
+    }
 
     /// A Boolean value that indicates whether the file is a screen capture.
     open var isScreenCapture: Bool? { value(for: .isScreenCapture) }
@@ -846,10 +1077,33 @@ open class MetadataItem: NSObject, Identifiable {
     /// The screen capture type of the file.
     open var screenCaptureType: ScreenCaptureType? { value(for: .screenCaptureType) }
 
+    /// The screen capture type of a file.
+    public enum ScreenCaptureType: String, QueryRawRepresentable, CustomStringConvertible {
+        /// A screen capture of a display.
+        case display
+
+        /// a screen capture of a window.
+        case window
+
+        /// A screen capture of a selection.
+        case selection
+        
+        public var description: String {
+            switch self {
+            case .display: return "Display"
+            case .window: return "Window"
+            case .selection: return "Selection"
+            }
+        }
+    }
+
     /// The screen capture rect of the file.
     open var screenCaptureRect: CGRect? {
-        guard let values: [Double] = value(for: .screenCaptureRect), values.count == 4 else { return nil }
-        return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
+        let kp: PartialKeyPath<MetadataItem> = \.screenCaptureRect
+        if let values: [Double] = value(for: kp.mdItemKey), values.count == 4 {
+            return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
+        }
+        return nil
     }
 
     // MARK: - Messages / Mail
@@ -1102,36 +1356,6 @@ extension MetadataItem {
         }
     }
     
-    /// The orientation of a contents.
-    public enum Orientation: Int, CustomStringConvertible, Hashable, QueryRawRepresentable {
-        /// Horizontal orientation.
-        case horizontal = 0
-        /// Vertical orientation.
-        case vertical = 1
-        
-        public var description: String {
-            switch self {
-            case .horizontal: return "Horizontal"
-            case .vertical: return "Vertical"
-            }
-        }
-    }
-    
-    /// The white balance setting of a camera.
-    public enum WhiteBalance: Int, CustomStringConvertible, Hashable, QueryRawRepresentable {
-        /// Automatic white balance.
-        case auto = 0
-        /// White balance is off.
-        case off = 1
-        
-        public var description: String {
-            switch self {
-            case .auto: return "Auto"
-            case .off: return "Off"
-            }
-        }
-    }
-    
     /// The metering mode used to take an image.
     public struct MeteringMode: RawRepresentable, ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
         /// Average.
@@ -1165,24 +1389,6 @@ extension MetadataItem {
         
         public var description: String {
             rawValue
-        }
-    }
-    
-    /// The screen capture type of a file.
-    public enum ScreenCaptureType: String, CustomStringConvertible, QueryRawRepresentable {
-        /// A screen capture of a display.
-        case display
-        /// a screen capture of a window.
-        case window
-        /// A screen capture of a selection.
-        case selection
-        
-        public var description: String {
-            switch self {
-            case .display: return "display"
-            case .window: return "window"
-            case .selection: return "selection"
-            }
         }
     }
 }
