@@ -90,7 +90,7 @@ open class MetadataQuery: NSObject {
         }
     }
 
-    let query = NSMetadataQuery()
+    public let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultDifference()
@@ -613,7 +613,7 @@ open class MetadataQuery: NSObject {
     override public init() {
         super.init()
         query.delegate = delegate
-        predicate = { $0.contentType == .item }
+        query.predicate = NSPredicate(format: "%K == 'public.item'", NSMetadataItemContentTypeTreeKey)
 
         NotificationCenter.default.addObserver(self, selector: #selector(gatheringStarted(_:)), name: .NSMetadataQueryDidStartGathering, object: query)
         NotificationCenter.default.addObserver(self, selector: #selector(gatheringProgressed(_:)), name: .NSMetadataQueryGatheringProgress, object: query)
