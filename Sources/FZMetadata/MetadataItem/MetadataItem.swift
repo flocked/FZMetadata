@@ -9,26 +9,26 @@ import Foundation
 import FZSwiftUtils
 
 #if os(macOS)
-    import AppKit
+import AppKit
 #else
-    import UIKit
+import UIKit
 #endif
 
 #if canImport(UniformTypeIdentifiers)
-    import UniformTypeIdentifiers
+import UniformTypeIdentifiers
 #endif
 
 #if os(macOS)
-    public extension URL {
-        /**
-         The metadata for the file at this url.
+public extension URL {
+    /**
+     The metadata for the file at this url.
 
-         - Returns: The metadata, or `nil` if the file isn't available or can't be accessed.
-         */
-        var metadata: MetadataItem? {
-            MetadataItem(url: self)
-        }
+     - Returns: The metadata, or `nil` if the file isn't available or can't be accessed.
+     */
+    var metadata: MetadataItem? {
+        MetadataItem(url: self)
     }
+}
 #endif
 
 /**
@@ -76,26 +76,26 @@ open class MetadataItem: Identifiable {
     }
 
     #if os(macOS)
-        /**
-         Initializes a metadata item with a given URL.
+    /**
+     Initializes a metadata item with a given URL.
 
-         Example usage:
+     Example usage:
 
-         ```swift
-         if let metadata = MetadataItem(url: fileURL) {
-            metadata.creationDate // The creation date of the file
-            metadata.contentModificationDate = Date()
-         }
-         ```
+     ```swift
+     if let metadata = MetadataItem(url: fileURL) {
+        metadata.creationDate // The creation date of the file
+        metadata.contentModificationDate = Date()
+     }
+     ```
 
-         - Parameter url: The URL for the metadata
-         - Returns: A metadata item for the file at the url, or `nil` if the file isn't available or can't be accessed.
-         */
-        public init?(url: URL) {
-            guard let item = NSMetadataItem(url: url) else { return nil }
-            self.item = item
-            self.filePath = url.path
-        }
+     - Parameter url: The URL for the metadata
+     - Returns: A metadata item for the file at the url, or `nil` if the file isn't available or can't be accessed.
+     */
+    public init?(url: URL) {
+        guard let item = NSMetadataItem(url: url) else { return nil }
+        self.item = item
+        self.filePath = url.path
+    }
 
     #endif
     
@@ -1102,11 +1102,8 @@ open class MetadataItem: Identifiable {
 
     /// The screen capture rect of the file.
     open var screenCaptureRect: CGRect? {
-        let kp: PartialKeyPath<MetadataItem> = \.screenCaptureRect
-        if let values: [Double] = value(for: kp.mdItemKey), values.count == 4 {
-            return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
-        }
-        return nil
+        guard let values: [Double] = value(for: .screenCaptureRect) else { return nil }
+        return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
     }
 
     // MARK: - Messages / Mail
@@ -1272,61 +1269,23 @@ extension MetadataItem {
     }
     
     func value<T>(for attribute: Attribute, save: Bool = false) -> T? {
-        return value(for: attribute.rawValue)
+        value(for: attribute.rawValue)
     }
     
     func value<T: RawRepresentable>(for attribute: Attribute) -> T? {
-        if let rawValue: T.RawValue = value(for: attribute.rawValue) {
-            return T(rawValue: rawValue)
-        }
-        return nil
+        guard let rawValue: T.RawValue = value(for: attribute.rawValue) else { return nil }
+        return T(rawValue: rawValue)
     }
     
-    subscript<T: RawRepresentable, U: WritableKeyPath<URLResources, T?>>(attribute: Attribute, urlResources: U? = nil) -> T? {
-        get {
-            if let rawValue: T.RawValue = value(for: attribute.rawValue) {
-                return T(rawValue: rawValue)
-            }
-            return nil
-        }
-        set {
-            if attribute == .pixelSize, let value = newValue as? CGSize {
-                setExplicity(.pixelWidth, to: Double(value.width))
-                setExplicity(.pixelHeight, to: Double(value.height))
-            } else if let keyPath = urlResources, var resources = url?.resources {
-                resources[keyPath: keyPath] = newValue
-            } else {
-                url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = newValue?.rawValue
-            }
-        }
+    func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? where T: Codable {
+        url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList]
     }
     
-    subscript<T, U: WritableKeyPath<URLResources, T?>>(attribute: Attribute, urlResources: U? = nil) -> T? {
-        get { value(for: attribute.rawValue) }
-        set {
-            if attribute == .pixelSize, let value = newValue as? CGSize {
-                setExplicity(.pixelWidth, to: Double(value.width))
-                setExplicity(.pixelHeight, to: Double(value.height))
-            } else if let keyPath = urlResources, var resources = url?.resources {
-                resources[keyPath: keyPath] = newValue
-            } else {
-                url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = newValue
-            }
-        }
-    }
-    
-    func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? {
-        url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"]
-    }
-    
-    func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) {
-        if attribute == .pixelSize, let value = value as? CGSize {
-            setExplicity(.pixelWidth, to: Double(value.width))
-            setExplicity(.pixelHeight, to: Double(value.height))
-        } else if let keyPath = urlResources, var resources = url?.resources {
+    func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) where V: Codable {
+        if let keyPath = urlResources, var resources = url?.resources {
             resources[keyPath: keyPath] = value
         } else {
-            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = value
+            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList] = value
         }
     }
 }
