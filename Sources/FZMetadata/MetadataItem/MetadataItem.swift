@@ -1403,25 +1403,23 @@ extension MetadataItem {
     }
     
     func value<T>(for attribute: Attribute, save: Bool = false) -> T? {
-        return value(for: attribute.rawValue)
+        value(for: attribute.rawValue)
     }
     
     func value<T: RawRepresentable>(for attribute: Attribute) -> T? {
-        if let rawValue: T.RawValue = value(for: attribute.rawValue) {
-            return T(rawValue: rawValue)
-        }
-        return nil
+        guard let rawValue: T.RawValue = value(for: attribute.rawValue) else { return nil }
+        return T(rawValue: rawValue)
     }
     
-    func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? {
-        url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"]
+    func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? where T: Codable {
+        url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList]
     }
     
-    func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) {
+    func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) where V: Codable {
         if let keyPath = urlResources, var resources = url?.resources {
             resources[keyPath: keyPath] = value
         } else {
-            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)"] = value
+            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList] = value
         }
     }
 }
