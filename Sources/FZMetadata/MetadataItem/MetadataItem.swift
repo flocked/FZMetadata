@@ -198,11 +198,8 @@ open class MetadataItem: Identifiable {
     open var fileIsInvisible: Bool? {
         get { value(for: .fileIsInvisible) }
         set {
-            if let resources = url?.resources {
-                resources.isHidden = newValue ?? resources.isHidden
-            } else {
-                setExplicity(.fileIsInvisible, to: newValue)
-            }
+            guard let newValue = newValue else { return }
+            url?.resources.isHidden = newValue
         }
     }
 
@@ -210,30 +207,23 @@ open class MetadataItem: Identifiable {
     open var fileExtensionIsHidden: Bool? {
         get { value(for: .fileExtensionIsHidden) }
         set {
-            if let resources = url?.resources {
-                resources.hasHiddenExtension = newValue ?? resources.hasHiddenExtension
-            } else {
-                setExplicity(.fileExtensionIsHidden, to: newValue)
-            }
+            guard let newValue = newValue else { return }
+            url?.resources.hasHiddenExtension = newValue
         }
     }
 
     /// The file type. For example: `video`, `document` or `directory`
-    open var fileType: FileType? { 
-        if let contentTypeTree: [String] = value(for: .contentTypeTree) {
-            return FileType(contentTypeTree: contentTypeTree)
-        }
-        return nil
+    open var fileType: FileType? {
+        guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
+        return FileType(contentTypeTree: contentTypeTree)
     }
     
     #if (os(macOS) && compiler(>=5.3.1)) || (!os(macOS) && compiler(>=5.3.0))
     /// The content type of the file.
     @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentType: UTType? {
-        if let type: String = value(for: .contentType) {
-            return UTType(type)
-        }
-        return nil
+        guard let type: String = value(for: .contentType) else { return nil }
+        return UTType(type)
     }
     
     /// The content type tree of the file.
@@ -396,12 +386,7 @@ open class MetadataItem: Identifiable {
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
-        get { 
-            if let finderTags: [String] = value(for: .finderTags) {
-                return finderTags
-            }
-            return url?.resources.finderTags
-        }
+        get { value(for: .finderTags) ?? url?.resources.finderTags }
         set { url?.resources.finderTags = newValue ?? [] }
     }
     
@@ -414,11 +399,9 @@ open class MetadataItem: Identifiable {
     open var hasCustomIcon: Bool? { value(for: .hasCustomIcon) }
 
     /// The number of usages of the file.
-    open var usageCount: Int? { 
-        if let useCount: Int = value(for: .usageCount) {
-            return useCount - 2
-        }
-        return nil
+    open var usageCount: Int? {
+        guard let useCount: Int = value(for: .usageCount) else { return nil }
+        return useCount - 2
     }
 
     /// The bundle identifier of this item. If this item is a bundle, then this is the `CFBundleIdentifier`.
