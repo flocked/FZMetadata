@@ -265,7 +265,6 @@ extension FileType: QueryRawRepresentable {
     var rawValue: String { identifier }
 }
 
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
 extension UTType: QueryRawRepresentable {
     var rawValue: String { identifier }
 }
