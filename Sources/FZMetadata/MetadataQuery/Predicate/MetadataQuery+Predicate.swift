@@ -262,7 +262,7 @@ extension TimeDuration: QueryRawRepresentable {
 }
 
 extension FileType: QueryRawRepresentable {
-    var rawValue: String { identifier ?? "other" }
+    var rawValue: String { identifier }
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, macCatalyst 14.0, *)
@@ -359,13 +359,12 @@ extension FileType {
         case .image: value = NSExpression(format: "%i", 13)
         case .video: value = NSExpression(format: "%i", 7)
         case .presentation: value = NSExpression(format: "%i", 12)
-        case .other(let pathExtension,_): value = NSExpression(format: "%@", pathExtension)
-        default: value = NSExpression(format: "%@", identifier ?? "public.item")
+        default: value = NSExpression(format: "%@", identifier)
         }
 
         let modifier: NSComparisonPredicate.Modifier
         switch self {
-        case .application, .archive, .text, .document, .other:
+        case .application, .archive, .text, .document:
             modifier = .any
         default:
             modifier = .direct

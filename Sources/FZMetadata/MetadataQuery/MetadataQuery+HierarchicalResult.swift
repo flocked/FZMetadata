@@ -435,7 +435,6 @@ extension Array where Element: RandomAccessCollection, Element.Element: Comparab
         for index in 0..<maxCount {
             var firstValue: Element.Element?
             for (i, collection) in enumerated() {
-                let first = collection[index]
                 guard index < collection.count else {
                     return index
                 }
