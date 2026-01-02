@@ -253,14 +253,6 @@ protocol QueryRawRepresentable {
     var rawValue: RawValue { get }
 }
 
-extension DataSize: QueryRawRepresentable {
-    var rawValue: Int { bytes }
-}
-
-extension TimeDuration: QueryRawRepresentable {
-    var rawValue: Double { seconds }
-}
-
 extension FileType: QueryRawRepresentable {
     var rawValue: String { identifier }
 }
