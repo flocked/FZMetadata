@@ -223,11 +223,11 @@ protocol QueryRawRepresentable: QueryEquatable {
 }
 
 extension DataSize: QueryRawRepresentable {
-    public var rawValue: Int { bytes }
+  //  public var rawValue: Int { bytes }
 }
 
 extension TimeDuration: QueryRawRepresentable, QueryComparable {
-    public var rawValue: Double { seconds }
+  //  public var rawValue: Double { seconds }
 }
 
 extension FileType: QueryRawRepresentable, QueryEquatable {
@@ -360,13 +360,13 @@ extension FileType {
         case .image: value = NSExpression(format: "%i", 13)
         case .video: value = NSExpression(format: "%i", 7)
         case .presentation: value = NSExpression(format: "%i", 12)
-        case .other(let pathExtension,_): value = NSExpression(format: "%@", pathExtension)
+      //  case .other(let pathExtension,_): value = NSExpression(format: "%@", pathExtension)
         default: value = NSExpression(format: "%@", identifier ?? "public.item")
         }
 
         let modifier: NSComparisonPredicate.Modifier
         switch self {
-        case .application, .archive, .text, .document, .other:
+        case .application, .archive, .text, .document:
             modifier = .any
         default:
             modifier = .direct

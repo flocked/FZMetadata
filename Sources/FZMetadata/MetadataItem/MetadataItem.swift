@@ -214,31 +214,26 @@ open class MetadataItem: Identifiable {
 
     /// The file type. For example: `video`, `document` or `directory`
     open var fileType: FileType? {
-        guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
-        return FileType(contentTypeTree: contentTypeTree)
+        guard let contentType = contentType else { return nil }
+        return FileType(contentType: contentType)
     }
     
-    #if (os(macOS) && compiler(>=5.3.1)) || (!os(macOS) && compiler(>=5.3.0))
-    /// The content type of the file.
-    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentType: UTType? {
         guard let type: String = value(for: .contentType) else { return nil }
         return UTType(type)
     }
     
     /// The content type tree of the file.
-    @available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, macCatalyst 14.0, *)
     open var contentTypeTree: [UTType]? {
         guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
         return contentTypeTree.compactMap { UTType($0) }
     }
-    #else
+
     /// The content type identifier (`UTI`) of the file.
-    open var contentTypeIdentifier: String? { value(for: .contentType) }
+    var contentTypeIdentifier: String? { value(for: .contentType) }
     
     /// The content type tree identifiers (`UTI`) of the file.
-    open var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
-    #endif
+    var contentTypeTreeIdentifiers: [String]? { value(for: .contentTypeTree) }
 
     /// The date the file was created on the file system.
     open var creationDate: Date? {
