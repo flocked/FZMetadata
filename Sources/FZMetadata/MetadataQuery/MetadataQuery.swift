@@ -90,7 +90,7 @@ open class MetadataQuery: NSObject {
         }
     }
 
-    public let query = NSMetadataQuery()
+    let query = NSMetadataQuery()
     let delegate = Delegate()
     var _results: SynchronizedArray<MetadataItem> = []
     var pendingResultsUpdate = ResultDifference()
