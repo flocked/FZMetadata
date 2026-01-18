@@ -261,8 +261,6 @@ extension UTType: QueryRawRepresentable {
     var rawValue: String { identifier }
 }
 
-extension DataSize: QueryRawRepresentable { }
-
 extension URLUbiquitousItemDownloadingStatus: QueryRawRepresentable { }
 extension URLUbiquitousSharedItemPermissions: QueryRawRepresentable { }
 extension MetadataItem.MediaCodec: QueryRawRepresentable { }
