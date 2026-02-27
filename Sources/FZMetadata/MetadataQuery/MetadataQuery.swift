@@ -691,6 +691,6 @@ public func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: M
 
 @_cdecl("swizzled_MDQueryCreate")
 func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!, _ valueListAttrs: CFArray!, _ sortingAttrs: CFArray!) -> MDQuery! {
-    Swift.print("swizzled_MDQueryCreate", queryString as String, valueListAttrs.asNS() as? [String] ?? [], sortingAttrs.asNS() as? [String] ?? [])
+    Swift.print("swizzled_MDQueryCreate", queryString as String, valueListAttrs.asNS as? [String] ?? [], sortingAttrs.asNS as? [String] ?? [])
     return MDQueryCreate(allocator, queryString, valueListAttrs, sortingAttrs)
 }
