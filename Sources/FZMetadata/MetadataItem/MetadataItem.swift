@@ -378,8 +378,8 @@ open class MetadataItem: Identifiable {
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
-        get { value(for: .finderTags) ?? url?.resources.finderTags }
-        set { url?.resources.finderTags = newValue ?? [] }
+        get { value(for: .finderTags) ?? url?.resources.finderTagNames }
+        set { url?.resources.finderTagNames = newValue ?? [] }
     }
     
     /// The primary (first) finder tag color.
