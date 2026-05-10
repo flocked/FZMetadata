@@ -476,39 +476,18 @@ open class MetadataQuery: NSObject {
     func updateResults(post: Bool = false) {
         resultsUpdateLock.lock()
         query.disableUpdates()
-        var pending = pendingResultsUpdate
-        
-        var newResults: [MetadataItem] = []
-        newResults.reserveCapacity(query.resultCount)
-
-        Swift.print(pending)
-        MeasureTime.printTimeElapsed {
-            let count = newResults.count
-            if pending.removed.isEmpty, pending.changed.isEmpty, !pending.added.isEmpty, !pending.added.contains(where: { query.index(ofResult: $0) >= count }) {
-                newResults = _results.synchronized
-                newResults.append(contentsOf: (count-1..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem }))
-            } else {
-                newResults = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
-            }
-          //  newResults = query.results as! [MetadataItem]
-        }
-
-
+        let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
         resultCount = query.resultCount
+        var pending = pendingResultsUpdate
         pendingResultsUpdate = .init()
         pending.added.forEach({ updateResult($0, isInital: true) })
         pending.changed.forEach({ updateResult($0) })
-        
-        if !pending.isEmpty {
-          //  willChangeValue(for: \.results)
-            _results.synchronized = newResults
-          //  didChangeValue(for: \.results)
-        }
+        _results.synchronized = results
         query.enableUpdates()
         resultsUpdateLock.unlock()
-        if post, let resultsHandler = resultsHandler {
+        if post {
             pending.changes = .init(pending.changed)
-            resultsHandler(newResults, pending)
+            resultsHandler?(results, pending)
         }
     }
     
@@ -681,16 +660,13 @@ func swizzled_MDQueryExecute(_ query: MDQuery!,  _ optionFlags: CFOptionFlags
 
 @_cdecl("swizzled_MDQuerySetBatchingParameters")
 public func swizzled_MDQuerySetBatchingParameters( _ query: MDQuery, _ params: MDQueryBatchingParams) {
-    Swift.print("swizzled", params.first_max_ms, params.first_max_num, params.progress_max_ms, params.progress_max_num, params.update_max_ms, params.update_max_num)
     let params = MetadataQuery.resultUpdateOptions?.batching ?? params
     MetadataQuery.resultUpdateOptions = nil
-    Swift.print("swizzled", params.first_max_ms, params.first_max_num, params.progress_max_ms, params.progress_max_num, params.update_max_ms, params.update_max_num)
     MDQuerySetBatchingParameters(query, params)
 }
 #endif
 
 @_cdecl("swizzled_MDQueryCreate")
 func swizzled_MDQueryCreate(_ allocator: CFAllocator!, _ queryString: CFString!, _ valueListAttrs: CFArray!, _ sortingAttrs: CFArray!) -> MDQuery! {
-    Swift.print("swizzled_MDQueryCreate", queryString as String, valueListAttrs.asNS as? [String] ?? [], sortingAttrs.asNS as? [String] ?? [])
     return MDQueryCreate(allocator, queryString, valueListAttrs, sortingAttrs)
 }
