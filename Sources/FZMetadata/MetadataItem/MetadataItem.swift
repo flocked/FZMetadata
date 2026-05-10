@@ -281,7 +281,7 @@ open class MetadataItem: Identifiable {
     }
 
     /// The date that the file was downloaded.
-    open var downloadedDate: Date? {
+    open var downloadedDate: [Date]? {
         get { value(for: .downloadedDate) }
         set { setExplicity(.downloadedDate, to: newValue) }
     }
