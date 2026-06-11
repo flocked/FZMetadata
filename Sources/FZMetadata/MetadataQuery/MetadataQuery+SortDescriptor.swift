@@ -140,8 +140,8 @@ extension MetadataQuery.SortDescriptor {
     /// The date the file was created, or renamed into or within its parent directory.
     public static let addedDate = Self(.addedDate)
 
-    /// The date that the file was downloaded.
-    public static let downloadedDate = Self(.downloadedDate)
+    /// The dates that the file was downloaded.
+    public static let downloadDates = Self(.downloadDates)
 
     /// The date that the file was purchased.
     public static let purchaseDate = Self(.purchaseDate)

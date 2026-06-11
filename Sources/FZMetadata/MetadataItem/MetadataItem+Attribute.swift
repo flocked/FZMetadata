@@ -53,8 +53,8 @@ public extension MetadataItem {
         case contentModificationDate = "kMDItemContentModificationDate"
         /// The date the file was created, or renamed into or within its parent directory.
         case addedDate = "kMDItemDateAdded"
-        /// The date that the file was downloaded.
-        case downloadedDate = "kMDItemDownloadedDate"
+        /// The dates that the file was downloaded.
+        case downloadDates = "kMDItemDownloadedDate"
         /// The date that the file was purchased.
         case purchaseDate = "kMDItemPurchaseDate"
         /// The date that this item is due (e.g. for a calendar event file).
@@ -498,7 +498,7 @@ public extension MetadataItem {
             case .modificationDate: return \.modificationDate
             case .contentModificationDate: return \.contentModificationDate
             case .addedDate: return \.addedDate
-            case .downloadedDate: return \.downloadedDate
+            case .downloadDates: return \.downloadDates
             case .purchaseDate: return \.purchaseDate
             case .dueDate: return \.dueDate
             case .directoryFilesCount: return \.directoryFilesCount
