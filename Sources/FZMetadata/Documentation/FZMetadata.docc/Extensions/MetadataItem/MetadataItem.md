@@ -42,7 +42,7 @@
 - ``contentModificationDate``
 - ``lastUsedDate``
 - ``lastUsageDates``
-- ``downloadedDate``
+- ``downloadDates``
 - ``purchaseDate``
 - ``dueDate``
 
