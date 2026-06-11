@@ -280,10 +280,10 @@ open class MetadataItem: Identifiable {
         set { setExplicity(.addedDate, to: newValue) }
     }
 
-    /// The date that the file was downloaded.
-    open var downloadedDate: [Date]? {
-        get { value(for: .downloadedDate) }
-        set { setExplicity(.downloadedDate, to: newValue) }
+    /// The dates that the file was downloaded.
+    open var downloadDates: [Date]? {
+        get { value(for: .downloadDates) }
+        set { setExplicity(.downloadDates, to: newValue) }
     }
 
     /// The date that the file was purchased.
