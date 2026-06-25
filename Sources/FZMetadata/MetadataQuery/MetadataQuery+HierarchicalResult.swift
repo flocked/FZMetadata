@@ -526,7 +526,7 @@ class HierarchicalItem {
             pending = Dictionary(grouping: _items, by: \.components[safe: level]).map({$0})
             _items = []
         }
-        guard let val = pending.removeFirstSafetly() else { return nil }
+        guard let val = pending.popFirst() else { return nil }
         guard let key = val.key else { return buildNextChild() }
         if val.value.count == 1, let item = val.value.first, item.url.isFile {
             let file = HierarchicalItem(item.item, url.appendingPathComponent(key), level+1, .file, self)
