@@ -1264,6 +1264,7 @@ extension MetadataItem {
             resources[keyPath: keyPath] = value
         } else {
             url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList] = value
+            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList, flags: [.noExport, .syncable]] = value
         }
     }
 }
