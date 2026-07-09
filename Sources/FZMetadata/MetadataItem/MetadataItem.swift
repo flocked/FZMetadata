@@ -121,18 +121,13 @@ open class MetadataItem {
      
      It lists changes for attributes specified by the query's ``MetadataQuery/attributes``, ``MetadataQuery/groupingAttributes``, and ``MetadataQuery/sortedBy`` properties.
      
-     In the following example the query is gathering files and attributes. Because `monitorResults` is enabled, the handler is called subsequently whenever the available files or their attributes change. 
-     
-     `updatedAttributes` is  used to filter the files by the attributes that have changed:
-          
+     In the following example the query is gathering files and attributes. Because ``MetadataQuery/monitorResults`` is enabled, the handler is called subsequently whenever the available files or their attributes change.
+               
      ```swift
      query,searchLocations = [folder]
      query.attributes = [.finderTags, .lastUsedDate]
      query.monitorResults = true
      query.resultsHandler = { items, _ in
-        // Files with changed finder tags.
-        let finderTagFiles = items.filter({$0.updatedAttributes.contains(.finderTags)})
-
         // Files with changed last usage date.
         let lastUsedFiles = items.filter({$0.updatedAttributes.contains(.lastUsedDate)})
      }
