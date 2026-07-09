@@ -156,7 +156,7 @@ open class MetadataItem: Identifiable {
      - Note: The attribute can't be used in a metadata query predicate or to sort query results.
      */
     open var url: URL? {
-        _url ?? value(for: .url)
+        _url ?? self[.url]
     }
     
     private var _url: URL? {
@@ -171,703 +171,702 @@ open class MetadataItem: Identifiable {
     open var path: String? {
         filePathOperation?.cancel()
         if let filePath { return filePath }
-        filePath = filePath ?? value(for: .path)
+        filePath = filePath ?? self[.path]
         return filePath
     }
 
     /// The name of the file including the extension.
     open var fileName: String? {
-        _url?.lastPathComponent ?? value(for: .fileName)
+        _url?.lastPathComponent ?? self[.fileName]
     }
 
     /// The display name of the file, which may be different then the file system name.
-    open var displayName: String? { value(for: .displayName) }
+    open var displayName: String? { self[.displayName] }
 
     /// The alternative names of the file.
-    open var alternateNames: [String]? { value(for: .alternateNames) }
+    open var alternateNames: [String]? { self[.alternateNames] }
 
     /// The extension of the file.
     open var fileExtension: String? { url?.pathExtension }
 
     /// The size of the file.
     open var fileSize: DataSize? {
-        guard let bytes: Int = value(for: .fileSize) else { return nil }
+        guard let bytes: Int = self[.fileSize] else { return nil }
         return DataSize(bytes)
     }
 
     /// A Boolean value that indicates whether the file is invisible.
     open var fileIsInvisible: Bool? {
-        get { value(for: .fileIsInvisible) }
+        get { self[.fileIsInvisible] }
         set {
             if let resources = url?.resources {
                 resources.isHidden = newValue ?? resources.isHidden
             } else {
-                setExplicity(.fileIsInvisible, to: newValue)
+                self[.fileIsInvisible] = newValue
             }
         }
     }
 
     /// A Boolean value that indicates whether the file extension is hidden.
     open var fileExtensionIsHidden: Bool? {
-        get { value(for: .fileExtensionIsHidden) }
+        get { self[.fileExtensionIsHidden] }
         set {
             if let resources = url?.resources {
                 resources.hasHiddenExtension = newValue ?? resources.hasHiddenExtension
             } else {
-                setExplicity(.fileExtensionIsHidden, to: newValue)
+                self[.fileExtensionIsHidden] = newValue
             }
         }
     }
 
     /// The file type. For example: `video`, `document` or `directory`
     open var fileType: FileType? {
-        guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
+        guard let contentTypeTree: [String] = self[.contentTypeTree] else { return nil }
         return contentTypeTree.lazy.compactMap({ identifier in  FileType.allCases.first(where: { $0.identifier == identifier }) }).first
     }
     
     /// The content type of the file.
     open var contentType: UTType? {
-        guard let type: String = value(for: .contentType) else { return nil }
+        guard let type: String = self[.contentType] else { return nil }
         return UTType(type)
     }
     
     open var contentTypeTree: [UTType]? {
-        guard let contentTypeTree: [String] = value(for: .contentTypeTree) else { return nil }
+        guard let contentTypeTree: [String] = self[.contentTypeTree] else { return nil }
         return contentTypeTree.compactMap { UTType($0) }
     }
 
     /// The date the file was created on the file system.
     open var creationDate: Date? {
-        get { value(for: .creationDate) }
-        set { setExplicity(.creationDate, urlResources: \.creationDate, to: newValue) }
+        get { self[.creationDate] }
+        set { self[.creationDate, \.creationDate] = newValue }
     }
     
     /// The last date that the item's data on the file system was modified.
     open var modificationDate: Date? {
-        get { value(for: .modificationDate) }
-        set { setExplicity(.modificationDate, to: newValue) }
+        get { self[.modificationDate] }
+        set { self[.modificationDate] = newValue }
     }
     
     /// The date that the content of the file was created.
     open var contentCreationDate: Date? {
-        get { value(for: .contentCreationDate) }
-        set { setExplicity(.contentCreationDate, to: newValue) }
+        get { self[.contentCreationDate] }
+        set { self[.contentCreationDate] = newValue }
     }
 
     /// The last date that the content of the file was modified.
     open var contentModificationDate: Date? {
-        get { value(for: .contentModificationDate) }
-        set { setExplicity(.contentModificationDate, urlResources: \.contentModificationDate, to: newValue) }
-    }
+        get { self[.contentModificationDate] }
+        set { self[.contentModificationDate, \.contentModificationDate] = newValue } }
     
     /// The last date that the attributes of the file were changed.
     open var attributeModificationDate: Date? {
-        get { value(for: .attributeModificationDate) }
-        set { setExplicity(.attributeModificationDate, to: newValue) }
+        get { self[.attributeModificationDate] }
+        set { self[.attributeModificationDate] = newValue }
     }
 
     /// The last date that the file was used.
     open var lastUsedDate: Date? {
-        get { value(for: .lastUsedDate) }
-        set { setExplicity(.lastUsedDate, urlResources: \.contentAccessDate, to: newValue) }
+        get { self[.lastUsedDate] }
+        set { self[.lastUsedDate, \.contentAccessDate] = newValue }
     }
 
     /// The dates the file was last used.
     open var lastUsageDates: [Date]? {
-        get { value(for: .lastUsageDates) }
-        set { setExplicity(.lastUsageDates, to: newValue) }
+        get { self[.lastUsageDates] }
+        set { self[.lastUsageDates] = newValue }
     }
 
     /// The date the file was created, or renamed into or within its parent directory.
     open var addedDate: Date? {
-        get { value(for: .addedDate) }
-        set { setExplicity(.addedDate, to: newValue) }
+        get { self[.addedDate] }
+        set { self[.addedDate] = newValue }
     }
 
     /// The dates that the file was downloaded.
     open var downloadDates: [Date]? {
-        get { value(for: .downloadDates) }
-        set { setExplicity(.downloadDates, to: newValue) }
+        get { self[.downloadDates] }
+        set { self[.downloadDates] = newValue }
     }
 
     /// The date that the file was purchased.
     open var purchaseDate: Date? {
-        get { value(for: .purchaseDate) }
-        set { setExplicity(.purchaseDate, to: newValue) }
+        get { self[.purchaseDate] }
+        set { self[.purchaseDate] = newValue }
     }
 
     /// The date that this item is due (e.g. for a calendar event file).
     open var dueDate: Date? {
-        get { value(for: .dueDate) }
-        set { setExplicity(.dueDate, to: newValue) }
+        get { self[.dueDate] }
+        set { self[.dueDate] = newValue }
     }
 
     /// The number of files in a directory.
-    open var directoryFilesCount: Int? { value(for: .directoryFilesCount) }
+    open var directoryFilesCount: Int? { self[.directoryFilesCount] }
 
     ///  A description of the content of the item. The description may include an abstract, table of contents, reference to a graphical representation of content or a free-text account of the content.
     open var description: String? {
-        get { value(for: .description) }
-        set { setExplicity(.description, to: newValue) }
+        get { self[.description] }
+        set { self[.description] = newValue }
     }
 
     /// A description of the kind of item the file represents.
-    open var kind: [String]? { value(for: .kind) }
+    open var kind: [String]? { self[.kind] }
 
     /// Information of this item.
     open var information: String? {
-        get { value(for: .information) }
-        set { setExplicity(.information, to: newValue) }
+        get { self[.information] }
+        set { self[.information] = newValue }
     }
 
     /// The formal identifier used to reference the item within a given context.
     open var identifier: String? {
-        get { value(for: .identifier) }
-        set { setExplicity(.identifier, to: newValue) }
+        get { self[.identifier] }
+        set { self[.identifier] = newValue }
     }
 
     /// The keywords associated with the file. For example: `Birthday` or `Important`.
     open var keywords: [String]? {
-        get { value(for: .keywords) }
-        set { setExplicity(.keywords, to: newValue) }
+        get { self[.keywords] }
+        set { self[.keywords] = newValue }
     }
 
     /// The title of the file. For example, this could be the title of a document, the name of a song, or the subject of an email message.
     open var title: String? {
-        get { value(for: .title) }
-        set { setExplicity(.title, to: newValue) }
+        get { self[.title] }
+        set { self[.title] = newValue }
     }
 
     /// The title for a collection of media. This is analagous to a record album, or photo album.
     open var album: String? {
-        get { value(for: .album) }
-        set { setExplicity(.album, to: newValue) }
+        get { self[.album] }
+        set { self[.album] = newValue }
     }
 
     /// The authors, artists, etc. of the contents of the file.
     open var authors: [String]? {
-        get { value(for: .authors) }
-        set { setExplicity(.authors, to: newValue) }
+        get { self[.authors] }
+        set { self[.authors] = newValue }
     }
 
     /// The version of the file.
     open var version: String? {
-        get { value(for: .version) }
-        set { setExplicity(.version, to: newValue) }
+        get { self[.version] }
+        set { self[.version] = newValue }
     }
 
     /// A comment related to the file. This differs from ``finderComment``.
     open var comment: String? {
-        get { value(for: .comment) }
-        set { setExplicity(.comment, to: newValue) }
+        get { self[.comment] }
+        set { self[.comment] = newValue }
     }
 
     /// The user rating of the file. For example, the stars rating of an iTunes track.
     open var starRating: Double? {
-        get { value(for: .starRating) }
-        set { setExplicity(.starRating, to: newValue) }
+        get { self[.starRating] }
+        set { self[.starRating] = newValue }
     }
 
     /// A describes where the file was obtained from. For example download urls.
     open var whereFroms: [String]? {
-        get { value(for: .whereFroms) }
-        set { setExplicity(.whereFroms, to: newValue) }
+        get { self[.whereFroms] }
+        set { self[.whereFroms] = newValue }
     }
 
     /// The finder comment of the file. This differs from the ``comment``.
     open var finderComment: String? {
-        get { value(for: .finderComment) }
-        set { setExplicity(.finderComment, to: newValue) }
+        get { self[.finderComment] }
+        set { self[.finderComment] = newValue }
     }
 
     /// The finder tags of the file.
     open var finderTags: [String]? {
-        get { value(for: .finderTags) ?? url?.resources.finderTagNames }
+        get { self[.finderTags] ?? url?.resources.finderTagNames }
         set { url?.resources.finderTagNames = newValue ?? [] }
     }
     
     /// The primary (first) finder tag color.
     open var finderTagPrimaryColor: FinderTagColor? {
-        value(for: .finderTagPrimaryColor)
+        self[.finderTagPrimaryColor]
     }
 
     /// A Boolean value that indicates whether the file has a custom icon.
-    open var hasCustomIcon: Bool? { value(for: .hasCustomIcon) }
+    open var hasCustomIcon: Bool? { self[.hasCustomIcon] }
 
     /// The number of usages of the file.
     open var usageCount: Int? {
-        guard let useCount: Int = value(for: .usageCount) else { return nil }
+        guard let useCount: Int = self[.usageCount] else { return nil }
         return useCount - 2
     }
 
     /// The bundle identifier of this item. If this item is a bundle, then this is the `CFBundleIdentifier`.
-    open var bundleIdentifier: String? { value(for: .bundleIdentifier) }
+    open var bundleIdentifier: String? { self[.bundleIdentifier] }
 
     /// The architectures this item requires to execute.
-    open var executableArchitectures: [String]? { value(for: .executableArchitectures) }
+    open var executableArchitectures: [String]? { self[.executableArchitectures] }
 
     /// The platform this item requires to execute.
-    open var executablePlatform: String? { value(for: .executablePlatform) }
+    open var executablePlatform: String? { self[.executablePlatform] }
 
     /// A Boolean value that indicates whether the file is owned and managed by an application.
-    open var isApplicationManaged: Bool? { value(for: .isApplicationManaged) }
+    open var isApplicationManaged: Bool? { self[.isApplicationManaged] }
 
     /// The application used to convert the original content into it's current form. For example, a PDF file might have an encoding application set to "Distiller".
-    open var encodingApplications: [String]? { value(for: .encodingApplications) }
+    open var encodingApplications: [String]? { self[.encodingApplications] }
 
     /// The categories the application is a member of.
-    open var applicationCategories: [String]? { value(for: .applicationCategories) }
+    open var applicationCategories: [String]? { self[.applicationCategories] }
 
     /// The AppStore category of this item if it's an application from the AppStore.
-    open var appstoreCategory: String? { value(for: .appstoreCategory) }
+    open var appstoreCategory: String? { self[.appstoreCategory] }
 
     /// The AppStore category type of this item if it's an application from the AppStore.
-    open var appstoreCategoryType: String? { value(for: .appstoreCategoryType) }
+    open var appstoreCategoryType: String? { self[.appstoreCategoryType] }
 
     // MARK: - Document
 
     /// A text representation of the content of the document.
-    open var textContent: String? { value(for: .textContent) }
+    open var textContent: String? { self[.textContent] }
 
     /// The subject of the this item
     open var subject: String? {
-        get { value(for: .subject) }
-        set { setExplicity(.subject, to: newValue) }
+        get { self[.subject] }
+        set { self[.subject] = newValue }
     }
 
     /// The theme of the this item.
     open var theme: String? {
-        get { value(for: .theme) }
-        set { setExplicity(.theme, to: newValue) }
+        get { self[.theme] }
+        set { self[.theme] = newValue }
     }
 
     /// A publishable summary of the contents of the item.
     open var headline: String? {
-        get { value(for: .headline) }
-        set { setExplicity(.headline, to: newValue) }
+        get { self[.headline] }
+        set { self[.headline] = newValue }
     }
 
     /// the application or operation system used to create the document content. For example: `Word`,  `Pages` or `16.2`.
     open var creator: String? {
-        get { value(for: .creator) }
-        set { setExplicity(.creator, to: newValue) }
+        get { self[.creator] }
+        set { self[.creator] = newValue }
     }
 
     /// Other information concerning this item, such as handling instructions.
     open var instructions: String? {
-        get { value(for: .instructions) }
-        set { setExplicity(.instructions, to: newValue) }
+        get { self[.instructions] }
+        set { self[.instructions] = newValue }
     }
 
     /// The editors of the contents of the file.
     open var editors: [String]? {
-        get { value(for: .editors) }
-        set { setExplicity(.editors, to: newValue) }
+        get { self[.editors] }
+        set { self[.editors] = newValue }
     }
 
     /// The audience for which the file is intended. The audience may be determined by the creator or the publisher or by a third party.
     open var audiences: [String]? {
-        get { value(for: .audiences) }
-        set { setExplicity(.audiences, to: newValue) }
+        get { self[.audiences] }
+        set { self[.audiences] = newValue }
     }
 
     /// The extent or scope of the content of the document.
     open var coverage: [String]? {
-        get { value(for: .coverage) }
-        set { setExplicity(.coverage, to: newValue) }
+        get { self[.coverage] }
+        set { self[.coverage] = newValue }
     }
 
     /// The list of projects that the file is part of. For example, if you were working on a movie all of the files could be marked as belonging to the project `My Movie`.
     open var projects: [String]? {
-        get { value(for: .projects) }
-        set { setExplicity(.projects, to: newValue) }
+        get { self[.projects] }
+        set { self[.projects] = newValue }
     }
 
     /// The number of pages in the document.
     open var numberOfPages: Int? {
-        get { value(for: .numberOfPages) }
-        set { setExplicity(.numberOfPages, to: newValue) }
+        get { self[.numberOfPages] }
+        set { self[.numberOfPages] = newValue }
     }
 
     /// The width of the document page, in points (72 points per inch). For PDF files this indicates the width of the first page only.
     open var pageWidth: Double? {
-        get { value(for: .pageWidth) }
-        set { setExplicity(.pageWidth, to: newValue) }
+        get { self[.pageWidth] }
+        set { self[.pageWidth] = newValue }
     }
 
     /// The height of the document page, in points (72 points per inch). For PDF files this indicates the height of the first page only.
     open var pageHeight: Double? {
-        get { value(for: .pageHeight) }
-        set { setExplicity(.pageHeight, to: newValue) }
+        get { self[.pageHeight] }
+        set { self[.pageHeight] = newValue }
     }
 
     /// The copyright owner of the file contents.
     open var copyright: String? {
-        get { value(for: .copyright) }
-        set { setExplicity(.copyright, to: newValue) }
+        get { self[.copyright] }
+        set { self[.copyright] = newValue }
     }
 
     /// The names of the fonts used in his document.
     open var fonts: [String]? {
-        get { value(for: .fonts) }
-        set { setExplicity(.fonts, to: newValue) }
+        get { self[.fonts] }
+        set { self[.fonts] = newValue }
     }
 
     /// The family name of the font used in this document.
     open var fontFamilyName: String? {
-        get { value(for: .fontFamilyName) }
-        set { setExplicity(.fontFamilyName, to: newValue) }
+        get { self[.fontFamilyName] }
+        set { self[.fontFamilyName] = newValue }
     }
 
     /// A list of contacts that are associated with this document, not including the authors.
     open var contactKeywords: [String]? {
-        get { value(for: .contactKeywords) }
-        set { setExplicity(.contactKeywords, to: newValue) }
+        get { self[.contactKeywords] }
+        set { self[.contactKeywords] = newValue }
     }
 
     /// The languages of the intellectual content of the resource.
     open var languages: [String]? {
-        get { value(for: .languages) }
-        set { setExplicity(.languages, to: newValue) }
+        get { self[.languages] }
+        set { self[.languages] = newValue }
     }
 
     /// A link to information about rights held in and over the resource.
     open var rights: String? {
-        get { value(for: .rights) }
-        set { setExplicity(.rights, to: newValue) }
+        get { self[.rights] }
+        set { self[.rights] = newValue }
     }
 
     /// The company or organization that created the document.
     open var organizations: [String]? {
-        get { value(for: .organizations) }
-        set { setExplicity(.organizations, to: newValue) }
+        get { self[.organizations] }
+        set { self[.organizations] = newValue }
     }
 
     /// The entity responsible for making this item available. For example, a person, an organization, or a service. Typically, the name of a publisher should be used to indicate the entity.
     open var publishers: [String]? {
-        get { value(for: .publishers) }
-        set { setExplicity(.publishers, to: newValue) }
+        get { self[.publishers] }
+        set { self[.publishers] = newValue }
     }
 
     /// The email Addresses related to this document.
     open var emailAddresses: [String]? {
-        get { value(for: .emailAddresses) }
-        set { setExplicity(.emailAddresses, to: newValue) }
+        get { self[.emailAddresses] }
+        set { self[.emailAddresses] = newValue }
     }
 
     /// The phone numbers related to this document.
     open var phoneNumbers: [String]? {
-        get { value(for: .phoneNumbers) }
-        set { setExplicity(.phoneNumbers, to: newValue) }
+        get { self[.phoneNumbers] }
+        set { self[.phoneNumbers] = newValue }
     }
 
     /// The people or organizations contributing to the content of the document.
     open var contributors: [String]? {
-        get { value(for: .contributors) }
-        set { setExplicity(.contributors, to: newValue) }
+        get { self[.contributors] }
+        set { self[.contributors] = newValue }
     }
 
     /// The security or encryption method used for the document.
-    open var securityMethod: Double? { value(for: .securityMethod) }
+    open var securityMethod: Double? { self[.securityMethod] }
 
     // MARK: - Places
 
     /// The full, publishable name of the country or region where the intellectual property of this item was created, according to guidelines of the provider.
     open var country: String? {
-        get { value(for: .country) }
-        set { setExplicity(.country, to: newValue) }
+        get { self[.country] }
+        set { self[.country] = newValue }
     }
 
     /// The city.of this document.
     open var city: String? {
-        get { value(for: .city) }
-        set { setExplicity(.city, to: newValue) }
+        get { self[.city] }
+        set { self[.city] = newValue }
     }
 
     /// The province or state of origin according to guidelines established by the provider. For example: `CA`, `Ontario` or `Sussex`.
     open var stateOrProvince: String? {
-        get { value(for: .stateOrProvince) }
-        set { setExplicity(.stateOrProvince, to: newValue) }
+        get { self[.stateOrProvince] }
+        set { self[.stateOrProvince] = newValue }
     }
 
     /// The area information of the file.
     open var areaInformation: String? {
-        get { value(for: .areaInformation) }
-        set { setExplicity(.areaInformation, to: newValue) }
+        get { self[.areaInformation] }
+        set { self[.areaInformation] = newValue }
     }
 
     /// The name of the location or point of interest associated with the
     open var namedLocation: String? {
-        get { value(for: .namedLocation) }
-        set { setExplicity(.namedLocation, to: newValue) }
+        get { self[.namedLocation] }
+        set { self[.namedLocation] = newValue }
     }
 
     /// The altitude of this item in meters above sea level, expressed using the WGS84 datum. Negative values lie below sea level.
     open var altitude: Double? {
-        get { value(for: .altitude) }
-        set { setExplicity(.altitude, to: newValue) }
+        get { self[.altitude] }
+        set { self[.altitude] = newValue }
     }
 
     /// The latitude of this item in degrees north of the equator, expressed using the WGS84 datum. Negative values lie south of the equator.
     open var latitude: Double? {
-        get { value(for: .latitude) }
-        set { setExplicity(.latitude, to: newValue) }
+        get { self[.latitude] }
+        set { self[.latitude] = newValue }
     }
 
     /// The longitude of this item in degrees east of the prime meridian, expressed using the WGS84 datum. Negative values lie west of the prime meridian.
     open var longitude: Double? {
-        get { value(for: .longitude) }
-        set { setExplicity(.longitude, to: newValue) }
+        get { self[.longitude] }
+        set { self[.longitude] = newValue }
     }
 
     /// The speed of this item, in kilometers per hour.
     open var speed: Double? {
-        get { value(for: .speed) }
-        set { setExplicity(.speed, to: newValue) }
+        get { self[.speed] }
+        set { self[.speed] = newValue }
     }
 
     /// The timestamp on the item  This generally is used to indicate the time at which the event captured by this item took place.
     open var timestamp: Date? {
-        get { value(for: .timestamp) }
-        set { setExplicity(.timestamp, to: newValue) }
+        get { self[.timestamp] }
+        set { self[.timestamp] = newValue }
     }
 
     /// The direction of travel of this item, in degrees from true north.
     open var gpsTrack: Double? {
-        get { value(for: .gpsTrack) }
-        set { setExplicity(.gpsTrack, to: newValue) }
+        get { self[.gpsTrack] }
+        set { self[.gpsTrack] = newValue }
     }
 
     /// The gps status of this item.
     open var gpsStatus: String? {
-        get { value(for: .gpsStatus) }
-        set { setExplicity(.gpsStatus, to: newValue) }
+        get { self[.gpsStatus] }
+        set { self[.gpsStatus] = newValue }
     }
 
     /// The gps measure mode of this item.
     open var gpsMeasureMode: String? {
-        get { value(for: .gpsMeasureMode) }
-        set { setExplicity(.gpsMeasureMode, to: newValue) }
+        get { self[.gpsMeasureMode] }
+        set { self[.gpsMeasureMode] = newValue }
     }
 
     /// The gps dop of this item.
     open var gpsDop: Double? {
-        get { value(for: .gpsDop) }
-        set { setExplicity(.gpsDop, to: newValue) }
+        get { self[.gpsDop] }
+        set { self[.gpsDop] = newValue }
     }
 
     /// The gps map datum of this item.
     open var gpsMapDatum: String? {
-        get { value(for: .gpsMapDatum) }
-        set { setExplicity(.gpsMapDatum, to: newValue) }
+        get { self[.gpsMapDatum] }
+        set { self[.gpsMapDatum] = newValue }
     }
 
     /// The gps destination latitude of this item.
     open var gpsDestLatitude: Double? {
-        get { value(for: .gpsDestLatitude) }
-        set { setExplicity(.gpsDestLatitude, to: newValue) }
+        get { self[.gpsDestLatitude] }
+        set { self[.gpsDestLatitude] = newValue }
     }
 
     /// The gps destination longitude of this item.
     open var gpsDestLongitude: Double? {
-        get { value(for: .gpsDestLongitude) }
-        set { setExplicity(.gpsDestLongitude, to: newValue) }
+        get { self[.gpsDestLongitude] }
+        set { self[.gpsDestLongitude] = newValue }
     }
 
     /// The gps destination bearing of this item.
     open var gpsDestBearing: Double? {
-        get { value(for: .gpsDestBearing) }
-        set { setExplicity(.gpsDestBearing, to: newValue) }
+        get { self[.gpsDestBearing] }
+        set { self[.gpsDestBearing] = newValue }
     }
 
     /// The gps destination distance of this item.
     open var gpsDestDistance: Double? {
-        get { value(for: .gpsDestDistance) }
-        set { setExplicity(.gpsDestDistance, to: newValue) }
+        get { self[.gpsDestDistance] }
+        set { self[.gpsDestDistance] = newValue }
     }
 
     /// The gps processing method of this item.
     open var gpsProcessingMethod: String? {
-        get { value(for: .gpsProcessingMethod) }
-        set { setExplicity(.gpsProcessingMethod, to: newValue) }
+        get { self[.gpsProcessingMethod] }
+        set { self[.gpsProcessingMethod] = newValue }
     }
 
     /// The gps date stamp of this item.
     open var gpsDateStamp: Date? {
-        get { value(for: .gpsDateStamp) }
-        set { setExplicity(.gpsDateStamp, to: newValue) }
+        get { self[.gpsDateStamp] }
+        set { self[.gpsDateStamp] = newValue }
     }
 
     /// The gps differental of this item.
     open var gpsDifferental: Double? {
-        get { value(for: .gpsDifferental) }
-        set { setExplicity(.gpsDifferental, to: newValue) }
+        get { self[.gpsDifferental] }
+        set { self[.gpsDifferental] = newValue }
     }
 
     // MARK: - Audio
 
     /// The sample rate of the audio data contained in the file. The sample rate representing `audio_frames/second`. For example: `44100.0`, `22254.54`.
-    open var audioSampleRate: Double? { value(for: .audioSampleRate) }
+    open var audioSampleRate: Double? { self[.audioSampleRate] }
 
     /// The number of channels in the audio data contained in the file.
-    open var audioChannelCount: Int? { value(for: .audioChannelCount) }
+    open var audioChannelCount: Int? { self[.audioChannelCount] }
 
     /// The name of the application that encoded the data of a audio file.
     open var audioEncodingApplication: String? {
-        get { value(for: .audioEncodingApplication) }
-        set { setExplicity(.audioEncodingApplication, to: newValue) }
+        get { self[.audioEncodingApplication] }
+        set { self[.audioEncodingApplication] = newValue }
     }
 
     /// The tempo that specifies the beats per minute of the music contained in the audio file.
     open var tempo: Double? {
-        get { value(for: .tempo) }
-        set { setExplicity(.tempo, to: newValue) }
+        get { self[.tempo] }
+        set { self[.tempo] = newValue }
     }
 
     /// The key of the music contained in the audio file. For example: `C`, `Dm`, `F#, `Bb`.
     open var keySignature: String? {
-        get { value(for: .keySignature) }
-        set { setExplicity(.keySignature, to: newValue) }
+        get { self[.keySignature] }
+        set { self[.keySignature] = newValue }
     }
 
     /// The time signature of the musical composition contained in the audio/MIDI file. For example: `4/4`, `7/8`.
     open var timeSignature: String? {
-        get { value(for: .timeSignature) }
-        set { setExplicity(.timeSignature, to: newValue) }
+        get { self[.timeSignature] }
+        set { self[.timeSignature] = newValue }
     }
 
     /// The track number of a song or composition when it is part of an album.
     open var trackNumber: Int? {
-        get { value(for: .trackNumber) }
-        set { setExplicity(.trackNumber, to: newValue) }
+        get { self[.trackNumber] }
+        set { self[.trackNumber] = newValue }
     }
 
     /// The composer of the music contained in the audio file.
     open var composer: String? {
-        get { value(for: .composer) }
-        set { setExplicity(.composer, to: newValue) }
+        get { self[.composer] }
+        set { self[.composer] = newValue }
     }
 
     /// The lyricist, or text writer, of the music contained in the audio file.
     open var lyricist: String? {
-        get { value(for: .lyricist) }
-        set { setExplicity(.lyricist, to: newValue) }
+        get { self[.lyricist] }
+        set { self[.lyricist] = newValue }
     }
 
     /// The recording date of the song or composition.
     open var recordingDate: Date? {
-        get { value(for: .recordingDate) }
-        set { setExplicity(.recordingDate, to: newValue) }
+        get { self[.recordingDate] }
+        set { self[.recordingDate] = newValue }
     }
 
     /// Indicates the year this item was recorded. For example: `1964`, `2003`.
     open var recordingYear: Double? {
-        get { value(for: .recordingYear) }
-        set { setExplicity(.recordingYear, to: newValue) }
+        get { self[.recordingYear] }
+        set { self[.recordingYear] = newValue }
     }
 
     /// The musical genre of the song or composition contained in the audio file. For example: `Jazz`, `Pop`, `Rock`, `Classical`.
     open var musicalGenre: String? {
-        get { value(for: .musicalGenre) }
-        set { setExplicity(.musicalGenre, to: newValue) }
+        get { self[.musicalGenre] }
+        set { self[.musicalGenre] = newValue }
     }
 
     /// A Boolean value that indicates whether the MIDI sequence contained in the file is setup for use with a General MIDI device.
-    open var isGeneralMidiSequence: Bool? { value(for: .isGeneralMidiSequence) }
+    open var isGeneralMidiSequence: Bool? { self[.isGeneralMidiSequence] }
 
     /// The original key of an Apple loop. The key is the root note or tonic for the loop, and does not include the scale type.
-    open var appleLoopsRootKey: String? { value(for: .appleLoopsRootKey) }
+    open var appleLoopsRootKey: String? { self[.appleLoopsRootKey] }
 
     /// The key filtering information of an Apple loop. Loops are matched against projects that often in a major or minor key.
-    open var appleLoopsKeyFilterType: String? { value(for: .appleLoopsKeyFilterType) }
+    open var appleLoopsKeyFilterType: String? { self[.appleLoopsKeyFilterType] }
 
     /// The looping mode of an Apple loop.
-    open var appleLoopsLoopMode: String? { value(for: .appleLoopsLoopMode) }
+    open var appleLoopsLoopMode: String? { self[.appleLoopsLoopMode] }
 
     /// The escriptive information of an Apple loop.
-    open var appleLoopDescriptors: [String]? { value(for: .appleLoopDescriptors) }
+    open var appleLoopDescriptors: [String]? { self[.appleLoopDescriptors] }
 
     /// The category of the instrument.
-    open var musicalInstrumentCategory: String? { value(for: .musicalInstrumentCategory) }
+    open var musicalInstrumentCategory: String? { self[.musicalInstrumentCategory] }
 
     /// The name of the instrument relative to the instrument category.
-    open var musicalInstrumentName: String? { value(for: .musicalInstrumentName) }
+    open var musicalInstrumentName: String? { self[.musicalInstrumentName] }
 
     // MARK: - Media
 
     /// The duration of the content of file. Usually for videos and audio.
     open var duration: TimeDuration? {
-        guard let durationSeconds: Double = value(for: .duration) else { return nil }
+        guard let durationSeconds: Double = self[.duration] else { return nil }
         return TimeDuration(durationSeconds)
     }
 
     /// The media types (video, sound) present in the content.
-    open var mediaTypes: [String]? { value(for: .mediaTypes) }
+    open var mediaTypes: [String]? { self[.mediaTypes] }
 
     /// The codecs used to encode/decode the media.
-    open var codecs: [String]? { value(for: .codecs) }
+    open var codecs: [String]? { self[.codecs] }
 
     /// The total bit rate, audio and video combined, of the media.
-    open var totalBitRate: Double? { value(for: .totalBitRate) }
+    open var totalBitRate: Double? { self[.totalBitRate] }
 
     /// The video bit rate of the media.
-    open var videoBitRate: Double? { value(for: .videoBitRate) }
+    open var videoBitRate: Double? { self[.videoBitRate] }
 
     /// The audio bit rate of the media.
-    open var audioBitRate: Double? { value(for: .audioBitRate) }
+    open var audioBitRate: Double? { self[.audioBitRate] }
 
     /// A Boolean value that indicates whether the media is prepared for streaming.
-    open var streamable: Bool? { value(for: .streamable) }
+    open var streamable: Bool? { self[.streamable] }
 
     /// The delivery type of the media. Either `Fast start` or `RTSP`.
-    open var mediaDeliveryType: String? { value(for: .mediaDeliveryType) }
+    open var mediaDeliveryType: String? { self[.mediaDeliveryType] }
 
     /// Original format of the media.
-    open var originalFormat: String? { value(for: .originalFormat) }
+    open var originalFormat: String? { self[.originalFormat] }
 
     /// Original source of the media.
     open var originalSource: String? {
-        get { value(for: .originalSource) }
-        set { setExplicity(.originalSource, to: newValue) }
+        get { self[.originalSource] }
+        set { self[.originalSource] = newValue }
     }
 
     /// The genre of the content.
     open var genre: String? {
-        get { value(for: .genre) }
-        set { setExplicity(.genre, to: newValue) }
+        get { self[.genre] }
+        set { self[.genre] = newValue }
     }
 
     /// The director of the content.
     open var director: String? {
-        get { value(for: .director) }
-        set { setExplicity(.director, to: newValue) }
+        get { self[.director] }
+        set { self[.director] = newValue }
     }
 
     /// The producer of the content.
     open var producer: String? {
-        get { value(for: .producer) }
-        set { setExplicity(.producer, to: newValue) }
+        get { self[.producer] }
+        set { self[.producer] = newValue }
     }
 
     /// The performers of the content.
     open var performers: [String]? {
-        get { value(for: .performers) }
-        set { setExplicity(.performers, to: newValue) }
+        get { self[.performers] }
+        set { self[.performers] = newValue }
     }
 
     /// The people that are visible in an image or movie or are written about in a document.
     open var participants: [String]? {
-        get { value(for: .participants) }
-        set { setExplicity(.participants, to: newValue) }
+        get { self[.participants] }
+        set { self[.participants] = newValue }
     }
 
     // MARK: - Image
 
     /// The pixel height of the contents. For example, the height of a image or video.
-    open var pixelHeight: Double? { value(for: .pixelHeight) }
+    open var pixelHeight: Double? { self[.pixelHeight] }
 
     /// The pixel width of the contents. For example, the width of a image or video.
-    open var pixelWidth: Double? { value(for: .pixelWidth) }
+    open var pixelWidth: Double? { self[.pixelWidth] }
 
     /// The pixel size of the contents. For example, the image size or the video frame size.
     open var pixelSize: CGSize? {
@@ -876,46 +875,46 @@ open class MetadataItem: Identifiable {
     }
 
     /// The total number of pixels in the contents. Same as `pixelHeight x pixelWidth`.
-    open var pixelCount: Double? { value(for: .pixelCount) }
+    open var pixelCount: Double? { self[.pixelCount] }
 
     /// The color space model used by the contents. For example: `RGB`, `CMYK`, `YUV`, or `YCbCr`.
-    open var colorSpace: String? { value(for: .colorSpace) }
+    open var colorSpace: String? { self[.colorSpace] }
 
     /// The number of bits per sample. For example, the bit depth of an image (8-bit, 16-bit etc...) or the bit depth per audio sample of uncompressed audio data (8, 16, 24, 32, 64, etc..).
-    open var bitsPerSample: Double? { value(for: .bitsPerSample) }
+    open var bitsPerSample: Double? { self[.bitsPerSample] }
 
     /// A Boolean value that indicates whether a camera flash was used.
     open var isFlashOn: Bool?  {
-        get { value(for: .isFlashOn) }
-        set { setExplicity(.isFlashOn, to: newValue) }
+        get { self[.isFlashOn] }
+        set { self[.isFlashOn] = newValue }
     }
 
     /// The actual focal length of the lens, in millimeters.
     open var focalLength: Double?  {
-        get { value(for: .focalLength) }
-        set { setExplicity(.focalLength, to: newValue) }
+        get { self[.focalLength] }
+        set { self[.focalLength] = newValue }
     }
 
     /// The manufacturer of the device used for the contents. For example: `Apple`, `Canon`.
     open var deviceManufacturer: String?  {
-        get { value(for: .deviceManufacturer) }
-        set { setExplicity(.deviceManufacturer, to: newValue) }
+        get { self[.deviceManufacturer] }
+        set { self[.deviceManufacturer] = newValue }
     }
 
     /// The model of the device used for the contents. For example: `iPhone 13`.
     open var deviceModel: String?  {
-        get { value(for: .deviceModel) }
-        set { setExplicity(.deviceModel, to: newValue) }
+        get { self[.deviceModel] }
+        set { self[.deviceModel] = newValue }
     }
 
     /// The ISO speed used to acquire the contents.
     open var isoSpeed: Double?  {
-        get { value(for: .isoSpeed) }
-        set { setExplicity(.isoSpeed, to: newValue) }
+        get { self[.isoSpeed] }
+        set { self[.isoSpeed] = newValue }
     }
 
     /// The orientation of the contents.
-    open var orientation: Orientation? { value(for: .orientation) }
+    open var orientation: Orientation? { self[.orientation] }
 
     /// The orientation of a contents.
     public enum Orientation: Int, QueryRawRepresentable, CustomStringConvertible {
@@ -934,10 +933,10 @@ open class MetadataItem: Identifiable {
     }
 
     /// The names of the layers in the file.
-    open var layerNames: [String]? { value(for: .layerNames) }
+    open var layerNames: [String]? { self[.layerNames] }
 
     /// The white balance setting of the camera when the picture was taken.
-    open var whiteBalance: WhiteBalance? { value(for: .whiteBalance) }
+    open var whiteBalance: WhiteBalance? { self[.whiteBalance] }
 
     /// The white balance setting of a camera.
     public enum WhiteBalance: Int, QueryRawRepresentable, CustomStringConvertible {
@@ -956,16 +955,16 @@ open class MetadataItem: Identifiable {
     }
 
     /// The aperture setting used to acquire the document contents. This unit is the APEX value.
-    open var aperture: Double? { value(for: .aperture) }
+    open var aperture: Double? { self[.aperture] }
 
     /// The name of the color profile used by the document contents.
-    open var colorProfile: String? { value(for: .colorProfile) }
+    open var colorProfile: String? { self[.colorProfile] }
 
     /// The resolution width, in DPI, of the contents.
-    open var dpiResolutionWidth: Double? { value(for: .dpiResolutionWidth) }
+    open var dpiResolutionWidth: Double? { self[.dpiResolutionWidth] }
 
     /// The resolution height, in DPI, of the contents.
-    open var dpiResolutionHeight: Double? { value(for: .dpiResolutionHeight) }
+    open var dpiResolutionHeight: Double? { self[.dpiResolutionHeight] }
 
     /// The resolution size, in DPI, of the contents.
     open var dpiResolution: CGSize? {
@@ -975,87 +974,87 @@ open class MetadataItem: Identifiable {
 
     /// The exposure mode used to acquire the contents.
     open var exposureMode: Double? {
-        get { value(for: .exposureMode) }
-        set { setExplicity(.exposureMode, to: newValue) }
+        get { self[.exposureMode] }
+        set { self[.exposureMode] = newValue }
     }
 
     /// The exposure time, in seconds, used to acquire the contents.
     open var exposureTimeSeconds: Double? {
-        get { value(for: .exposureTimeSeconds) }
-        set { setExplicity(.exposureTimeSeconds, to: newValue) }
+        get { self[.exposureTimeSeconds] }
+        set { self[.exposureTimeSeconds] = newValue }
     }
 
     /// The version of the EXIF header used to generate the metadata.
     open var exifVersion: String? {
-        get { value(for: .exifVersion) }
-        set { setExplicity(.exifVersion, to: newValue) }
+        get { self[.exifVersion] }
+        set { self[.exifVersion] = newValue }
     }
 
     /// The name of the camera company.
     open var cameraOwner: String? {
-        get { value(for: .cameraOwner) }
-        set { setExplicity(.cameraOwner, to: newValue) }
+        get { self[.cameraOwner] }
+        set { self[.cameraOwner] = newValue }
     }
 
     /// The actual focal length of the lens, in 35 millimeters.
     open var focalLength35Mm: Double? {
-        get { value(for: .focalLength35Mm) }
-        set { setExplicity(.focalLength35Mm, to: newValue) }
+        get { self[.focalLength35Mm] }
+        set { self[.focalLength35Mm] = newValue }
     }
 
     /// The name of the camera lens model.
     open var lensModel: String? {
-        get { value(for: .lensModel) }
-        set { setExplicity(.lensModel, to: newValue) }
+        get { self[.lensModel] }
+        set { self[.lensModel] = newValue }
     }
 
     /// The direction of the item's image, in degrees from true north.
-    open var imageDirection: Double? { value(for: .imageDirection) }
+    open var imageDirection: Double? { self[.imageDirection] }
 
     /// A Boolean value that indicates whether the image has an alpha channel.
-    open var hasAlphaChannel: Bool? { value(for: .hasAlphaChannel) }
+    open var hasAlphaChannel: Bool? { self[.hasAlphaChannel] }
 
     /// A Boolean value that indicates whether a red-eye reduction was used to take the picture.
     open var redEyeOnOff: Bool? {
-        get { value(for: .redEyeOnOff) }
-        set { setExplicity(.redEyeOnOff, to: newValue) }
+        get { self[.redEyeOnOff] }
+        set { self[.redEyeOnOff] = newValue }
     }
 
     /// The metering mode used to take the image.
     open var meteringMode: String? {
-        get { value(for: .meteringMode) }
-        set { setExplicity(.meteringMode, to: newValue) }
+        get { self[.meteringMode] }
+        set { self[.meteringMode] = newValue }
     }
 
     /// The smallest f-number of the lens. Ordinarily it is given in the range of 00.00 to 99.99.
     open var maxAperture: Double? {
-        get { value(for: .maxAperture) }
-        set { setExplicity(.maxAperture, to: newValue) }
+        get { self[.maxAperture] }
+        set { self[.maxAperture] = newValue }
     }
 
     /// The diameter of the diaphragm aperture in terms of the effective focal length of the lens.
     open var fNumber: Double? {
-        get { value(for: .fNumber) }
-        set { setExplicity(.fNumber, to: newValue) }
+        get { self[.fNumber] }
+        set { self[.fNumber] = newValue }
     }
 
     /// The class of the exposure program used by the camera to set exposure when the image is taken. Possible values include: Manual, Normal, and Aperture priority.
     open var exposureProgram: String? {
-        get { value(for: .exposureProgram) }
-        set { setExplicity(.exposureProgram, to: newValue) }
+        get { self[.exposureProgram] }
+        set { self[.exposureProgram] = newValue }
     }
 
     /// The time of the exposure of the imge.
     open var exposureTimeString: String? {
-        get { value(for: .exposureTimeString) }
-        set { setExplicity(.exposureTimeString, to: newValue) }
+        get { self[.exposureTimeString] }
+        set { self[.exposureTimeString] = newValue }
     }
 
     /// A Boolean value that indicates whether the file is a screen capture.
-    open var isScreenCapture: Bool? { value(for: .isScreenCapture) }
+    open var isScreenCapture: Bool? { self[.isScreenCapture] }
 
     /// The screen capture type of the file.
-    open var screenCaptureType: ScreenCaptureType? { value(for: .screenCaptureType) }
+    open var screenCaptureType: ScreenCaptureType? { self[.screenCaptureType] }
 
     /// The screen capture type of a file.
     public enum ScreenCaptureType: String, QueryRawRepresentable, CustomStringConvertible {
@@ -1079,149 +1078,149 @@ open class MetadataItem: Identifiable {
 
     /// The screen capture rect of the file.
     open var screenCaptureRect: CGRect? {
-        guard let values: [Double] = value(for: .screenCaptureRect) else { return nil }
+        guard let values: [Double] = self[.screenCaptureRect] else { return nil }
         return CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
     }
 
     // MARK: - Messages / Mail
 
     /// The email addresses for the authors of this item.
-    open var authorEmailAddresses: [String]? { value(for: .authorEmailAddresses) }
+    open var authorEmailAddresses: [String]? { self[.authorEmailAddresses] }
 
     /// The addresses for the authors of this item.
-    open var authorAddresses: [String]? { value(for: .authorAddresses) }
+    open var authorAddresses: [String]? { self[.authorAddresses] }
 
     /// The recipients of this item.
-    open var recipients: [String]? { value(for: .recipients) }
+    open var recipients: [String]? { self[.recipients] }
 
     /// The rmail addresses for the recipients of this item.
-    open var recipientEmailAddresses: [String]? { value(for: .recipientEmailAddresses) }
+    open var recipientEmailAddresses: [String]? { self[.recipientEmailAddresses] }
 
     /// The addresses for the recipients of this item.
-    open var recipientAddresses: [String]? { value(for: .recipientAddresses) }
+    open var recipientAddresses: [String]? { self[.recipientAddresses] }
 
     /// The instant message addresses related to this item.
-    open var instantMessageAddresses: [String]? { value(for: .instantMessageAddresses) }
+    open var instantMessageAddresses: [String]? { self[.instantMessageAddresses] }
 
     /// The received dates for this item.
-    open var receivedDates: [Date]? { value(for: .receivedDates) }
+    open var receivedDates: [Date]? { self[.receivedDates] }
 
     /// The received recipients for this item.
-    open var receivedRecipients: [String]? { value(for: .receivedRecipients) }
+    open var receivedRecipients: [String]? { self[.receivedRecipients] }
 
     /// Received recipient handles for this item.
-    open var receivedRecipientHandles: [String]? { value(for: .receivedRecipientHandles) }
+    open var receivedRecipientHandles: [String]? { self[.receivedRecipientHandles] }
 
     /// The received sendesr for this item.
-    open var receivedSenders: [String]? { value(for: .receivedSenders) }
+    open var receivedSenders: [String]? { self[.receivedSenders] }
 
     /// The received sender handles for this item.
-    open var receivedSenderHandles: [String]? { value(for: .receivedSenderHandles) }
+    open var receivedSenderHandles: [String]? { self[.receivedSenderHandles] }
 
     /// The received types for this item.
-    open var receivedTypes: [String]? { value(for: .receivedTypes) }
+    open var receivedTypes: [String]? { self[.receivedTypes] }
 
     /// A Boolean value that indicates whether the file is likely to be considered a junk file.
-    open var isLikelyJunk: Bool? { value(for: .isLikelyJunk) }
+    open var isLikelyJunk: Bool? { self[.isLikelyJunk] }
     
     // MARK: - iCloud
     
     /// A Boolean indicating whether the item is stored in the cloud.
     open var isUbiquitousItem: Bool? {
-        value(for: .isUbiquitousItem)
+        self[.isUbiquitousItem]
     }
 
     /// The name of the item’s container as the system displays it to users.
     open var ubiquitousItemContainerDisplayName: String? {
-        value(for: .ubiquitousItemContainerDisplayName)
+        self[.ubiquitousItemContainerDisplayName]
     }
 
     /// A Boolean value that indicates whether the user or the system requests a download of the item.
     open var ubiquitousItemDownloadRequested: Bool? {
-        value(for: .ubiquitousItemDownloadRequested)
+        self[.ubiquitousItemDownloadRequested]
     }
 
     open var ubiquitousItemIsExternalDocument: Bool? {
-        value(for: .ubiquitousItemIsExternalDocument)
+        self[.ubiquitousItemIsExternalDocument]
     }
 
     open var ubiquitousItemURLInLocalContainer: URL? {
-        value(for: .ubiquitousItemURLInLocalContainer)
+        self[.ubiquitousItemURLInLocalContainer]
     }
 
     /// A Boolean value that indicates whether the item has outstanding conflicts.
     open var ubiquitousItemHasUnresolvedConflicts: Bool? {
-        value(for: .ubiquitousItemHasUnresolvedConflicts)
+        self[.ubiquitousItemHasUnresolvedConflicts]
     }
 
     /// A Boolean value that indicates whether the item is present in the system.
     open var ubiquitousItemIsDownloaded: Bool? {
-        value(for: .ubiquitousItemIsDownloaded)
+        self[.ubiquitousItemIsDownloaded]
     }
 
     /// A Boolean value that indicates whether the system is downloading the item.
     open var ubiquitousItemIsDownloading: Bool? {
-        value(for: .ubiquitousItemIsDownloading)
+        self[.ubiquitousItemIsDownloading]
     }
 
     /// A Boolean value that indicates whether data is present in the cloud for the item.
     open var ubiquitousItemIsUploaded: Bool? {
-        value(for: .ubiquitousItemIsUploaded)
+        self[.ubiquitousItemIsUploaded]
     }
 
     /// A Boolean value that indicates whether the system is uploading the item.
     open var ubiquitousItemIsUploading: Bool? {
-        value(for: .ubiquitousItemIsUploading)
+        self[.ubiquitousItemIsUploading]
     }
 
     /// The percentage of the file that has already been downloaded from the cloud.
     open var ubiquitousItemPercentDownloaded: Double? {
-        value(for: .ubiquitousItemPercentDownloaded)
+        self[.ubiquitousItemPercentDownloaded]
     }
 
     /// The percentage of the file that has already been downloaded from the cloud.
     open var ubiquitousItemPercentUploaded: Double? {
-        value(for: .ubiquitousItemPercentUploaded)
+        self[.ubiquitousItemPercentUploaded]
     }
 
     /// The download status of the item.
     open var ubiquitousItemDownloadingStatus: URLUbiquitousItemDownloadingStatus? {
-        value(for: .ubiquitousItemDownloadingStatus)
+        self[.ubiquitousItemDownloadingStatus]
     }
 
     /// The error when downloading the item from iCloud fails.
     open var ubiquitousItemDownloadingError: NSError? {
-        value(for: .ubiquitousItemDownloadingError)
+        self[.ubiquitousItemDownloadingError]
     }
 
     /// The error when uploading the item to iCloud fails.
     open var ubiquitousItemUploadingError: NSError? {
-        value(for: .ubiquitousItemUploadingError)
+        self[.ubiquitousItemUploadingError]
     }
 
     /// A Boolean value that indicates a shared item.
     open var ubiquitousItemIsShared: Bool? {
-        value(for: .ubiquitousItemIsShared)
+        self[.ubiquitousItemIsShared]
     }
 
     /// The current user’s permissions for the shared item.
     open var ubiquitousSharedItemCurrentUserPermissions: URLUbiquitousSharedItemPermissions? {
-        value(for: .ubiquitousSharedItemCurrentUserPermissions)
+        self[.ubiquitousSharedItemCurrentUserPermissions]
     }
 
     /// The current user’s role for the shared item.
     open var ubiquitousSharedItemCurrentUserRole: URLUbiquitousSharedItemRole? {
-        value(for: .ubiquitousSharedItemCurrentUserRole)
+        self[.ubiquitousSharedItemCurrentUserRole]
     }
 
     /// The name components of the most recent editor of the shared item.
     open var ubiquitousSharedItemMostRecentEditorNameComponents: PersonNameComponents? {
-        value(for: .ubiquitousSharedItemMostRecentEditorNameComponents)
+        self[.ubiquitousSharedItemMostRecentEditorNameComponents]
     }
 
     /// The name components of the owner of the shared item.
     open var ubiquitousSharedItemOwnerNameComponents: PersonNameComponents? {
-        value(for: .ubiquitousSharedItemOwnerNameComponents)
+        self[.ubiquitousSharedItemOwnerNameComponents]
     }
     
     // MARK: - Query Content Relevance
@@ -1233,7 +1232,7 @@ open class MetadataItem: Identifiable {
      
      It may not be computed if the item matches the query through evaluation of other attributes
      */
-    open var queryContentRelevance: Double? { value(for: .queryContentRelevance) }
+    open var queryContentRelevance: Double? { self[.queryContentRelevance] }
 }
 
 extension MetadataItem {
@@ -1379,24 +1378,23 @@ extension MetadataItem {
         return value
     }
     
-    func value<T>(for attribute: Attribute, save: Bool = false) -> T? {
+    subscript<T>(attribute: Attribute) -> T? {
         value(for: attribute.rawValue)
     }
     
-    func value<T: RawRepresentable>(for attribute: Attribute) -> T? {
+    subscript<T: RawRepresentable>(attribute: Attribute) -> T? {
         guard let rawValue: T.RawValue = value(for: attribute.rawValue) else { return nil }
         return T(rawValue: rawValue)
     }
     
-    func getExplicity<T: RawRepresentable>(for attribute: Attribute) -> T? where T: Codable {
-        url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList]
-    }
-    
-    func setExplicity<V, U: WritableKeyPath<URLResources, V?>>(_ attribute: Attribute, urlResources: U? = nil, to value: V?) where V: Codable {
-        if let keyPath = urlResources, var resources = url?.resources {
-            resources[keyPath: keyPath] = value
-        } else {
-            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList, flags: [.syncable, .noExport]] = value
+    subscript<V, U: WritableKeyPath<URLResources, V?>>(attribute: Attribute, urlResources: U? = nil) -> V? where V: Codable {
+        get { value(for: attribute.rawValue) }
+        set {
+            if let keyPath = urlResources, var resources = url?.resources {
+                resources[keyPath: keyPath] = newValue
+            } else {
+                url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList, flags: [.syncable, .noExport]] = newValue
+            }
         }
     }
 }
