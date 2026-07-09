@@ -47,10 +47,7 @@ public extension URL {
  metadata.contentModificationDate = Date.now
  ```
  */
-open class MetadataItem: Identifiable {
-    /// The identifier of the item.
-    public let id = UUID()
-    
+open class MetadataItem {
     let item: NSMetadataItem
     
     /// Attribute values fetched by a query.
@@ -1402,10 +1399,10 @@ extension MetadataItem {
 
 extension MetadataItem: Hashable {
     public static func == (lhs: MetadataItem, rhs: MetadataItem) -> Bool {
-        lhs.id == rhs.id
+        lhs.item === rhs.item
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+        hasher.combine(item.objectID)
     }
 }
