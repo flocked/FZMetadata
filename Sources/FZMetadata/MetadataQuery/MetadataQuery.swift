@@ -560,7 +560,7 @@ class ItemPathPrefetchOperation: Operation {
     override func main() {
         guard !isCancelled else { return }
         if let item = item, item.filePath == nil {
-            item.filePath = item.value(for: .path)
+            item.filePath = item[.path]
         }
     }
 }
