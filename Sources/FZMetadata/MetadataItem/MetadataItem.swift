@@ -155,9 +155,8 @@ open class MetadataItem: Identifiable {
         _url ?? value(for: .url)
     }
     
-    var _url: URL? {
-        guard let path = path else { return nil }
-        return URL(fileURLWithPath: path)
+    private var _url: URL? {
+        path.map({ .file($0) })
     }
 
     /**
@@ -167,13 +166,14 @@ open class MetadataItem: Identifiable {
      */
     open var path: String? {
         filePathOperation?.cancel()
+        if let filePath { return filePath }
         filePath = filePath ?? value(for: .path)
         return filePath
     }
 
     /// The name of the file including the extension.
     open var fileName: String? {
-        return _url?.lastPathComponent ?? (values[Attribute.url.rawValue] as? URL)?.lastPathComponent ?? value(for: .fileName)
+        _url?.lastPathComponent ?? value(for: .fileName)
     }
 
     /// The display name of the file, which may be different then the file system name.
