@@ -10,7 +10,7 @@ import FZSwiftUtils
 
 extension MetadataItem {
     /// Represents the changed attributes between two states of a metadata item.
-    public class Changes: CustomStringConvertible {
+     class Changes: CustomStringConvertible {
         private var values: [String: Any] = [:]
         private var previous: [String: Any] = [:]
         private var didParse = false

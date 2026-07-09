@@ -139,13 +139,18 @@ open class MetadataItem: Identifiable {
      query.start()
      ```
      */
-    public var updatedAttributes: [Attribute] {
-        changes.changedAttributes
+    public var updatedAttributes: Set<Attribute> {
+        Set(changes.changedAttributes)
     }
     
     /// A Boolean value indicating whether the specified attribute has changed between the current and previous item state.
-    open func didUpdate(_ attribute: Attribute) -> Bool {
+    public func didUpdate(_ attribute: Attribute) -> Bool {
         changes.didChange(attribute)
+    }
+    
+    /// Returns the current and previous value for the attribute at the specified key path, if it has changed.
+    public func change<Value>(for keyPath: KeyPath<MetadataItem, Value>) -> (value: Value, previous: Value)? {
+        changes.change(for: keyPath)
     }
     
     // MARK: - File
