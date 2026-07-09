@@ -150,7 +150,11 @@ open class MetadataItem: Identifiable {
     
     // MARK: - File
 
-    /// The url of the file.
+    /**
+     The url of the file.
+     
+     - Note: The attribute can't be used in a metadata query predicate or to sort query results.
+     */
     open var url: URL? {
         _url ?? value(for: .url)
     }
