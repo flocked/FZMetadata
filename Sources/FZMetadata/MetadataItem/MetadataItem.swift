@@ -1392,7 +1392,7 @@ extension MetadataItem {
         if let keyPath = urlResources, var resources = url?.resources {
             resources[keyPath: keyPath] = value
         } else {
-            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList] = value
+            url?.extendedAttributes["com.apple.metadata:\(attribute.rawValue)", .propertyList, flags: [.syncable, .noExport]] = value
         }
     }
 }
