@@ -151,6 +151,11 @@ open class MetadataItem: Identifiable {
         changes.didChange(attribute)
     }
     
+    /// Returns the current and previous value for the attribute at the specified key path, if it has changed.
+    open func change<Value>(for keyPath: KeyPath<MetadataItem, Value>) -> (value: Value, previous: Value)? {
+        changes.change(for: keyPath)
+    }
+    
     // MARK: - File
 
     /**
