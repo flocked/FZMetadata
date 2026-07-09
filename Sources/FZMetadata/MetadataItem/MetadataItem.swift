@@ -1370,12 +1370,8 @@ extension MetadataItem {
 }
 
 extension MetadataItem {
-    func value<T>(for attribute: String, save: Bool = false) -> T? {
-        let value = values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
-        if save && values[attribute] == nil {
-            values[attribute] = value
-        }
-        return value
+    private func value<T>(for attribute: String) -> T? {
+        values[attribute] as? T ?? item.value(forAttribute: attribute) as? T
     }
     
     subscript<T>(attribute: Attribute) -> T? {
