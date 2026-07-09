@@ -142,8 +142,8 @@ open class MetadataItem: Identifiable {
      query.start()
      ```
      */
-    public var updatedAttributes: [Attribute] {
-        changes.changedAttributes
+    public var updatedAttributes: Set<Attribute> {
+        Set(changes.changedAttributes)
     }
     
     /// A Boolean value indicating whether the specified attribute has changed between the current and previous item state.
