@@ -405,10 +405,14 @@ open class MetadataQuery: NSObject {
         query.disableUpdates()
         let results = (0..<query.resultCount).compactMap({ query.result(at: $0) as? MetadataItem })
         resultCount = query.resultCount
+        let previousResults = _results.synchronized
         var pending = pendingResultsUpdate
         pendingResultsUpdate = .init()
-        pending.added.forEach({ updateResult($0, isInital: true) })
-        pending.changed.forEach({ updateResult($0) })
+        pending = .init(
+            added: pending.added.map({ updateResult($0, in: results, isInital: true) }),
+            removed: pending.removed,
+            changed: pending.changed.map({ updateResult($0, in: results, previousResults: previousResults) })
+        )
         _results.synchronized = results
         query.enableUpdates()
         resultsUpdateLock.unlock()
@@ -418,16 +422,34 @@ open class MetadataQuery: NSObject {
         }
     }
     
-    func updateResult(_ result: MetadataItem, isInital: Bool = false) {
+    @discardableResult
+    func updateResult(_ result: MetadataItem, in results: [MetadataItem]? = nil, previousResults: [MetadataItem] = [], isInital: Bool = false) -> MetadataItem {
         let index = query.index(ofResult: result)
-        guard index < resultCount else { return }
-        result.values = query.values(of: queryAttributes, forResultsAt: index)
-        if !isInital {
+        guard index < resultCount else { return result }
+        let result = results?[safe: index] ?? result
+        let values = query.values(of: queryAttributes, forResultsAt: index)
+        if !isInital, result.values.isEmpty, let previousResult = previousResult(for: values, at: index, in: previousResults) {
+            result.values = previousResult.values
+            result.changes = previousResult.changes.copy()
+        }
+        result.values = values
+        if isInital {
+            result.changes = .init(values: result.values)
+        } else {
             result.changes.update(with: result.values)
         }
         result.filePath = nil
         result.filePathOperation?.cancel()
         prefetchItemPath(for: result)
+        return result
+    }
+    
+    func previousResult(for values: [String: Any], at index: Int, in previousResults: [MetadataItem]) -> MetadataItem? {
+        if let path = values[MetadataItem.Attribute.path.rawValue] as? String,
+           let result = previousResults.first(where: { $0.values[MetadataItem.Attribute.path.rawValue] as? String == path }) {
+            return result
+        }
+        return previousResults[safe: index]
     }
     
     func prefetchItemPath(for item: MetadataItem) {
