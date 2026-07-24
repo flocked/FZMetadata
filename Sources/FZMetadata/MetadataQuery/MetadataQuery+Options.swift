@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FZSwiftUtils
 
 #if os(macOS)
 extension MetadataQuery {
@@ -80,11 +81,16 @@ extension MetadataQuery {
         
         public var description: String {
             var strings: [String] = []
-            if contains(.synchronous) { strings.append(".synchronous") }
-            if contains(.other) { strings.append(".other") }
-            if contains(.wantsUpdates) { strings.append(".wantsUpdates") }
-            if contains(.allowFSTranslation) { strings.append(".allowFSTranslation") }
-            return "[\(strings.joined(separator: ", "))]"
+            var rawStrings: [String] = []
+            for element in elements() {
+                if element == .synchronous { strings += ".synchronous" } else
+                if element == .wantsUpdates { strings += ".wantsUpdates" } else
+                if element == .allowFSTranslation { strings += ".allowFSTranslation" } else
+                { rawStrings += "\(rawValue)" }
+            }
+            let string = strings.joined(separator: ", ")
+            let rawString = rawStrings.joined(separator: ", ")
+            return !rawString.isEmpty ? "[\(string), \(rawString)]" : "[\(string)]"
         }
         
         public init(rawValue: UInt) { self.rawValue = rawValue }
