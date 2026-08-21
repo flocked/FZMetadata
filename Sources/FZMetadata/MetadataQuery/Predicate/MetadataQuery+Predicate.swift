@@ -324,23 +324,13 @@ extension DataSize {
         
         func value(for value: Any) -> Any {
             guard let value = value as? Double else { return value }
-            switch self {
-            case .byte: return Int(value)
-            case .kilobyte: return DataSize.kilobytes(value).bytes
-            case .megabyte: return DataSize.megabytes(value).bytes
-            case .gigabyte: return DataSize.gigabytes(value).bytes
-            case .terabyte: return DataSize.terabytes(value).bytes
-            case .petabyte: return DataSize.petabytes(value).bytes
-            case .exabyte: return DataSize.exabytes(value).bytes
-            case .zettabyte: return DataSize.zettabytes(value).bytes
-            case .yottabyte: return DataSize.yottabytes(value).bytes
-            }
+            return UInt64(value * pow(1000, Double(rawValue)))
         }
     }
 }
 
 extension TimeDuration {
-    enum Unit: Double, CaseIterable, PredicateValueConverter {
+    enum Unit: Double, PredicateValueConverter {
         case second = 1
         case minute = 60
         case hour = 3_600
@@ -349,18 +339,9 @@ extension TimeDuration {
         case month = 2_629_746
         case year = 31_557_600
         
-        func seconds(for value: Double) -> Double {
-            value * rawValue
-        }
-        
         func value(for value: Any) -> Any {
             guard let seconds = value as? Double else { return value }
-            return seconds / rawValue
-            /*
-            let factor: Double = 60
-            let conversionFactor = pow(factor, Double(rawValue - TimeDuration.Unit.second.rawValue))
-            return value * conversionFactor
-            */
+           return seconds * rawValue
         }
     }
 }
