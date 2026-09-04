@@ -18,7 +18,7 @@ extension NSPredicateEditorRowTemplate {
     
     /// The initial value of the row template. The default value is `nil`.
     var initialValue: Any? {
-        get { associatedValue(for: "initialValue") }
+        get { associatedValue(for: "initialValue", initial: nil) }
         set { setAssociatedValue(newValue, for: "initialValue") }
     }
     
