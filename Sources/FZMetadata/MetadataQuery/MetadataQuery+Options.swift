@@ -82,7 +82,7 @@ extension MetadataQuery {
         public var description: String {
             var strings: [String] = []
             var rawStrings: [String] = []
-            for element in elements() {
+            for element in elements {
                 if element == .synchronous { strings += ".synchronous" } else
                 if element == .wantsUpdates { strings += ".wantsUpdates" } else
                 if element == .allowFSTranslation { strings += ".allowFSTranslation" } else
